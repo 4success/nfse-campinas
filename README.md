@@ -4,7 +4,7 @@ Pacote de integração que abstrai os webservices da prefeitura de Campinas.
 
 ## Instruções de uso
 
-Instalar via `npm install renanwilliam/nfse` ou `yarn add renanwilliam/nfse`
+Instalar via `npm install @4success/nfse` ou `yarn add @4success/nfse`
 
 Com a biblioteca instalada, basta criar uma instância apontando para a URL do webservice, passando também um Buffer com o arquivo do certificado e a senha do certificado
 ```javascript
