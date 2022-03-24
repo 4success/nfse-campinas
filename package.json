@@ -15,7 +15,7 @@
   "scripts": {
     "execute-ts": "node_modules/.bin/ts-node src/index.ts",
     "prepare": "yarn run build",
-    "prepublishOnly": "yarn run test && yarn run lint",
+    "prepublishOnly": "yarn run lint",
     "preversion": "yarn run lint",
     "version": "yarn run format && git add -A src",
     "postversion": "git push && git push --tags",
