@@ -34,7 +34,7 @@ const parser = new XMLParser({
 });
 
 function MyKeyInfo(pem: { certificate: string; key: string }) {
-  this.getKeyInfo = function(key, prefix) {
+  this.getKeyInfo = function (key, prefix) {
     prefix = prefix || '';
     prefix = prefix ? prefix + ':' : prefix;
     const certificate = pem.certificate
@@ -45,7 +45,7 @@ function MyKeyInfo(pem: { certificate: string; key: string }) {
 
     return `<${prefix}X509Data><${prefix}X509Certificate>${certificate}</${prefix}X509Certificate></${prefix}X509Data>`;
   };
-  this.getKey = function(keyInfo) {
+  this.getKey = function (keyInfo) {
     return Buffer.from(pem.key);
   };
 }
@@ -522,7 +522,6 @@ export class NfseCampinas {
   }
 }
 
-
 export class DataScraper {
   public static async consultaLinkNfse(payload: ConsultaUrlNfse.Request): Promise<ConsultaUrlNfse.Response> {
     let browser = await chromium.puppeteer.launch({
@@ -544,7 +543,7 @@ export class DataScraper {
       await (await page.$('#rCodigoVerificacao')).type(payload.codVerificacao.toString());
       await (await page.$('#rInsMun')).type(payload.inscricaoMunicipal.toString());
 
-      const image = await page.$x('//*[@id=\'coluna5B\']/form/table/tbody/tr[5]/td[4]/img');
+      const image = await page.$x("//*[@id='coluna5B']/form/table/tbody/tr[5]/td[4]/img");
       const srcProperty = await image[0].getProperty('src');
       const nfUrl: string = await srcProperty.jsonValue();
 
@@ -556,12 +555,13 @@ export class DataScraper {
       await (await page.$('#btnVerificar')).click();
 
       const newWindowTarget = await browser.waitForTarget(
-        (target) => target.url().indexOf('https://nfse.campinas.sp.gov.br/NotaFiscal/notaFiscal.php') > -1, {
+        (target) => target.url().indexOf('https://nfse.campinas.sp.gov.br/NotaFiscal/notaFiscal.php') > -1,
+        {
           timeout: 10000,
         },
       );
 
-      const searchParams = (new URL(newWindowTarget.url())).searchParams;
+      const searchParams = new URL(newWindowTarget.url()).searchParams;
       const returnObject: ConsultaUrlNfse.Response = {
         url: newWindowTarget.url(),
         id_nota_fiscal: Buffer.from(searchParams.get('id_nota_fiscal'), 'base64').toString(),
@@ -583,7 +583,7 @@ export class DataScraper {
   }
 
   public static async imprimePdfNfse(linkNfse: string): Promise<ImprimePdfNfse.Return> {
-    const searchParams = (new URL(linkNfse)).searchParams;
+    const searchParams = new URL(linkNfse).searchParams;
     const nfseNum = Buffer.from(searchParams.get('numero_nota_fiscal'), 'base64').toString('utf8');
 
     let browser = await chromium.puppeteer.launch({
@@ -599,7 +599,7 @@ export class DataScraper {
       await page.goto(linkNfse);
 
       await page.waitForTimeout(2000);
-      const pdfBuffer = await page.pdf({
+      const pdfBuffer = (await page.pdf({
         format: 'a4',
         margin: {
           top: '0',
@@ -607,7 +607,7 @@ export class DataScraper {
           bottom: '0.4in',
           left: '0.4in',
         },
-      }) as Buffer;
+      })) as Buffer;
 
       return {
         nfse: nfseNum,
