@@ -1,5 +1,5 @@
 /** testeEnviarRequest */
 export interface TesteEnviarRequest {
-    /** xsd:string */
-    mensagemXml?: string;
+  /** xsd:string */
+  mensagemXml?: string;
 }

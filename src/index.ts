@@ -30,15 +30,19 @@ const parser = new XMLParser({
   },
 });
 
-function MyKeyInfo(pem: { certificate: string, key: string }) {
-  this.getKeyInfo = function(key, prefix) {
+function MyKeyInfo(pem: { certificate: string; key: string }) {
+  this.getKeyInfo = function (key, prefix) {
     prefix = prefix || '';
     prefix = prefix ? prefix + ':' : prefix;
-    const certificate = pem.certificate.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').split('\n').join('');
+    const certificate = pem.certificate
+      .replace('-----BEGIN CERTIFICATE-----', '')
+      .replace('-----END CERTIFICATE-----', '')
+      .split('\n')
+      .join('');
 
     return `<${prefix}X509Data><${prefix}X509Certificate>${certificate}</${prefix}X509Certificate></${prefix}X509Data>`;
   };
-  this.getKey = function(keyInfo) {
+  this.getKey = function (keyInfo) {
     return Buffer.from(pem.key);
   };
 }
@@ -46,7 +50,12 @@ function MyKeyInfo(pem: { certificate: string, key: string }) {
 export class NfseCampinas {
   protected readonly certTempFile: string;
 
-  constructor(protected host: string, protected certificate: Buffer, protected certPassword: string, protected debug = false) {
+  constructor(
+    protected host: string,
+    protected certificate: Buffer,
+    protected certPassword: string,
+    protected debug = false,
+  ) {
     const tempPath = path.join(os.tmpdir(), `cert-${crypto.randomBytes(4).readUInt32LE(0)}`);
 
     fs.writeFileSync(tempPath, certificate);
@@ -60,13 +69,16 @@ export class NfseCampinas {
     fs.unlinkSync(this.certTempFile);
   }
 
-  async cancelarNotaFiscal(parametrosConsulta: CancelarNfseRequest.RootObject): Promise<CancelarNfseResponse.Ns1RetornoCancelamentoNFSe> {
+  async cancelarNotaFiscal(
+    parametrosConsulta: CancelarNfseRequest.RootObject,
+  ): Promise<CancelarNfseResponse.Ns1RetornoCancelamentoNFSe> {
     const payload = {
       'ns1:ReqCancelamentoNFSe': {
         '@xmlns:ns1': 'http://localhost:8080/WsNFe2/lote',
         '@xmlns:tipos': 'http://localhost:8080/WsNFe2/tp',
         '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-        '@xsi:schemaLocation': 'http://localhost:8080/WsNFe2/lote http://localhost:8080/WsNFe2/xsd/ReqCancelamentoNFSe.xsd',
+        '@xsi:schemaLocation':
+          'http://localhost:8080/WsNFe2/lote http://localhost:8080/WsNFe2/xsd/ReqCancelamentoNFSe.xsd',
         Cabecalho: parametrosConsulta.Cabecalho,
         Lote: parametrosConsulta.Lote,
       },
@@ -104,7 +116,9 @@ export class NfseCampinas {
     }
   }
 
-  async consultaSequenciaRps(parametrosConsulta: ConsultaSequencialRps.Request): Promise<ConsultaSequencialRps.Ns1RetornoConsultaSeqRps> {
+  async consultaSequenciaRps(
+    parametrosConsulta: ConsultaSequencialRps.Request,
+  ): Promise<ConsultaSequencialRps.Ns1RetornoConsultaSeqRps> {
     const payload = {
       'ns1:ConsultaSeqRps': {
         '@xmlns:ns1': 'http://localhost:8080/WsNFe2/lote',
@@ -136,7 +150,9 @@ export class NfseCampinas {
 
       let resposta: ConsultaSequencialRps.Response;
       try {
-        resposta = parser.parse(wsResponse.consultarSequencialRpsReturn.$value) as unknown as ConsultaSequencialRps.Response;
+        resposta = parser.parse(
+          wsResponse.consultarSequencialRpsReturn.$value,
+        ) as unknown as ConsultaSequencialRps.Response;
       } catch (e) {
         throw Error(wsResponse.consultarSequencialRpsReturn.$value);
       }
@@ -149,7 +165,9 @@ export class NfseCampinas {
     }
   }
 
-  async consultarLote(parametrosConsulta: ConsultaLoteRequest.Cabecalho): Promise<ConsultaLoteResponse.RetornoConsultaLote> {
+  async consultarLote(
+    parametrosConsulta: ConsultaLoteRequest.Cabecalho,
+  ): Promise<ConsultaLoteResponse.RetornoConsultaLote> {
     const payload = {
       'ns1:ReqConsultaLote': {
         '@xmlns:ns1': 'http://localhost:8080/WsNFe2/lote',
@@ -205,20 +223,26 @@ export class NfseCampinas {
       },
     };
 
-    payload['ns1:ReqEnvioLoteRPS'].Lote.RPS = payload['ns1:ReqEnvioLoteRPS'].Lote.RPS.map(lote => {
-      const valorServico = lote.Itens.Item.reduce((previousValue, currentValue) => previousValue + currentValue.ValorTotal, 0) - lote.Deducoes.reduce((previousValue, currentValue) => previousValue + currentValue.Deducao.ValorDeduzir, 0);
-      const valorDeducoes = lote.Deducoes.reduce((previousValue, currentValue) => previousValue + currentValue.Deducao.ValorDeduzir, 0);
-      const baseAssinatura = lote.InscricaoMunicipalPrestador.padStart(11, '0')
-        + lote.SerieRPS.padEnd(5, ' ')
-        + lote.NumeroRPS.toString().padStart(12, '0')
-        + DateTime.fromISO(lote.DataEmissaoRPS).toFormat('yyyyLLdd')
-        + lote.Tributacao.padEnd(2, ' ')
-        + lote.SituacaoRPS
-        + (lote.TipoRecolhimento === TipoRecolhimento.A_RECEBER ? 'N' : 'S')
-        + valorServico.toFixed(2).replace('.', '').padStart(15, '0')
-        + valorDeducoes.toFixed(2).replace('.', '').padStart(15, '0')
-        + lote.CodigoAtividade.toString().padStart(10, '0')
-        + lote.CPFCNPJTomador.padStart(14, '0');
+    payload['ns1:ReqEnvioLoteRPS'].Lote.RPS = payload['ns1:ReqEnvioLoteRPS'].Lote.RPS.map((lote) => {
+      const valorServico =
+        lote.Itens.Item.reduce((previousValue, currentValue) => previousValue + currentValue.ValorTotal, 0) -
+        lote.Deducoes.reduce((previousValue, currentValue) => previousValue + currentValue.Deducao.ValorDeduzir, 0);
+      const valorDeducoes = lote.Deducoes.reduce(
+        (previousValue, currentValue) => previousValue + currentValue.Deducao.ValorDeduzir,
+        0,
+      );
+      const baseAssinatura =
+        lote.InscricaoMunicipalPrestador.padStart(11, '0') +
+        lote.SerieRPS.padEnd(5, ' ') +
+        lote.NumeroRPS.toString().padStart(12, '0') +
+        DateTime.fromISO(lote.DataEmissaoRPS).toFormat('yyyyLLdd') +
+        lote.Tributacao.padEnd(2, ' ') +
+        lote.SituacaoRPS +
+        (lote.TipoRecolhimento === TipoRecolhimento.A_RECEBER ? 'N' : 'S') +
+        valorServico.toFixed(2).replace('.', '').padStart(15, '0') +
+        valorDeducoes.toFixed(2).replace('.', '').padStart(15, '0') +
+        lote.CodigoAtividade.toString().padStart(10, '0') +
+        lote.CPFCNPJTomador.padStart(14, '0');
 
       const assinaturaSha1 = sha1(baseAssinatura);
 
@@ -277,20 +301,26 @@ export class NfseCampinas {
       },
     };
 
-    payload['ns1:ReqEnvioLoteRPS'].Lote.RPS = payload['ns1:ReqEnvioLoteRPS'].Lote.RPS.map(lote => {
-      const valorServico = lote.Itens.Item.reduce((previousValue, currentValue) => previousValue + currentValue.ValorTotal, 0) - lote.Deducoes.reduce((previousValue, currentValue) => previousValue + currentValue.Deducao.ValorDeduzir, 0);
-      const valorDeducoes = lote.Deducoes.reduce((previousValue, currentValue) => previousValue + currentValue.Deducao.ValorDeduzir, 0);
-      const baseAssinatura = lote.InscricaoMunicipalPrestador.padStart(11, '0')
-        + lote.SerieRPS.padEnd(5, ' ')
-        + lote.NumeroRPS.toString().padStart(12, '0')
-        + DateTime.fromISO(lote.DataEmissaoRPS).toFormat('yyyyLLdd')
-        + lote.Tributacao.padEnd(2, ' ')
-        + lote.SituacaoRPS
-        + (lote.TipoRecolhimento === TipoRecolhimento.A_RECEBER ? 'N' : 'S')
-        + valorServico.toFixed(2).replace('.', '').padStart(15, '0')
-        + valorDeducoes.toFixed(2).replace('.', '').padStart(15, '0')
-        + lote.CodigoAtividade.toString().padStart(10, '0')
-        + lote.CPFCNPJTomador.padStart(14, '0');
+    payload['ns1:ReqEnvioLoteRPS'].Lote.RPS = payload['ns1:ReqEnvioLoteRPS'].Lote.RPS.map((lote) => {
+      const valorServico =
+        lote.Itens.Item.reduce((previousValue, currentValue) => previousValue + currentValue.ValorTotal, 0) -
+        lote.Deducoes.reduce((previousValue, currentValue) => previousValue + currentValue.Deducao.ValorDeduzir, 0);
+      const valorDeducoes = lote.Deducoes.reduce(
+        (previousValue, currentValue) => previousValue + currentValue.Deducao.ValorDeduzir,
+        0,
+      );
+      const baseAssinatura =
+        lote.InscricaoMunicipalPrestador.padStart(11, '0') +
+        lote.SerieRPS.padEnd(5, ' ') +
+        lote.NumeroRPS.toString().padStart(12, '0') +
+        DateTime.fromISO(lote.DataEmissaoRPS).toFormat('yyyyLLdd') +
+        lote.Tributacao.padEnd(2, ' ') +
+        lote.SituacaoRPS +
+        (lote.TipoRecolhimento === TipoRecolhimento.A_RECEBER ? 'N' : 'S') +
+        valorServico.toFixed(2).replace('.', '').padStart(15, '0') +
+        valorDeducoes.toFixed(2).replace('.', '').padStart(15, '0') +
+        lote.CodigoAtividade.toString().padStart(10, '0') +
+        lote.CPFCNPJTomador.padStart(14, '0');
 
       const assinaturaSha1 = sha1(baseAssinatura);
 
@@ -350,20 +380,26 @@ export class NfseCampinas {
       },
     };
 
-    payload['ns1:ReqEnvioLoteRPS'].Lote.RPS = payload['ns1:ReqEnvioLoteRPS'].Lote.RPS.map(lote => {
-      const valorServico = lote.Itens.Item.reduce((previousValue, currentValue) => previousValue + currentValue.ValorTotal, 0) - lote.Deducoes.reduce((previousValue, currentValue) => previousValue + currentValue.Deducao.ValorDeduzir, 0);
-      const valorDeducoes = lote.Deducoes.reduce((previousValue, currentValue) => previousValue + currentValue.Deducao.ValorDeduzir, 0);
-      const baseAssinatura = lote.InscricaoMunicipalPrestador.padStart(11, '0')
-        + lote.SerieRPS.padEnd(5, ' ')
-        + lote.NumeroRPS.toString().padStart(12, '0')
-        + DateTime.fromISO(lote.DataEmissaoRPS).toFormat('yyyyLLdd')
-        + lote.Tributacao.padEnd(2, ' ')
-        + lote.SituacaoRPS
-        + (lote.TipoRecolhimento === TipoRecolhimento.A_RECEBER ? 'N' : 'S')
-        + valorServico.toFixed(2).replace('.', '').padStart(15, '0')
-        + valorDeducoes.toFixed(2).replace('.', '').padStart(15, '0')
-        + lote.CodigoAtividade.toString().padStart(10, '0')
-        + lote.CPFCNPJTomador.padStart(14, '0');
+    payload['ns1:ReqEnvioLoteRPS'].Lote.RPS = payload['ns1:ReqEnvioLoteRPS'].Lote.RPS.map((lote) => {
+      const valorServico =
+        lote.Itens.Item.reduce((previousValue, currentValue) => previousValue + currentValue.ValorTotal, 0) -
+        lote.Deducoes.reduce((previousValue, currentValue) => previousValue + currentValue.Deducao.ValorDeduzir, 0);
+      const valorDeducoes = lote.Deducoes.reduce(
+        (previousValue, currentValue) => previousValue + currentValue.Deducao.ValorDeduzir,
+        0,
+      );
+      const baseAssinatura =
+        lote.InscricaoMunicipalPrestador.padStart(11, '0') +
+        lote.SerieRPS.padEnd(5, ' ') +
+        lote.NumeroRPS.toString().padStart(12, '0') +
+        DateTime.fromISO(lote.DataEmissaoRPS).toFormat('yyyyLLdd') +
+        lote.Tributacao.padEnd(2, ' ') +
+        lote.SituacaoRPS +
+        (lote.TipoRecolhimento === TipoRecolhimento.A_RECEBER ? 'N' : 'S') +
+        valorServico.toFixed(2).replace('.', '').padStart(15, '0') +
+        valorDeducoes.toFixed(2).replace('.', '').padStart(15, '0') +
+        lote.CodigoAtividade.toString().padStart(10, '0') +
+        lote.CPFCNPJTomador.padStart(14, '0');
 
       const assinaturaSha1 = sha1(baseAssinatura);
 
@@ -416,7 +452,8 @@ export class NfseCampinas {
         '@xmlns:ns1': 'http://localhost:8080/WsNFe2/lote',
         '@xmlns:tipos': 'http://localhost:8080/WsNFe2/tp',
         '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-        '@xsi:schemaLocation': 'http://localhost:8080/WsNFe2/lote http://localhost:8080/WsNFe2/xsd/ReqConsultaNotas.xsd',
+        '@xsi:schemaLocation':
+          'http://localhost:8080/WsNFe2/lote http://localhost:8080/WsNFe2/xsd/ReqConsultaNotas.xsd',
         Cabecalho: {
           '@Id': 'Consulta:notas',
           CodCidade: parametrosConsulta.CodCidade,
@@ -469,7 +506,10 @@ export class NfseCampinas {
     });
 
     const sig = new SignedXml();
-    sig.addReference(`//*[local-name(.)='${tagName}']`, ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315']);
+    sig.addReference(`//*[local-name(.)='${tagName}']`, [
+      'http://www.w3.org/2000/09/xmldsig#enveloped-signature',
+      'http://www.w3.org/TR/2001/REC-xml-c14n-20010315',
+    ]);
     sig.canonicalizationAlgorithm = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315';
     sig.signingKey = Buffer.from(pem.key);
     sig.keyInfoProvider = new MyKeyInfo(pem);

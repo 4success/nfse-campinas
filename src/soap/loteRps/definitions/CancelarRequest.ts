@@ -1,5 +1,5 @@
 /** cancelarRequest */
 export interface CancelarRequest {
-    /** xsd:string */
-    mensagemXml?: string;
+  /** xsd:string */
+  mensagemXml?: string;
 }

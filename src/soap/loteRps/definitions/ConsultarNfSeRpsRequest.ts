@@ -1,5 +1,5 @@
 /** consultarNFSeRpsRequest */
 export interface ConsultarNfSeRpsRequest {
-    /** xsd:string */
-    mensagemXml?: string;
+  /** xsd:string */
+  mensagemXml?: string;
 }

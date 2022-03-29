@@ -1,5 +1,5 @@
 /** enviarRequest */
 export interface EnviarRequest {
-    /** xsd:string */
-    mensagemXml?: string;
+  /** xsd:string */
+  mensagemXml?: string;
 }

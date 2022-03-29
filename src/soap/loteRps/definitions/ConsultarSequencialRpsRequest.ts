@@ -1,5 +1,5 @@
 /** consultarSequencialRpsRequest */
 export interface ConsultarSequencialRpsRequest {
-    /** xsd:string */
-    mensagemXml?: string;
+  /** xsd:string */
+  mensagemXml?: string;
 }

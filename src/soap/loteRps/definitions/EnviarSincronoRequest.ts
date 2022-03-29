@@ -1,5 +1,5 @@
 /** enviarSincronoRequest */
 export interface EnviarSincronoRequest {
-    /** xsd:string */
-    mensagemXml?: string;
+  /** xsd:string */
+  mensagemXml?: string;
 }

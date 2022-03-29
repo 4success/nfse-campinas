@@ -1,5 +1,5 @@
 /** consultarLoteRequest */
 export interface ConsultarLoteRequest {
-    /** xsd:string */
-    mensagemXml?: string;
+  /** xsd:string */
+  mensagemXml?: string;
 }

@@ -1,5 +1,5 @@
-import {LoteRps} from "../ports/LoteRps";
+import { LoteRps } from '../ports/LoteRps';
 
 export interface LoteRpsService {
-    readonly LoteRps: LoteRps;
+  readonly LoteRps: LoteRps;
 }
