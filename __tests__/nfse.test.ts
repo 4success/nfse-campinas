@@ -1,6 +1,6 @@
-import { NfseCampinas } from '../src';
+import { NfseCampinas, DataScraper } from '../src';
 import * as fs from 'fs';
-import * as nock from 'nock';
+import nock from 'nock';
 
 const scopeNockNfseCampinas = nock('https://issdigital.campinas.sp.gov.br');
 scopeNockNfseCampinas.get('/WsNFe2/LoteRps.jws?wsdl')
@@ -35,3 +35,25 @@ test('consulta de nota', async () => {
   expect(response).toBeDefined();
   expect(response.Notas.Nota.length).toBeGreaterThan(1);
 });
+
+test('consultaLinkNfse', async () => {
+  jest.setTimeout(3600000);
+
+  // @ts-ignore
+  const response = await DataScraper.consultaLinkNfse({
+    "cnpj": "15547137000138",
+    "nfNum": 1086,
+    "codVerificacao": "346ea2c2",
+    "inscricaoMunicipal": "2163896"
+  });
+
+  expect(response).toBeDefined();
+})
+
+test('imprimePdfNfse', async () => {
+  jest.setTimeout(3600000);
+
+  // @ts-ignore
+  const response = await DataScraper.imprimePdfNfse("https://nfse.campinas.sp.gov.br/NotaFiscal/notaFiscal.php?id_nota_fiscal=NTEzMzgzMTMz&confirma=Tg==&temPrestador=Tg==&doc_prestador=MTU1NDcxMzcwMDAxMzg=&numero_nota_fiscal=MTA4Ng==&inscricao_prestador=MDAyMTYzODk2&cod_verificacao=MzQ2ZWEyYzI=")
+  expect(response).toBeDefined();
+})

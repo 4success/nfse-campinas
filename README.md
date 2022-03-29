@@ -164,6 +164,74 @@ Cancelar nota:
   });
 ```
 
-### Suporte
+### Data Scraper para imprimir Danfe e buscar link da prefeitura e impressão de PDF
+
+Após a emissão da NFSe via RPS, o sistema não possui um método para resgatar o link da NFSe para pegar a Danfe e enviar, quando necessário. Isso pode ser feito automaticamente usando automaçõa 
+```typescript
+  const response = await DataScraper.consultaLinkNfse({
+    "cnpj": "9999999999999",
+    "nfNum": 1000,
+    "codVerificacao": "346ea2c2",
+    "inscricaoMunicipal": "9999999"
+  });
+```
+Se os dados forem válidos, será retornado uma resposta nesse padrão:
+```json
+{
+  "url": "https://nfse.campinas.sp.gov.br/NotaFiscal/visualizarNota.php?id_nota_fiscal=XXXXX&confirma=Tg==&temPrestador=Tg==&doc_prestador=XXXXXX=&numero_nota_fiscal=XXXXX==&inscricao_prestador=XXXXXX==&cod_verificacao=XXXX",
+  "id_nota_fiscal": "511111111",
+  "confirma": "N",
+  "temPrestador": "N",
+  "doc_prestador": "9999999999999",
+  "numero_nota_fiscal": "1000",
+  "inscricao_prestador": "9999999",
+  "cod_verificacao": "346ea2c2"
+}
+```
+
+Para imprimir o PDF com base no link, foi disponibilizado um método que já faz essa tarefa e retorna um base64:
+```typescript
+  const response = await DataScraper.imprimePdfNfse("https://nfse.campinas.sp.gov.br/NotaFiscal/visualizarNota.php?id_nota_fiscal=XXXXX&confirma=Tg==&temPrestador=Tg==&doc_prestador=XXXXXX=&numero_nota_fiscal=XXXXX==&inscricao_prestador=XXXXXX==&cod_verificacao=XXXX");
+```
+
+Se os dados forem válidos, será retornado uma resposta nesse padrão:
+```json
+{
+  "nfse": "1000",
+  "pdfBase64Content": "BASE64DOPDF=="
+}
+```
+
+### Rodando em AWS Lambda / Serverless Framework
+Por ter em suas dependências o pacote `chrome-aws-lambda`, o projeto tem algumas pecularidades ao rodar usando AWS Lambda.
+Resumidamente, caso você estiver usando o `serverless-bundle`, você precisa forçar a exclusão desse pacote do bundle, importar via Lambda Layer e ter pelo menos 2GB de memória:
+
+```yml
+custom:
+  bundle:
+    externals:
+      - x509.js
+    forceExclude:
+      - chrome-aws-lambda
+```
+
+Visto que o pacote foi excluído do bundle, é necessário usar uma Lambda Layer para ter os arquivos necessários para o processamento:
+```yml
+functions:
+  imprimePdfNfse:
+    handler: src/handlers/nfseDataScraper.imprimePdfNfse
+    timeout: 30
+    memorySize: 2048
+    layers:
+      - arn:aws:lambda:us-east-1:764866452798:layer:chrome-aws-lambda:25
+    events:
+      - http:
+          path: v1/nfse/imprimePdfNfse
+          method: post
+          private: true
+          cors: true
+```
+
+### Suporte e dúvidas
 
 Para suporte basta abrir um [issue no repositório](https://github.com/4success/nfse-campinas/issues).
