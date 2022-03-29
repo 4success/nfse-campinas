@@ -166,4 +166,4 @@ Cancelar nota:
 
 ### Suporte
 
-Para suporte basta abrir um issue no repositório.
+Para suporte basta abrir um [issue no repositório](https://github.com/4success/nfse-campinas/issues).
