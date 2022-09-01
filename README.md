@@ -1,6 +1,19 @@
 # NFSe Campinas
 
-Pacote de integração que abstrai os webservices da prefeitura de Campinas.
+Pacote de integração que abstrai os webservices da prefeitura de Campinas  (**Padrão DSFNET**). 
+
+### Outras cidades atendidas
+Se o você for de um município que seja atendido pelo Padrão DSFNET, esse pacote também funcionará. Abaixo alguns exemplos de cidades com padrão DSFNET:
+- Belém (PA)
+- Campo Grande (MS)
+- Campinas (SP)
+- Nova Iguaçu (RJ)
+- São Luís (MA)
+- Sorocaba (SP)
+- Teresina (PI)
+- Uberlândia (MG)
+
+Para emitir nota fiscal no Padrão DSFNET, é necessário a utilização do Certificado Digital A1
 
 ## Instalação
 Instalar via NPM ou Yarn:
