@@ -2,9 +2,25 @@
 
 Pacote de integração que abstrai os webservices da prefeitura de Campinas.
 
-## Instruções de uso
+## Instalação
+Instalar via NPM ou Yarn:
+- `npm install @4success/nfse-campinas` 
+- `yarn add @4success/nfse-campinas`
 
-Instalar via `npm install @4success/nfse-campinas` ou `yarn add @4success/nfse-campinas`
+### Detalhes sobre onde o código será executado 
+Este projeto é compilado especificamente para AWS Lambda (Linux x64) usando o pacote [chrome-aws-lambda](https://github.com/alixaxel/chrome-aws-lambda). Por conta disso, o binário do browser não irá estar presente, pois é esperado que ele esteja em uma Lambda Layer.
+Para o deploy na AWS, é necessário adicionar a lambda layer (mais detalhes na seção [abaixo](#rodando-em-aws-lambda--serverless-framework)).
+
+Para executar em seu ambiente local, instale o pacote puppeteer localmente com o comando:
+- `yarn add --dev puppeteer@^10.1.0`
+
+Com isso o binário será adicionado conforme o seu sistema operacional e irá funcionar.
+
+Caso você não esteja executando em um ambiente AWS Lambda, o pacote deve ser adicionado as dependências **produtivas**:
+
+- `yarn add puppeteer@^10.1.0`
+
+## Instruções de uso
 
 Com a biblioteca instalada, basta criar uma instância apontando para a URL do webservice, passando também um Buffer com
 o arquivo do certificado e a senha do certificado
