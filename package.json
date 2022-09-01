@@ -18,7 +18,7 @@
     "version": "yarn run format && git add -A src",
     "postversion": "git push && git push --tags",
     "test": "jest --config jestconfig.json",
-    "build": "node esbuild/index.js",
+    "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json"
   },

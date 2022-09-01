@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "moduleResolution": "Node",
-    "emitDeclarationOnly": true,
+    "emitDeclarationOnly": false,
     "declaration": true,
     "esModuleInterop": true,
     "outDir": "./dist"
