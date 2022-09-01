@@ -10,8 +10,9 @@ Com a biblioteca instalada, basta criar uma instância apontando para a URL do w
 o arquivo do certificado e a senha do certificado
 
 ```javascript
- const cert = fs.readFileSync(`/caminho/para/certificado.pfx`);
+import { NfseCampinas } from '@4success/nfse-campinas';
 
+const cert = fs.readFileSync(`/caminho/para/certificado.pfx`);
 const nfse = new NfseCampinas(
   'https://issdigital.campinas.sp.gov.br/WsNFe2/LoteRps.jws?wsdl',
   cert,
@@ -168,7 +169,9 @@ Cancelar nota:
 
 Após a emissão da NFSe via RPS, o sistema não possui um método para resgatar o link da NFSe para pegar a Danfe e enviar, quando necessário. Isso pode ser feito automaticamente usando automaçõa 
 ```typescript
-  const response = await DataScraper.consultaLinkNfse({
+import { DataScraper } from '@4success/nfse-campinas';
+
+const response = await DataScraper.consultaLinkNfse({
     "cnpj": "9999999999999",
     "nfNum": 1000,
     "codVerificacao": "346ea2c2",
@@ -191,7 +194,8 @@ Se os dados forem válidos, será retornado uma resposta nesse padrão:
 
 Para imprimir o PDF com base no link, foi disponibilizado um método que já faz essa tarefa e retorna um base64:
 ```typescript
-  const response = await DataScraper.imprimePdfNfse("https://nfse.campinas.sp.gov.br/NotaFiscal/visualizarNota.php?id_nota_fiscal=XXXXX&confirma=Tg==&temPrestador=Tg==&doc_prestador=XXXXXX=&numero_nota_fiscal=XXXXX==&inscricao_prestador=XXXXXX==&cod_verificacao=XXXX");
+import { DataScraper } from '@4success/nfse-campinas';
+const response = await DataScraper.imprimePdfNfse("https://nfse.campinas.sp.gov.br/NotaFiscal/visualizarNota.php?id_nota_fiscal=XXXXX&confirma=Tg==&temPrestador=Tg==&doc_prestador=XXXXXX=&numero_nota_fiscal=XXXXX==&inscricao_prestador=XXXXXX==&cod_verificacao=XXXX");
 ```
 
 Se os dados forem válidos, será retornado uma resposta nesse padrão:
@@ -209,8 +213,6 @@ Resumidamente, caso você estiver usando o `serverless-bundle`, você precisa fo
 ```yml
 custom:
   bundle:
-    externals:
-      - x509.js
     forceExclude:
       - chrome-aws-lambda
 ```
