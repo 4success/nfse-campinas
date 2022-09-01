@@ -34,7 +34,7 @@ const parser = new XMLParser({
 });
 
 function MyKeyInfo(pem: { certificate: string; key: string }) {
-  this.getKeyInfo = function(key, prefix) {
+  this.getKeyInfo = function (key, prefix) {
     prefix = prefix || '';
     prefix = prefix ? prefix + ':' : prefix;
     const certificate = pem.certificate
@@ -45,7 +45,7 @@ function MyKeyInfo(pem: { certificate: string; key: string }) {
 
     return `<${prefix}X509Data><${prefix}X509Certificate>${certificate}</${prefix}X509Certificate></${prefix}X509Data>`;
   };
-  this.getKey = function(keyInfo) {
+  this.getKey = function (keyInfo) {
     return Buffer.from(pem.key);
   };
 }
@@ -550,7 +550,7 @@ export class DataScraper {
       await (await page.$('#rCodigoVerificacao')).type(payload.codVerificacao.toString());
       await (await page.$('#rInsMun')).type(payload.inscricaoMunicipal.toString());
 
-      const image = await page.$x('//*[@id=\'coluna5B\']/form/table/tbody/tr[5]/td[4]/img');
+      const image = await page.$x("//*[@id='coluna5B']/form/table/tbody/tr[5]/td[4]/img");
       const srcProperty = await image[0].getProperty('src');
       const nfUrl: string = await srcProperty.jsonValue();
 
