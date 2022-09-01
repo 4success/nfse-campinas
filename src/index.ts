@@ -552,7 +552,7 @@ export class DataScraper {
 
       const image = await page.$x("//*[@id='coluna5B']/form/table/tbody/tr[5]/td[4]/img");
       const srcProperty = await image[0].getProperty('src');
-      const nfUrl: string = await srcProperty.jsonValue();
+      const nfUrl = await srcProperty.jsonValue() as string;
 
       const url = new URL(nfUrl);
       const code_b64 = url.searchParams.get('gd_code');
