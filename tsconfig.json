@@ -1,24 +1,17 @@
 {
   "compilerOptions": {
-    "esModuleInterop": true,
-    "preserveConstEnums": true,
-    "strictNullChecks": false,
-    "sourceMap": true,
-    "allowJs": true,
+    "target": "ESNext",
+    "moduleResolution": "Node",
+    "emitDeclarationOnly": true,
     "declaration": true,
-    "target": "ES2017",
-    "outDir": "./dist",
-    "moduleResolution": "node",
-    "lib": [
-      "ES2017",
-      "dom"
-    ],
+    "esModuleInterop": true,
+    "outDir": "./dist"
   },
   "include": [
-    "src"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
-    "**/__tests__/*"
+    "**/*.spec.ts"
   ]
 }

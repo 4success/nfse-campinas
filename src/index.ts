@@ -17,13 +17,13 @@ import os from 'os';
 import fs from 'fs';
 import crypto from 'crypto';
 import { SignedXml } from 'xml-crypto';
-import PfxToPem from 'pfx-to-pem';
 import { DateTime } from 'luxon';
 import sha1 from 'sha1';
 import { XMLParser } from 'fast-xml-parser';
 import { ConsultaUrlNfse, ImprimePdfNfse } from './types/dataScraper';
 import chromium from 'chrome-aws-lambda';
 import { URL } from 'url';
+import pem from 'pem';
 
 const parser = new XMLParser({
   ignoreDeclaration: true,
@@ -34,7 +34,7 @@ const parser = new XMLParser({
 });
 
 function MyKeyInfo(pem: { certificate: string; key: string }) {
-  this.getKeyInfo = function (key, prefix) {
+  this.getKeyInfo = function(key, prefix) {
     prefix = prefix || '';
     prefix = prefix ? prefix + ':' : prefix;
     const certificate = pem.certificate
@@ -45,7 +45,7 @@ function MyKeyInfo(pem: { certificate: string; key: string }) {
 
     return `<${prefix}X509Data><${prefix}X509Certificate>${certificate}</${prefix}X509Certificate></${prefix}X509Data>`;
   };
-  this.getKey = function (keyInfo) {
+  this.getKey = function(keyInfo) {
     return Buffer.from(pem.key);
   };
 }
@@ -503,9 +503,13 @@ export class NfseCampinas {
   }
 
   protected async getSignedXml(xmlConverted: string, tagName = 'Cabecalho') {
-    const pem = await PfxToPem.toPem({
-      path: this.certTempFile,
-      password: this.certPassword,
+    const pfx = fs.readFileSync(this.certTempFile);
+
+    const pemCert: pem.Pkcs12ReadResult = await new Promise((resolve, reject) => {
+      pem.readPkcs12(pfx, { p12Password: this.certPassword }, (err, cert) => {
+        if (err) reject(err);
+        else resolve(cert);
+      });
     });
 
     const sig = new SignedXml();
@@ -514,8 +518,11 @@ export class NfseCampinas {
       'http://www.w3.org/TR/2001/REC-xml-c14n-20010315',
     ]);
     sig.canonicalizationAlgorithm = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315';
-    sig.signingKey = Buffer.from(pem.key);
-    sig.keyInfoProvider = new MyKeyInfo(pem);
+    sig.signingKey = Buffer.from(pemCert.key);
+    sig.keyInfoProvider = new MyKeyInfo({
+      certificate: pemCert.cert,
+      key: pemCert.key,
+    });
     sig.computeSignature(xmlConverted);
 
     return sig.getSignedXml();
@@ -543,7 +550,7 @@ export class DataScraper {
       await (await page.$('#rCodigoVerificacao')).type(payload.codVerificacao.toString());
       await (await page.$('#rInsMun')).type(payload.inscricaoMunicipal.toString());
 
-      const image = await page.$x("//*[@id='coluna5B']/form/table/tbody/tr[5]/td[4]/img");
+      const image = await page.$x('//*[@id=\'coluna5B\']/form/table/tbody/tr[5]/td[4]/img');
       const srcProperty = await image[0].getProperty('src');
       const nfUrl: string = await srcProperty.jsonValue();
 
