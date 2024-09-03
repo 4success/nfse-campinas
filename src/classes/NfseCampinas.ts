@@ -31,7 +31,7 @@ export class NfseCampinas {
     ],
     uri: 'rps@1',
   };
-  protected readonly certTempFile: string;
+  readonly certTempFile: string;
   private soapClient: NotaFiscalSoapClient;
 
   constructor(
