@@ -9,5 +9,5 @@ export interface Prestador {
   /** CpfCnpj */
   CpfCnpj: CpfCnpj;
   /** xs:string */
-  InscricaoMunicipal?: string;
+  InscricaoMunicipal: string;
 }
