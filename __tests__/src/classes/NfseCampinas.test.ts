@@ -1,6 +1,5 @@
 import fs from 'fs';
-import { NfseCampinas } from '../../../src';
-import { createClientAsync } from '../../../src/soap/notafiscalsoap';
+import { createClientAsync, NfseCampinas } from '../../../src';
 import { SignedXml } from 'xml-crypto';
 import pem, { Pkcs12ReadResult } from 'pem';
 

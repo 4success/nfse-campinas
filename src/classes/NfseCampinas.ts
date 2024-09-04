@@ -353,7 +353,7 @@ export class NfseCampinas {
       ignoreAttributes: false,
       attributeNamePrefix: '@',
       numberParseOptions: {
-        leadingZeros: true,
+        leadingZeros: false,
         hex: false,
       },
     });
