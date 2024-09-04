@@ -13,22 +13,22 @@ import {
 import type { Reference } from 'xml-crypto/lib/types';
 
 export type ConsultarNfsePorRpsInput = {
-  ConsultarNfseRpsEnvio?: Omit<ConsultarNfseRpsEnvio, 'Signature'>;
+  ConsultarNfseRpsEnvio: Omit<ConsultarNfseRpsEnvio, 'Signature'>;
 }
 
 export type ConsultarNfseServicoTomadoInput = {
-  ConsultarNfseServicoTomadoEnvio?: Omit<ConsultarNfseServicoTomadoEnvio, 'Signature'>;
+  ConsultarNfseServicoTomadoEnvio: Omit<ConsultarNfseServicoTomadoEnvio, 'Signature'>;
 }
 
 export type RecepcionarLoteRpsInput = {
-  EnviarLoteRpsEnvio?: Omit<EnviarLoteRpsEnvio, 'Signature'>;
+  EnviarLoteRpsEnvio: Omit<EnviarLoteRpsEnvio, 'Signature'>;
 }
 export type RecepcionarLoteRpsSincronoInput = {
-  EnviarLoteRpsSincronoEnvio?: Omit<EnviarLoteRpsSincronoEnvio, 'Signature'>;
+  EnviarLoteRpsSincronoEnvio: Omit<EnviarLoteRpsSincronoEnvio, 'Signature'>;
 }
 
 export type ConsultarNfseServicoPrestadoInput = {
-  ConsultarNfseServicoPrestadoEnvio?: Omit<ConsultarNfseServicoPrestadoEnvio, 'Signature'>;
+  ConsultarNfseServicoPrestadoEnvio: Omit<ConsultarNfseServicoPrestadoEnvio, 'Signature'>;
 }
 
 export type CancelarNfseInput = {
@@ -38,11 +38,11 @@ export type CancelarNfseInput = {
 }
 
 export type ConsultarLoteRpsInput = {
-  ConsultarLoteRpsEnvio?: Omit<ConsultarLoteRpsEnvio, 'Signature'>;
+  ConsultarLoteRpsEnvio: Omit<ConsultarLoteRpsEnvio, 'Signature'>;
 }
 
 export type ConsultarNfseFaixaInput = {
-  ConsultarNfseFaixaEnvio?: Omit<ConsultarNfseFaixaEnvio, 'Signature'>;
+  ConsultarNfseFaixaEnvio: Omit<ConsultarNfseFaixaEnvio, 'Signature'>;
 }
 
 export type GerarNfseInput = {
@@ -52,7 +52,7 @@ export type GerarNfseInput = {
 }
 
 export type SubstituirNfseInput = {
-  SubstituirNfseEnvio?: Omit<SubstituirNfseEnvio, 'Signature'>;
+  SubstituirNfseEnvio: Omit<SubstituirNfseEnvio, 'Signature'>;
 }
 
 export type ReferenceOptions = Partial<Reference> & Pick<Reference, 'xpath'>;

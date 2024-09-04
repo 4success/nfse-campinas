@@ -17,7 +17,7 @@
     "prepare": "yarn run build",
     "postversion": "git push && git push --tags",
     "test": "jest",
-    "build": "node esbuild.mjs",
+    "build": "tsc --emitDeclarationOnly && node esbuild.mjs",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json"
   },
