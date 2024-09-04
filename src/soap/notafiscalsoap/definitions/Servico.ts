@@ -1,5 +1,5 @@
 import { Valores } from './Valores';
-import { TnsBinario } from './TnsBinario';
+import { Binario } from './Binario';
 
 /**
  * Servico
@@ -10,7 +10,7 @@ export interface Servico {
   /** Valores */
   Valores: Valores;
   /** xs:byte */
-  IssRetido: TnsBinario;
+  IssRetido: Binario;
   /** xs:byte */
   ResponsavelRetencao?: ResponsavelRetencao;
   /** xs:string */

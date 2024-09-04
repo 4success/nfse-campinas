@@ -4,7 +4,7 @@ import { Prestador } from './Prestador';
 import { Tomador } from './Tomador';
 import { Intermediario } from './Intermediario';
 import { ConstrucaoCivil } from './ConstrucaoCivil';
-import { TnsBinario } from './TnsBinario';
+import { Binario } from './Binario';
 
 /**
  * InfDeclaracaoPrestacaoServico
@@ -29,9 +29,9 @@ export interface InfDeclaracaoPrestacaoServico {
   /** xs:byte */
   RegimeEspecialTributacao?: RegimeEspecialTributacao;
   /** xs:byte */
-  OptanteSimplesNacional: TnsBinario;
+  OptanteSimplesNacional: Binario;
   /** xs:byte */
-  IncentivoFiscal: TnsBinario;
+  IncentivoFiscal: Binario;
 }
 
 
