@@ -1,7 +1,7 @@
 import { CancelarNfseResposta } from './CancelarNfseResposta';
 
 /** tns:CancelarNfseResponse */
-export interface TnscancelarNfseResponse {
+export interface TnsCancelarNfseResponse {
   /** CancelarNfseResposta */
   CancelarNfseResposta?: CancelarNfseResposta;
 }

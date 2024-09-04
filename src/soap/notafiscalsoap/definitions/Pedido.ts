@@ -1,5 +1,4 @@
 import { InfPedidoCancelamento } from './InfPedidoCancelamento';
-import { Signature } from './Signature';
 
 /**
  * Pedido
@@ -9,6 +8,4 @@ import { Signature } from './Signature';
 export interface Pedido {
   /** InfPedidoCancelamento */
   InfPedidoCancelamento: InfPedidoCancelamento;
-  /** Signature */
-  Signature?: Signature;
 }

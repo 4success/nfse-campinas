@@ -1,7 +1,7 @@
 import { SubstituirNfseEnvio } from './SubstituirNfseEnvio';
 
 /** tns:SubstituirNfse */
-export interface TnssubstituirNfse {
+export interface TnsSubstituirNfse {
   /** SubstituirNfseEnvio */
   SubstituirNfseEnvio: SubstituirNfseEnvio;
 }

@@ -1,42 +1,42 @@
-import { TnsconsultarNfsePorRps } from '../definitions/TnsconsultarNfsePorRps';
-import { TnsconsultarNfsePorRpsResponse } from '../definitions/TnsconsultarNfsePorRpsResponse';
-import { TnsconsultarNfseServicoTomado } from '../definitions/TnsconsultarNfseServicoTomado';
-import { TnsconsultarNfseServicoTomadoResponse } from '../definitions/TnsconsultarNfseServicoTomadoResponse';
-import { TnsrecepcionarLoteRps } from '../definitions/TnsrecepcionarLoteRps';
-import { TnsrecepcionarLoteRpsResponse } from '../definitions/TnsrecepcionarLoteRpsResponse';
-import { TnsrecepcionarLoteRpsSincrono } from '../definitions/TnsrecepcionarLoteRpsSincrono';
-import { TnsrecepcionarLoteRpsSincronoResponse } from '../definitions/TnsrecepcionarLoteRpsSincronoResponse';
-import { TnsconsultarNfseServicoPrestado } from '../definitions/TnsconsultarNfseServicoPrestado';
-import { TnsconsultarNfseServicoPrestadoResponse } from '../definitions/TnsconsultarNfseServicoPrestadoResponse';
-import { TnscancelarNfse } from '../definitions/TnscancelarNfse';
-import { TnscancelarNfseResponse } from '../definitions/TnscancelarNfseResponse';
-import { TnsconsultarLoteRps } from '../definitions/TnsconsultarLoteRps';
-import { TnsconsultarLoteRpsResponse } from '../definitions/TnsconsultarLoteRpsResponse';
-import { TnsconsultarNfseFaixa } from '../definitions/TnsconsultarNfseFaixa';
-import { TnsconsultarNfseFaixaResponse } from '../definitions/TnsconsultarNfseFaixaResponse';
-import { TnsgerarNfse } from '../definitions/TnsgerarNfse';
-import { TnsgerarNfseResponse } from '../definitions/TnsgerarNfseResponse';
-import { TnssubstituirNfse } from '../definitions/TnssubstituirNfse';
-import { TnssubstituirNfseResponse } from '../definitions/TnssubstituirNfseResponse';
+import { TnsConsultarNfsePorRps } from '../definitions/TnsConsultarNfsePorRps';
+import { TnsConsultarNfsePorRpsResponse } from '../definitions/TnsConsultarNfsePorRpsResponse';
+import { TnsConsultarNfseServicoTomado } from '../definitions/TnsConsultarNfseServicoTomado';
+import { TnsConsultarNfseServicoTomadoResponse } from '../definitions/TnsConsultarNfseServicoTomadoResponse';
+import { TnsRecepcionarLoteRps } from '../definitions/TnsRecepcionarLoteRps';
+import { TnsRecepcionarLoteRpsResponse } from '../definitions/TnsRecepcionarLoteRpsResponse';
+import { TnsRecepcionarLoteRpsSincrono } from '../definitions/TnsRecepcionarLoteRpsSincrono';
+import { TnsRecepcionarLoteRpsSincronoResponse } from '../definitions/TnsRecepcionarLoteRpsSincronoResponse';
+import { TnsConsultarNfseServicoPrestado } from '../definitions/TnsConsultarNfseServicoPrestado';
+import { TnsConsultarNfseServicoPrestadoResponse } from '../definitions/TnsConsultarNfseServicoPrestadoResponse';
+import { TnsCancelarNfse } from '../definitions/TnsCancelarNfse';
+import { TnsCancelarNfseResponse } from '../definitions/TnsCancelarNfseResponse';
+import { TnsConsultarLoteRps } from '../definitions/TnsConsultarLoteRps';
+import { TnsConsultarLoteRpsResponse } from '../definitions/TnsConsultarLoteRpsResponse';
+import { TnsConsultarNfseFaixa } from '../definitions/TnsConsultarNfseFaixa';
+import { TnsConsultarNfseFaixaResponse } from '../definitions/TnsConsultarNfseFaixaResponse';
+import { TnsGerarNfse } from '../definitions/TnsGerarNfse';
+import { TnsGerarNfseResponse } from '../definitions/TnsGerarNfseResponse';
+import { TnsSubstituirNfse } from '../definitions/TnsSubstituirNfse';
+import { TnsSubstituirNfseResponse } from '../definitions/TnsSubstituirNfseResponse';
 
 export interface NotaFiscalSoapPort {
-  ConsultarNfsePorRps(consultarNfsePorRps: TnsconsultarNfsePorRps, callback: (err: any, result: TnsconsultarNfsePorRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
+  ConsultarNfsePorRps(consultarNfsePorRps: TnsConsultarNfsePorRps, callback: (err: any, result: TnsConsultarNfsePorRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
 
-  ConsultarNfseServicoTomado(consultarNfseServicoTomado: TnsconsultarNfseServicoTomado, callback: (err: any, result: TnsconsultarNfseServicoTomadoResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
+  ConsultarNfseServicoTomado(consultarNfseServicoTomado: TnsConsultarNfseServicoTomado, callback: (err: any, result: TnsConsultarNfseServicoTomadoResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
 
-  RecepcionarLoteRps(recepcionarLoteRps: TnsrecepcionarLoteRps, callback: (err: any, result: TnsrecepcionarLoteRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
+  RecepcionarLoteRps(recepcionarLoteRps: TnsRecepcionarLoteRps, callback: (err: any, result: TnsRecepcionarLoteRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
 
-  RecepcionarLoteRpsSincrono(recepcionarLoteRpsSincrono: TnsrecepcionarLoteRpsSincrono, callback: (err: any, result: TnsrecepcionarLoteRpsSincronoResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
+  RecepcionarLoteRpsSincrono(recepcionarLoteRpsSincrono: TnsRecepcionarLoteRpsSincrono, callback: (err: any, result: TnsRecepcionarLoteRpsSincronoResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
 
-  ConsultarNfseServicoPrestado(consultarNfseServicoPrestado: TnsconsultarNfseServicoPrestado, callback: (err: any, result: TnsconsultarNfseServicoPrestadoResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
+  ConsultarNfseServicoPrestado(consultarNfseServicoPrestado: TnsConsultarNfseServicoPrestado, callback: (err: any, result: TnsConsultarNfseServicoPrestadoResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
 
-  CancelarNfse(cancelarNfse: TnscancelarNfse, callback: (err: any, result: TnscancelarNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
+  CancelarNfse(cancelarNfse: TnsCancelarNfse, callback: (err: any, result: TnsCancelarNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
 
-  ConsultarLoteRps(consultarLoteRps: TnsconsultarLoteRps, callback: (err: any, result: TnsconsultarLoteRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
+  ConsultarLoteRps(consultarLoteRps: TnsConsultarLoteRps, callback: (err: any, result: TnsConsultarLoteRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
 
-  ConsultarNfseFaixa(consultarNfseFaixa: TnsconsultarNfseFaixa, callback: (err: any, result: TnsconsultarNfseFaixaResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
+  ConsultarNfseFaixa(consultarNfseFaixa: TnsConsultarNfseFaixa, callback: (err: any, result: TnsConsultarNfseFaixaResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
 
-  GerarNfse(gerarNfse: TnsgerarNfse, callback: (err: any, result: TnsgerarNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
+  GerarNfse(gerarNfse: TnsGerarNfse, callback: (err: any, result: TnsGerarNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
 
-  SubstituirNfse(substituirNfse: TnssubstituirNfse, callback: (err: any, result: TnssubstituirNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
+  SubstituirNfse(substituirNfse: TnsSubstituirNfse, callback: (err: any, result: TnsSubstituirNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any) => void): void;
 }

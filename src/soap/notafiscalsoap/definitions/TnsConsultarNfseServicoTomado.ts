@@ -1,7 +1,7 @@
 import { ConsultarNfseServicoTomadoEnvio } from './ConsultarNfseServicoTomadoEnvio';
 
 /** tns:ConsultarNfseServicoTomado */
-export interface TnsconsultarNfseServicoTomado {
+export interface TnsConsultarNfseServicoTomado {
   /** ConsultarNfseServicoTomadoEnvio */
   ConsultarNfseServicoTomadoEnvio: ConsultarNfseServicoTomadoEnvio;
 }

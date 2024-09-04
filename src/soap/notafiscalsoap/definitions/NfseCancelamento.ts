@@ -1,5 +1,4 @@
 import { Confirmacao } from './Confirmacao';
-import { Signature } from './Signature';
 
 /**
  * NfseCancelamento
@@ -9,6 +8,4 @@ import { Signature } from './Signature';
 export interface NfseCancelamento {
   /** Confirmacao */
   Confirmacao?: Confirmacao;
-  /** Signature */
-  Signature?: Signature;
 }

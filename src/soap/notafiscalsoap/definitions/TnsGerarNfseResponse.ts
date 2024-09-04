@@ -1,7 +1,7 @@
 import { GerarNfseResposta } from './GerarNfseResposta';
 
 /** tns:GerarNfseResponse */
-export interface TnsgerarNfseResponse {
+export interface TnsGerarNfseResponse {
   /** GerarNfseResposta */
   GerarNfseResposta?: GerarNfseResposta;
 }

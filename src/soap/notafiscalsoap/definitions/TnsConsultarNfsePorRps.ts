@@ -1,7 +1,7 @@
 import { ConsultarNfseRpsEnvio } from './ConsultarNfseRpsEnvio';
 
 /** tns:ConsultarNfsePorRps */
-export interface TnsconsultarNfsePorRps {
+export interface TnsConsultarNfsePorRps {
   /** ConsultarNfseRpsEnvio */
   ConsultarNfseRpsEnvio: ConsultarNfseRpsEnvio;
 }

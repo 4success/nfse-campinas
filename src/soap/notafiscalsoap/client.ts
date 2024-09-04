@@ -1,48 +1,48 @@
 import { Client as SoapClient, createClientAsync as soapCreateClientAsync } from 'soap';
-import { TnsconsultarNfsePorRps } from './definitions/TnsconsultarNfsePorRps';
-import { TnsconsultarNfsePorRpsResponse } from './definitions/TnsconsultarNfsePorRpsResponse';
-import { TnsconsultarNfseServicoTomado } from './definitions/TnsconsultarNfseServicoTomado';
-import { TnsconsultarNfseServicoTomadoResponse } from './definitions/TnsconsultarNfseServicoTomadoResponse';
-import { TnsrecepcionarLoteRps } from './definitions/TnsrecepcionarLoteRps';
-import { TnsrecepcionarLoteRpsResponse } from './definitions/TnsrecepcionarLoteRpsResponse';
-import { TnsrecepcionarLoteRpsSincrono } from './definitions/TnsrecepcionarLoteRpsSincrono';
-import { TnsrecepcionarLoteRpsSincronoResponse } from './definitions/TnsrecepcionarLoteRpsSincronoResponse';
-import { TnsconsultarNfseServicoPrestado } from './definitions/TnsconsultarNfseServicoPrestado';
-import { TnsconsultarNfseServicoPrestadoResponse } from './definitions/TnsconsultarNfseServicoPrestadoResponse';
-import { TnscancelarNfse } from './definitions/TnscancelarNfse';
-import { TnscancelarNfseResponse } from './definitions/TnscancelarNfseResponse';
-import { TnsconsultarLoteRps } from './definitions/TnsconsultarLoteRps';
-import { TnsconsultarLoteRpsResponse } from './definitions/TnsconsultarLoteRpsResponse';
-import { TnsconsultarNfseFaixa } from './definitions/TnsconsultarNfseFaixa';
-import { TnsconsultarNfseFaixaResponse } from './definitions/TnsconsultarNfseFaixaResponse';
-import { TnsgerarNfse } from './definitions/TnsgerarNfse';
-import { TnsgerarNfseResponse } from './definitions/TnsgerarNfseResponse';
-import { TnssubstituirNfse } from './definitions/TnssubstituirNfse';
-import { TnssubstituirNfseResponse } from './definitions/TnssubstituirNfseResponse';
+import { TnsConsultarNfsePorRps } from './definitions/TnsConsultarNfsePorRps';
+import { TnsConsultarNfsePorRpsResponse } from './definitions/TnsConsultarNfsePorRpsResponse';
+import { TnsConsultarNfseServicoTomado } from './definitions/TnsConsultarNfseServicoTomado';
+import { TnsConsultarNfseServicoTomadoResponse } from './definitions/TnsConsultarNfseServicoTomadoResponse';
+import { TnsRecepcionarLoteRps } from './definitions/TnsRecepcionarLoteRps';
+import { TnsRecepcionarLoteRpsResponse } from './definitions/TnsRecepcionarLoteRpsResponse';
+import { TnsRecepcionarLoteRpsSincrono } from './definitions/TnsRecepcionarLoteRpsSincrono';
+import { TnsRecepcionarLoteRpsSincronoResponse } from './definitions/TnsRecepcionarLoteRpsSincronoResponse';
+import { TnsConsultarNfseServicoPrestado } from './definitions/TnsConsultarNfseServicoPrestado';
+import { TnsConsultarNfseServicoPrestadoResponse } from './definitions/TnsConsultarNfseServicoPrestadoResponse';
+import { TnsCancelarNfse } from './definitions/TnsCancelarNfse';
+import { TnsCancelarNfseResponse } from './definitions/TnsCancelarNfseResponse';
+import { TnsConsultarLoteRps } from './definitions/TnsConsultarLoteRps';
+import { TnsConsultarLoteRpsResponse } from './definitions/TnsConsultarLoteRpsResponse';
+import { TnsConsultarNfseFaixa } from './definitions/TnsConsultarNfseFaixa';
+import { TnsConsultarNfseFaixaResponse } from './definitions/TnsConsultarNfseFaixaResponse';
+import { TnsGerarNfse } from './definitions/TnsGerarNfse';
+import { TnsGerarNfseResponse } from './definitions/TnsGerarNfseResponse';
+import { TnsSubstituirNfse } from './definitions/TnsSubstituirNfse';
+import { TnsSubstituirNfseResponse } from './definitions/TnsSubstituirNfseResponse';
 import { NotaFiscalSoap } from './services/NotaFiscalSoap';
 
 export interface NotaFiscalSoapClient extends SoapClient {
   NotaFiscalSoap: NotaFiscalSoap;
 
-  ConsultarNfsePorRpsAsync(consultarNfsePorRps: TnsconsultarNfsePorRps, options?: Record<string, any>): Promise<[result: TnsconsultarNfsePorRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  ConsultarNfsePorRpsAsync(consultarNfsePorRps: TnsConsultarNfsePorRps, options?: Record<string, any>): Promise<[result: TnsConsultarNfsePorRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  ConsultarNfseServicoTomadoAsync(consultarNfseServicoTomado: TnsconsultarNfseServicoTomado, options?: Record<string, any>): Promise<[result: TnsconsultarNfseServicoTomadoResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  ConsultarNfseServicoTomadoAsync(consultarNfseServicoTomado: TnsConsultarNfseServicoTomado, options?: Record<string, any>): Promise<[result: TnsConsultarNfseServicoTomadoResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  RecepcionarLoteRpsAsync(recepcionarLoteRps: TnsrecepcionarLoteRps, options?: Record<string, any>): Promise<[result: TnsrecepcionarLoteRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  RecepcionarLoteRpsAsync(recepcionarLoteRps: TnsRecepcionarLoteRps, options?: Record<string, any>): Promise<[result: TnsRecepcionarLoteRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  RecepcionarLoteRpsSincronoAsync(recepcionarLoteRpsSincrono: TnsrecepcionarLoteRpsSincrono, options?: Record<string, any>): Promise<[result: TnsrecepcionarLoteRpsSincronoResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  RecepcionarLoteRpsSincronoAsync(recepcionarLoteRpsSincrono: TnsRecepcionarLoteRpsSincrono, options?: Record<string, any>): Promise<[result: TnsRecepcionarLoteRpsSincronoResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  ConsultarNfseServicoPrestadoAsync(consultarNfseServicoPrestado: TnsconsultarNfseServicoPrestado, options?: Record<string, any>): Promise<[result: TnsconsultarNfseServicoPrestadoResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  ConsultarNfseServicoPrestadoAsync(consultarNfseServicoPrestado: TnsConsultarNfseServicoPrestado, options?: Record<string, any>): Promise<[result: TnsConsultarNfseServicoPrestadoResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  CancelarNfseAsync(cancelarNfse: TnscancelarNfse, options?: Record<string, any>): Promise<[result: TnscancelarNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  CancelarNfseAsync(cancelarNfse: TnsCancelarNfse, options?: Record<string, any>): Promise<[result: TnsCancelarNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  ConsultarLoteRpsAsync(consultarLoteRps: TnsconsultarLoteRps, options?: Record<string, any>): Promise<[result: TnsconsultarLoteRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  ConsultarLoteRpsAsync(consultarLoteRps: TnsConsultarLoteRps, options?: Record<string, any>): Promise<[result: TnsConsultarLoteRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  ConsultarNfseFaixaAsync(consultarNfseFaixa: TnsconsultarNfseFaixa, options?: Record<string, any>): Promise<[result: TnsconsultarNfseFaixaResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  ConsultarNfseFaixaAsync(consultarNfseFaixa: TnsConsultarNfseFaixa, options?: Record<string, any>): Promise<[result: TnsConsultarNfseFaixaResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  GerarNfseAsync(gerarNfse: TnsgerarNfse, options?: Record<string, any>): Promise<[result: TnsgerarNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  GerarNfseAsync(gerarNfse: TnsGerarNfse, options?: Record<string, any>): Promise<[result: TnsGerarNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  SubstituirNfseAsync(substituirNfse: TnssubstituirNfse, options?: Record<string, any>): Promise<[result: TnssubstituirNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  SubstituirNfseAsync(substituirNfse: TnsSubstituirNfse, options?: Record<string, any>): Promise<[result: TnsSubstituirNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 }
 
 /** Create NotaFiscalSoapClient */

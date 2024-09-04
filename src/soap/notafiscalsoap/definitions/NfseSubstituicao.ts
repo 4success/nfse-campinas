@@ -1,5 +1,4 @@
 import { SubstituicaoNfse } from './SubstituicaoNfse';
-import { Signature } from './Signature';
 
 /**
  * NfseSubstituicao
@@ -9,6 +8,4 @@ import { Signature } from './Signature';
 export interface NfseSubstituicao {
   /** SubstituicaoNfse */
   SubstituicaoNfse?: SubstituicaoNfse;
-  /** Signature */
-  Signature?: Signature;
 }

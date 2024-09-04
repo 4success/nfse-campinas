@@ -1,5 +1,4 @@
 import { InfDeclaracaoPrestacaoServico } from './InfDeclaracaoPrestacaoServico';
-import { Signature } from './Signature';
 
 /**
  * DeclaracaoPrestacaoServico
@@ -9,6 +8,4 @@ import { Signature } from './Signature';
 export interface DeclaracaoPrestacaoServico {
   /** InfDeclaracaoPrestacaoServico */
   InfDeclaracaoPrestacaoServico: InfDeclaracaoPrestacaoServico;
-  /** Signature */
-  Signature?: Signature;
 }

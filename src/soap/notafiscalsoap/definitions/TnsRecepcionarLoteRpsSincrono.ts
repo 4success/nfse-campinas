@@ -1,7 +1,7 @@
 import { EnviarLoteRpsSincronoEnvio } from './EnviarLoteRpsSincronoEnvio';
 
 /** tns:RecepcionarLoteRpsSincrono */
-export interface TnsrecepcionarLoteRpsSincrono {
+export interface TnsRecepcionarLoteRpsSincrono {
   /** EnviarLoteRpsSincronoEnvio */
   EnviarLoteRpsSincronoEnvio: EnviarLoteRpsSincronoEnvio;
 }

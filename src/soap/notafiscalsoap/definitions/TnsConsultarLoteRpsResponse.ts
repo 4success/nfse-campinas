@@ -1,7 +1,7 @@
 import { ConsultarLoteRpsResposta } from './ConsultarLoteRpsResposta';
 
 /** tns:ConsultarLoteRpsResponse */
-export interface TnsconsultarLoteRpsResponse {
+export interface TnsConsultarLoteRpsResponse {
   /** ConsultarLoteRpsResposta */
   ConsultarLoteRpsResposta?: ConsultarLoteRpsResposta;
 }

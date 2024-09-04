@@ -4,20 +4,21 @@ import crypto from 'crypto';
 import fs from 'fs';
 import pem from 'pem';
 import { SignedXml } from 'xml-crypto';
-import { createClientAsync, NotaFiscalSoapClient } from '../soap/notafiscalsoap';
 import {
-  CancelarNfseInput,
-  ConsultarLoteRpsInput,
-  ConsultarNfseFaixaInput,
-  ConsultarNfsePorRpsInput,
-  ConsultarNfseServicoPrestadoInput,
-  ConsultarNfseServicoTomadoInput,
-  GerarNfseInput,
-  RecepcionarLoteRpsInput,
-  RecepcionarLoteRpsSincronoInput,
-  ReferenceOptions,
-  SubstituirNfseInput,
-} from '../types/nfseCampinas';
+  createClientAsync,
+  NotaFiscalSoapClient,
+  TnsCancelarNfse,
+  TnsConsultarLoteRps,
+  TnsConsultarNfseFaixa,
+  TnsConsultarNfsePorRps,
+  TnsConsultarNfseServicoPrestado,
+  TnsConsultarNfseServicoTomado,
+  TnsGerarNfse,
+  TnsRecepcionarLoteRps,
+  TnsRecepcionarLoteRpsSincrono,
+  TnsSubstituirNfse,
+} from '../soap/notafiscalsoap';
+import type { ReferenceOptions } from '../types/nfseCampinas';
 import { ComputeSignatureOptions } from 'xml-crypto/lib/types';
 import { XMLParser } from 'fast-xml-parser';
 import xmlbuilder from 'xmlbuilder';
@@ -53,7 +54,7 @@ export class NfseCampinas {
     fs.unlinkSync(this.certTempFile);
   }
 
-  public async ConsultarNfsePorRps(input: ConsultarNfsePorRpsInput) {
+  public async ConsultarNfsePorRps(input: TnsConsultarNfsePorRps) {
     const [client, pemCert] = await Promise.all([
       this.getSoapClient(),
       this.getPemCert(),
@@ -82,7 +83,7 @@ export class NfseCampinas {
     }
   }
 
-  public async ConsultarNfseServicoTomado(input: ConsultarNfseServicoTomadoInput) {
+  public async ConsultarNfseServicoTomado(input: TnsConsultarNfseServicoTomado) {
     const [client, pemCert] = await Promise.all([
       this.getSoapClient(),
       this.getPemCert(),
@@ -111,7 +112,7 @@ export class NfseCampinas {
     }
   }
 
-  public async RecepcionarLoteRps(input: RecepcionarLoteRpsInput) {
+  public async RecepcionarLoteRps(input: TnsRecepcionarLoteRps) {
     const [client, pemCert] = await Promise.all([
       this.getSoapClient(),
       this.getPemCert(),
@@ -139,7 +140,7 @@ export class NfseCampinas {
     }
   }
 
-  public async RecepcionarLoteRpsSincrono(input: RecepcionarLoteRpsSincronoInput) {
+  public async RecepcionarLoteRpsSincrono(input: TnsRecepcionarLoteRpsSincrono) {
     const [client, pemCert] = await Promise.all([
       this.getSoapClient(),
       this.getPemCert(),
@@ -167,7 +168,7 @@ export class NfseCampinas {
     }
   }
 
-  public async ConsultarNfseServicoPrestado(input: ConsultarNfseServicoPrestadoInput) {
+  public async ConsultarNfseServicoPrestado(input: TnsConsultarNfseServicoPrestado) {
     const [client, pemCert] = await Promise.all([
       this.getSoapClient(),
       this.getPemCert(),
@@ -196,7 +197,7 @@ export class NfseCampinas {
     }
   }
 
-  public async CancelarNfse(input: CancelarNfseInput) {
+  public async CancelarNfse(input: TnsCancelarNfse) {
     const [client, pemCert] = await Promise.all([
       this.getSoapClient(),
       this.getPemCert(),
@@ -221,7 +222,7 @@ export class NfseCampinas {
     }
   }
 
-  public async ConsultarLoteRps(input: ConsultarLoteRpsInput) {
+  public async ConsultarLoteRps(input: TnsConsultarLoteRps) {
     const [client, pemCert] = await Promise.all([
       this.getSoapClient(),
       this.getPemCert(),
@@ -247,7 +248,7 @@ export class NfseCampinas {
     }
   }
 
-  public async ConsultarNfseFaixa(input: ConsultarNfseFaixaInput) {
+  public async ConsultarNfseFaixa(input: TnsConsultarNfseFaixa) {
     const [client, pemCert] = await Promise.all([
       this.getSoapClient(),
       this.getPemCert(),
@@ -274,7 +275,7 @@ export class NfseCampinas {
 
   }
 
-  public async GerarNfse(input: GerarNfseInput) {
+  public async GerarNfse(input: TnsGerarNfse) {
     const [client, pemCert] = await Promise.all([
       this.getSoapClient(),
       this.getPemCert(),
@@ -302,7 +303,7 @@ export class NfseCampinas {
     }
   }
 
-  public async SubstituirNfse(input: SubstituirNfseInput) {
+  public async SubstituirNfse(input: TnsSubstituirNfse) {
     const [client, pemCert] = await Promise.all([
       this.getSoapClient(),
       this.getPemCert(),

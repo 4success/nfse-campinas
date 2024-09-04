@@ -3,7 +3,6 @@ import { PeriodoEmissao1 } from './PeriodoEmissao1';
 import { PeriodoCompetencia1 } from './PeriodoCompetencia1';
 import { IdentificacaoTomador } from './IdentificacaoTomador';
 import { IdentificacaoIntermediario } from './IdentificacaoIntermediario';
-import { Signature } from './Signature';
 
 /** ConsultarNfseServicoPrestadoEnvio */
 export interface ConsultarNfseServicoPrestadoEnvio {
@@ -21,6 +20,4 @@ export interface ConsultarNfseServicoPrestadoEnvio {
   Intermediario?: IdentificacaoIntermediario;
   /** xs:nonNegativeInteger */
   Pagina: string;
-  /** Signature */
-  Signature?: Signature;
 }

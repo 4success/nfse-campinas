@@ -1,5 +1,4 @@
 import { InfNfse } from './InfNfse';
-import { Signature } from './Signature';
 
 /**
  * Nfse
@@ -9,6 +8,4 @@ import { Signature } from './Signature';
 export interface Nfse {
   /** InfNfse */
   InfNfse?: InfNfse;
-  /** Signature */
-  Signature?: Signature;
 }
