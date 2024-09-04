@@ -355,6 +355,7 @@ export class NfseCampinas {
       numberParseOptions: {
         leadingZeros: false,
         hex: false,
+        eNotation: false,
       },
     });
 
