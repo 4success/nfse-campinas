@@ -1,3 +1,2 @@
-import { NfseCampinas } from './classes/NfseCampinas';
-
-export { NfseCampinas };
+export { NfseCampinas } from './classes/NfseCampinas';
+export * from './types/nfseCampinas';
