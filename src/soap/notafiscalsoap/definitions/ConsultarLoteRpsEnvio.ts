@@ -4,9 +4,9 @@ import { Signature } from './Signature';
 /** ConsultarLoteRpsEnvio */
 export interface ConsultarLoteRpsEnvio {
   /** Prestador */
-  Prestador?: Prestador;
+  Prestador: Prestador;
   /** xs:string */
-  Protocolo?: string;
+  Protocolo: string;
   /** Signature */
   Signature?: Signature;
 }

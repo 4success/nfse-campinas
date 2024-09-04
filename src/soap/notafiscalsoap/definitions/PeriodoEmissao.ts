@@ -1,7 +1,7 @@
 /** PeriodoEmissao */
 export interface PeriodoEmissao {
   /** xs:date */
-  DataInicial?: string;
+  DataInicial: string;
   /** xs:date */
-  DataFinal?: string;
+  DataFinal: string;
 }

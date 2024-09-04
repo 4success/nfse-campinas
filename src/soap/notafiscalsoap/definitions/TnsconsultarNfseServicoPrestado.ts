@@ -3,5 +3,5 @@ import { ConsultarNfseServicoPrestadoEnvio } from './ConsultarNfseServicoPrestad
 /** tns:ConsultarNfseServicoPrestado */
 export interface TnsconsultarNfseServicoPrestado {
   /** ConsultarNfseServicoPrestadoEnvio */
-  ConsultarNfseServicoPrestadoEnvio?: ConsultarNfseServicoPrestadoEnvio;
+  ConsultarNfseServicoPrestadoEnvio: ConsultarNfseServicoPrestadoEnvio;
 }

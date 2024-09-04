@@ -5,11 +5,11 @@ import { Signature } from './Signature';
 /** ConsultarNfseFaixaEnvio */
 export interface ConsultarNfseFaixaEnvio {
   /** Prestador */
-  Prestador?: Prestador;
+  Prestador: Prestador;
   /** Faixa */
-  Faixa?: Faixa;
+  Faixa: Faixa;
   /** xs:nonNegativeInteger */
-  Pagina?: string;
+  Pagina: string;
   /** Signature */
   Signature?: Signature;
 }

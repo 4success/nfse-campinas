@@ -5,9 +5,9 @@ import { Signature } from './Signature';
 /** ConsultarNfseRpsEnvio */
 export interface ConsultarNfseRpsEnvio {
   /** IdentificacaoRps */
-  IdentificacaoRps?: IdentificacaoRps;
+  IdentificacaoRps: IdentificacaoRps;
   /** Prestador */
-  Prestador?: Prestador;
+  Prestador: Prestador;
   /** Signature */
   Signature?: Signature;
 }

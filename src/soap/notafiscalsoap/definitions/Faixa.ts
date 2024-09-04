@@ -1,7 +1,7 @@
 /** Faixa */
 export interface Faixa {
   /** xs:nonNegativeInteger */
-  NumeroNfseInicial?: string;
+  NumeroNfseInicial: string;
   /** xs:nonNegativeInteger */
-  NumeroNfseFinal?: string;
+  NumeroNfseFinal: string;
 }

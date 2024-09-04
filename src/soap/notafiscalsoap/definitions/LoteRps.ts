@@ -8,13 +8,13 @@ import { ListaRps } from './ListaRps';
  */
 export interface LoteRps {
   /** xs:nonNegativeInteger */
-  NumeroLote?: string;
+  NumeroLote: string;
   /** CpfCnpj */
-  CpfCnpj?: CpfCnpj;
+  CpfCnpj: CpfCnpj;
   /** xs:string */
   InscricaoMunicipal?: string;
   /** xs:int */
-  QuantidadeRps?: number;
+  QuantidadeRps: number;
   /** ListaRps */
-  ListaRps?: ListaRps;
+  ListaRps: ListaRps;
 }

@@ -1,7 +1,7 @@
 /** PeriodoCompetencia */
 export interface PeriodoCompetencia {
   /** xs:date */
-  DataInicial?: string;
+  DataInicial: string;
   /** xs:date */
-  DataFinal?: string;
+  DataFinal: string;
 }

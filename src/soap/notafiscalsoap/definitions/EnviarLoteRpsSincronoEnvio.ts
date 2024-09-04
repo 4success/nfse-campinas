@@ -4,7 +4,7 @@ import { Signature } from './Signature';
 /** EnviarLoteRpsSincronoEnvio */
 export interface EnviarLoteRpsSincronoEnvio {
   /** LoteRps */
-  LoteRps?: LoteRps;
+  LoteRps: LoteRps;
   /** Signature */
   Signature?: Signature;
 }

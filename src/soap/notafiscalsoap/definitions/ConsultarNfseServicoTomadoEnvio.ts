@@ -9,7 +9,7 @@ import { Signature } from './Signature';
 /** ConsultarNfseServicoTomadoEnvio */
 export interface ConsultarNfseServicoTomadoEnvio {
   /** Consulente */
-  Consulente?: Consulente;
+  Consulente: Consulente;
   /** xs:nonNegativeInteger */
   NumeroNfse?: string;
   /** PeriodoEmissao */
@@ -23,7 +23,7 @@ export interface ConsultarNfseServicoTomadoEnvio {
   /** Intermediario */
   Intermediario?: IdentificacaoIntermediario;
   /** xs:nonNegativeInteger */
-  Pagina?: string;
+  Pagina: string;
   /** Signature */
   Signature?: Signature;
 }

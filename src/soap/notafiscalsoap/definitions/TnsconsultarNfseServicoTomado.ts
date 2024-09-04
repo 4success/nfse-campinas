@@ -3,5 +3,5 @@ import { ConsultarNfseServicoTomadoEnvio } from './ConsultarNfseServicoTomadoEnv
 /** tns:ConsultarNfseServicoTomado */
 export interface TnsconsultarNfseServicoTomado {
   /** ConsultarNfseServicoTomadoEnvio */
-  ConsultarNfseServicoTomadoEnvio?: ConsultarNfseServicoTomadoEnvio;
+  ConsultarNfseServicoTomadoEnvio: ConsultarNfseServicoTomadoEnvio;
 }
