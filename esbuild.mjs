@@ -23,4 +23,5 @@ build({
   console.log(result);
 }).catch((err) => {
   console.log(err);
-}).finally(() => process.exit(1));
+  process.exit(1);
+});
