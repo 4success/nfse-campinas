@@ -12,7 +12,7 @@ export interface LoteRps {
   /** CpfCnpj */
   CpfCnpj: CpfCnpj;
   /** xs:string */
-  InscricaoMunicipal?: string;
+  InscricaoMunicipal: string;
   /** xs:int */
   QuantidadeRps: number;
   /** ListaRps */
