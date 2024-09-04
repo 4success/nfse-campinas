@@ -1,7 +1,3 @@
-import path from 'path';
-import os from 'os';
-import crypto from 'crypto';
-import fs from 'fs';
 import pem from 'pem';
 import { SignedXml } from 'xml-crypto';
 import {
@@ -32,7 +28,6 @@ export class NfseCampinas {
     ],
     uri: 'rps@1',
   };
-  readonly certTempFile: string;
   private soapClient: NotaFiscalSoapClient;
 
   constructor(
@@ -41,17 +36,6 @@ export class NfseCampinas {
     protected certPassword: string,
     protected debug: boolean = false,
   ) {
-    const tempPath = path.join(os.tmpdir(), `cert-${crypto.randomBytes(4).readUInt32LE(0)}`);
-
-    fs.writeFileSync(tempPath, certificate);
-    this.certTempFile = tempPath;
-  }
-
-  /**
-   * Após usar esse método, a classe deixa de ser utilizável
-   */
-  public cleanup() {
-    fs.unlinkSync(this.certTempFile);
   }
 
   public async ConsultarNfsePorRps(input: TnsConsultarNfsePorRps) {
@@ -388,9 +372,8 @@ export class NfseCampinas {
   }
 
   private async getPemCert(): Promise<pem.Pkcs12ReadResult> {
-    const pfx = fs.readFileSync(this.certTempFile);
     return await new Promise((resolve, reject) => {
-      pem.readPkcs12(pfx, { p12Password: this.certPassword }, (err, cert) => {
+      pem.readPkcs12(this.certificate, { p12Password: this.certPassword }, (err, cert) => {
         if (err) reject(err);
         else resolve(cert);
       });

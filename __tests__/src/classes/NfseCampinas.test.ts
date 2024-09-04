@@ -23,16 +23,6 @@ describe('NfseCampinas', () => {
     jest.clearAllMocks();
   });
 
-  test('deve criar uma instância e salvar o certificado temporário', () => {
-    expect(fs.writeFileSync).toHaveBeenCalledWith(expect.any(String), mockCertificate);
-    expect(instance.certTempFile).toMatch(/cert-/);
-  });
-
-  test('deve deletar o arquivo de certificado temporário ao chamar cleanup', () => {
-    instance.cleanup();
-    expect(fs.unlinkSync).toHaveBeenCalledWith(instance.certTempFile);
-  });
-
   test('deve criar um cliente SOAP ao chamar getSoapClient', async () => {
     const mockClient = {};
     (createClientAsync as jest.Mock).mockResolvedValue(mockClient);
@@ -51,7 +41,6 @@ describe('NfseCampinas', () => {
     });
 
     const pemCert = await instance['getPemCert']();
-    expect(fs.readFileSync).toHaveBeenCalledWith(instance.certTempFile);
     expect(pemCert).toBe(mockCertResult);
   });
 
