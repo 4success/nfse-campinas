@@ -4,9 +4,9 @@ import {
   ConsultarNfseRpsEnvio,
   ConsultarNfseServicoPrestadoEnvio,
   ConsultarNfseServicoTomadoEnvio,
+  DeclaracaoPrestacaoServico,
   EnviarLoteRpsEnvio,
   EnviarLoteRpsSincronoEnvio,
-  GerarNfseEnvio,
   Pedido,
   SubstituirNfseEnvio,
 } from '../soap/notafiscalsoap';
@@ -46,7 +46,9 @@ export type ConsultarNfseFaixaInput = {
 }
 
 export type GerarNfseInput = {
-  GerarNfseEnvio?: Omit<GerarNfseEnvio, 'Signature'>;
+  GerarNfseEnvio: {
+    Rps: Omit<DeclaracaoPrestacaoServico, 'Signature'>;
+  }
 }
 
 export type SubstituirNfseInput = {

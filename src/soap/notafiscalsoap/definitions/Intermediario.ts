@@ -7,9 +7,9 @@ import { IdentificacaoIntermediario } from './IdentificacaoIntermediario';
  */
 export interface Intermediario {
   /** IdentificacaoIntermediario */
-  IdentificacaoIntermediario?: IdentificacaoIntermediario;
+  IdentificacaoIntermediario: IdentificacaoIntermediario;
   /** xs:string */
-  RazaoSocial?: string;
+  RazaoSocial: string;
   /** xs:int */
-  CodigoMunicipio?: number;
+  CodigoMunicipio: number;
 }

@@ -7,11 +7,16 @@ import { IdentificacaoRps } from './IdentificacaoRps';
  */
 export interface Rps {
   /** IdentificacaoRps */
-  IdentificacaoRps?: IdentificacaoRps;
+  IdentificacaoRps: IdentificacaoRps;
   /** xs:date */
-  DataEmissao?: string;
+  DataEmissao: string;
   /** xs:byte */
-  Status?: string;
+  Status: StatusRps;
   /** RpsSubstituido */
   RpsSubstituido?: IdentificacaoRps;
+}
+
+export enum StatusRps {
+  NORMAL = '1',
+  CANCELADO = '2'
 }

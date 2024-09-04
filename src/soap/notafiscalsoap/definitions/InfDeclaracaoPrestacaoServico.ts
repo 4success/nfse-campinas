@@ -4,6 +4,7 @@ import { Prestador } from './Prestador';
 import { Tomador } from './Tomador';
 import { Intermediario } from './Intermediario';
 import { ConstrucaoCivil } from './ConstrucaoCivil';
+import { TnsBinario } from './TnsBinario';
 
 /**
  * InfDeclaracaoPrestacaoServico
@@ -14,11 +15,11 @@ export interface InfDeclaracaoPrestacaoServico {
   /** Rps */
   Rps?: Rps;
   /** xs:date */
-  Competencia?: string;
+  Competencia: string;
   /** Servico */
-  Servico?: Servico;
+  Servico: Servico;
   /** Prestador */
-  Prestador?: Prestador;
+  Prestador: Prestador;
   /** Tomador */
   Tomador?: Tomador;
   /** Intermediario */
@@ -26,9 +27,19 @@ export interface InfDeclaracaoPrestacaoServico {
   /** ConstrucaoCivil */
   ConstrucaoCivil?: ConstrucaoCivil;
   /** xs:byte */
-  RegimeEspecialTributacao?: string;
+  RegimeEspecialTributacao?: RegimeEspecialTributacao;
   /** xs:byte */
-  OptanteSimplesNacional?: string;
+  OptanteSimplesNacional: TnsBinario;
   /** xs:byte */
-  IncentivoFiscal?: string;
+  IncentivoFiscal: TnsBinario;
+}
+
+
+export enum RegimeEspecialTributacao {
+  MICROEMPRESA_MUNICIPAL = '1',
+  ESTIMATIVA = '2',
+  SOCIEDADE_PROFISSIONAIS = '3',
+  COOPERATIVA = '4',
+  MEI = '5',
+  ME_EPP = '6'
 }

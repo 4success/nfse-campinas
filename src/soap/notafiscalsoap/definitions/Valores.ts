@@ -5,7 +5,7 @@
  */
 export interface Valores {
   /** xs:decimal */
-  ValorServicos?: number;
+  ValorServicos: number;
   /** xs:decimal */
   ValorDeducoes?: number;
   /** xs:decimal */

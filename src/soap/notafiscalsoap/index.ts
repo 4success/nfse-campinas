@@ -1,3 +1,4 @@
+export { TnsBinario } from './definitions/TnsBinario';
 export { TnsconsultarNfsePorRps } from './definitions/TnsconsultarNfsePorRps';
 export { ConsultarNfseRpsEnvio } from './definitions/ConsultarNfseRpsEnvio';
 export { IdentificacaoRps } from './definitions/IdentificacaoRps';

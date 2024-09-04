@@ -1,4 +1,5 @@
 import { Valores } from './Valores';
+import { TnsBinario } from './TnsBinario';
 
 /**
  * Servico
@@ -7,13 +8,13 @@ import { Valores } from './Valores';
  */
 export interface Servico {
   /** Valores */
-  Valores?: Valores;
+  Valores: Valores;
   /** xs:byte */
-  IssRetido?: string;
+  IssRetido: TnsBinario;
   /** xs:byte */
-  ResponsavelRetencao?: string;
+  ResponsavelRetencao?: ResponsavelRetencao;
   /** xs:string */
-  ItemListaServico?: string;
+  ItemListaServico: string;
   /** xs:int */
   CodigoCnae?: number;
   /** xs:string */
@@ -21,15 +22,30 @@ export interface Servico {
   /** xs:string */
   CodigoNbs?: string;
   /** xs:string */
-  Discriminacao?: string;
+  Discriminacao: string;
   /** xs:int */
-  CodigoMunicipio?: number;
+  CodigoMunicipio: number;
   /** xs:string */
   CodigoPais?: string;
   /** xs:byte */
-  ExigibilidadeISS?: string;
+  ExigibilidadeISS: ExigibilidadeISS;
   /** xs:int */
   MunicipioIncidencia?: number;
   /** xs:string */
   NumeroProcesso?: string;
+}
+
+export enum ExigibilidadeISS {
+  EXIGIVEL = '1',
+  NAO_INCIDENCIA = '2',
+  ISENCAO = '3',
+  EXPORTACAO = '4',
+  IMUNIDADE = '5',
+  EXIBILIDADE_SUSPENSA_DECISAO_JURIDICAL = '6',
+  EXIBILIDADE_SUSPENSA_PROCESSO_ADMINISTRATIVO = '7',
+}
+
+export enum ResponsavelRetencao {
+  TOMADOR = '1',
+  INTERMEDIARIO = '2'
 }

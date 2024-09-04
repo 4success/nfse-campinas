@@ -7,5 +7,5 @@ export interface ConstrucaoCivil {
   /** xs:string */
   CodigoObra?: string;
   /** xs:string */
-  Art?: string;
+  Art: string;
 }

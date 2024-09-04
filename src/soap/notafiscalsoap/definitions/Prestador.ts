@@ -7,7 +7,7 @@ import { CpfCnpj } from './CpfCnpj';
  */
 export interface Prestador {
   /** CpfCnpj */
-  CpfCnpj?: CpfCnpj;
+  CpfCnpj: CpfCnpj;
   /** xs:string */
   InscricaoMunicipal?: string;
 }

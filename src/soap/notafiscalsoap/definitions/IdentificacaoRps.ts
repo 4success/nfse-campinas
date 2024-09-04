@@ -5,11 +5,11 @@
  */
 export interface IdentificacaoRps {
   /** xs:nonNegativeInteger */
-  Numero?: string;
+  Numero: string;
   /** xs:string */
-  Serie?: string;
+  Serie: string;
   /** xs:string */
-  Tipo?: TipoRps;
+  Tipo: TipoRps;
 }
 
 export enum TipoRps {
