@@ -77,4 +77,86 @@ describe('NfseCampinas', () => {
     expect(consoleLogSpy).toHaveBeenCalledWith('<request/>');
     expect(consoleLogSpy).toHaveBeenCalledWith('<response/>');
   });
+
+  describe('ImprimirNfse', () => {
+    const mockParams = {
+      cnpj: '12345678000190',
+      inscricaoMunicipal: '123456',
+      numeroNfse: '1000',
+      codigoVerificacao: 'ABC123',
+    };
+
+    beforeEach(() => {
+      global.fetch = jest.fn();
+    });
+
+    test('deve retornar um Buffer quando a requisição for bem sucedida', async () => {
+      // Arrange
+      const mockPdfContent = new Uint8Array([1, 2, 3, 4]);
+      const expectedUrlString = `${mockHost}/servico/notafiscal/autenticacao/cpfCnpj/${mockParams.cnpj}/inscricaoMunicipal/${mockParams.inscricaoMunicipal}/numeroNota/${mockParams.numeroNfse}/codigoVerificacao/${mockParams.codigoVerificacao}`;
+      const expectedOptions = {
+        method: 'GET',
+        headers: { 'Accept': 'application/pdf' },
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({
+          'content-type': 'application/pdf',
+        }),
+        arrayBuffer: jest.fn().mockResolvedValueOnce(mockPdfContent.buffer),
+      });
+
+      // Act
+      const result = await instance.ImprimirNfse(mockParams);
+
+      // Assert
+      expect(result).toBeInstanceOf(Buffer);
+      expect(result.toString('hex')).toBe(Buffer.from(mockPdfContent).toString('hex'));
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+
+      const [calledUrl, calledOptions] = (global.fetch as jest.Mock).mock.calls[0];
+      expect(calledUrl.toString()).toBe(expectedUrlString);
+      expect(calledOptions).toEqual(expectedOptions);
+    });
+
+    test('deve lançar erro quando a resposta não for ok', async () => {
+      // Arrange
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      // Act & Assert
+      await expect(instance.ImprimirNfse(mockParams))
+        .rejects
+        .toThrow('Falha ao imprimir NFSe: Erro ao buscar NFSe: 404 - Not Found');
+    });
+
+    test('deve lançar erro quando o content-type não for PDF', async () => {
+      // Arrange
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({
+          'content-type': 'application/json',
+        }),
+      });
+
+      // Act & Assert
+      await expect(instance.ImprimirNfse(mockParams))
+        .rejects
+        .toThrow('Falha ao imprimir NFSe: Tipo de conteúdo inválido: application/json');
+    });
+
+    test('deve lançar erro quando o fetch falhar', async () => {
+      // Arrange
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+
+      // Act & Assert
+      await expect(instance.ImprimirNfse(mockParams))
+        .rejects
+        .toThrow('Falha ao imprimir NFSe: Network error');
+    });
+  });
 });

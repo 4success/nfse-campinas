@@ -43,7 +43,7 @@ const nfse = new NfseCampinas(
 );
 ```
 
-### Exemplo de Uso
+### Exemplo de Consulta
 
 ```javascript
 const response = await nfse.ConsultarNfseServicoPrestado({
@@ -61,52 +61,41 @@ const response = await nfse.ConsultarNfseServicoPrestado({
 });
 ```
 
-O editor da sua IDE irá avisar sobre os campos obrigatórios através das definições TypeScript.
+### Impressão da DANFE
+
+```javascript
+const pdfBuffer = await nfse.ImprimirNfse({
+  cnpj: '99999999000199',
+  inscricaoMunicipal: '1234567',
+  numeroNfse: '123',
+  codigoVerificacao: 'ABC123'
+});
+
+// Salvar o PDF
+fs.writeFileSync('danfe.pdf', pdfBuffer);
+```
 
 ### Configuração para Serverless (AWS Lambda)
 
 Para utilizar em ambientes serverless, adicione as seguintes configurações:
 
-1. Adicione as dependências necessárias no seu `package.json`:
-
-```json
-{
-  "dependencies": {
-    "@sparticuz/chromium": "^123.0.1",
-    "puppeteer": "^22.7.1"
-  }
-}
-```
-
-2. No seu `serverless.yml` ou configuração do esbuild, adicione os excludes:
-
-```yaml
-esbuild:
-  exclude:
-    - '@sparticuz/chromium'
-    - puppeteer
-```
-
-3. Adicione as layers necessárias:
-
+1. No seu `serverless.yml`, adicione a layer necessária:
 ```yaml
 layers:
-  - arn:aws:lambda:us-east-1:764866452798:layer:chrome-aws-lambda:45
   - arn:aws:lambda:us-east-1:034541671702:layer:openssl-lambda:1
 ```
 
 ## Funcionalidades
 
 ✅ Implementado
-❌ Não Implementado
 
 - ✅ Emissão com XMLs assinados
 - ✅ Consulta de NFSe por RPS
 - ✅ Consulta de serviços prestados
 - ✅ Consulta de serviços tomados
 - ✅ Cancelamento de NFSe
+- ✅ Impressão da DANFE em PDF
 - ✅ Suporte para ambientes serverless
-- ❌ Download da DANFE em PDF
 
 ## Links Úteis
 

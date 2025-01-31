@@ -14,7 +14,7 @@ import {
   TnsRecepcionarLoteRpsSincrono,
   TnsSubstituirNfse,
 } from '../soap/notafiscalsoap';
-import type { ReferenceOptions } from '../types/nfseCampinas';
+import { ImprimirNfseRequest, ReferenceOptions } from '../types/nfseCampinas';
 import { ComputeSignatureOptions } from 'xml-crypto/lib/types';
 import { XMLParser } from 'fast-xml-parser';
 import xmlbuilder from 'xmlbuilder';
@@ -311,6 +311,42 @@ export class NfseCampinas {
       throw err;
     } finally {
       this.logLastRequestResponse(client);
+    }
+  }
+
+  public async ImprimirNfse(param: ImprimirNfseRequest): Promise<Buffer> {
+    try {
+      // Constrói a URL com os parâmetros
+      const url = new URL(
+        `/servico/notafiscal/autenticacao/cpfCnpj/${param.cnpj}/inscricaoMunicipal/${param.inscricaoMunicipal}/numeroNota/${param.numeroNfse}/codigoVerificacao/${param.codigoVerificacao}`,
+        this.host,
+      );
+
+      // Faz a requisição GET
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/pdf',
+        },
+      });
+
+      // Verifica se a resposta foi bem sucedida
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar NFSe: ${response.status} - ${response.statusText}`);
+      }
+
+      // Verifica se o content-type está correto
+      const contentType = response.headers.get('content-type');
+      if (!contentType?.includes('application/pdf')) {
+        throw new Error(`Tipo de conteúdo inválido: ${contentType}`);
+      }
+
+      // Converte a resposta para Buffer
+      const arrayBuffer = await response.arrayBuffer();
+      return Buffer.from(arrayBuffer);
+    } catch (error) {
+      // Re-lança o erro com uma mensagem mais descritiva
+      throw new Error(`Falha ao imprimir NFSe: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
   }
 
