@@ -37,8 +37,8 @@ import { NfseCampinas } from '@4success/nfse-campinas';
 
 const cert = fs.readFileSync('/caminho/para/certificado.pfx');
 const nfse = new NfseCampinas(
-  'https://issdigital.campinas.sp.gov.br/WsNFe2/LoteRps.jws?wsdl',
-  cert,
+        'https://homol-rps.ima.sp.gov.br/notafiscal-abrasfv203-ws/NotaFiscalSoap?wsdl',
+        cert,
         'senhaCertificado'
 );
 ```
