@@ -15,5 +15,5 @@ export interface IdentificacaoRps {
 export enum TipoRps {
   RPS = '1',
   NotaFiscalConjugada = '2',
-  Cupom = '3'
+  Cupom = '3',
 }

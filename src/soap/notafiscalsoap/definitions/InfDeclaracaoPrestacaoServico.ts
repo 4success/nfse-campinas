@@ -34,12 +34,11 @@ export interface InfDeclaracaoPrestacaoServico {
   IncentivoFiscal: Binario;
 }
 
-
 export enum RegimeEspecialTributacao {
   MICROEMPRESA_MUNICIPAL = '1',
   ESTIMATIVA = '2',
   SOCIEDADE_PROFISSIONAIS = '3',
   COOPERATIVA = '4',
   MEI = '5',
-  ME_EPP = '6'
+  ME_EPP = '6',
 }

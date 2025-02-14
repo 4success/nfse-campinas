@@ -7,4 +7,4 @@ export type ImprimirNfseRequest = {
   inscricaoMunicipal: string;
   numeroNfse: string;
   codigoVerificacao: string;
-}
+};

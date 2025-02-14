@@ -47,5 +47,5 @@ export enum ExigibilidadeISS {
 
 export enum ResponsavelRetencao {
   TOMADOR = '1',
-  INTERMEDIARIO = '2'
+  INTERMEDIARIO = '2',
 }

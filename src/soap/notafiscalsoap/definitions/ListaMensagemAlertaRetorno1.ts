@@ -1,3 +1,2 @@
 /** ListaMensagemAlertaRetorno */
-export interface ListaMensagemAlertaRetorno1 {
-}
+export interface ListaMensagemAlertaRetorno1 {}

@@ -24,25 +24,55 @@ import { NotaFiscalSoap } from './services/NotaFiscalSoap';
 export interface NotaFiscalSoapClient extends SoapClient {
   NotaFiscalSoap: NotaFiscalSoap;
 
-  ConsultarNfsePorRpsAsync(consultarNfsePorRps: TnsConsultarNfsePorRps, options?: Record<string, any>): Promise<[result: TnsConsultarNfsePorRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  ConsultarNfsePorRpsAsync(
+    consultarNfsePorRps: TnsConsultarNfsePorRps,
+    options?: Record<string, any>,
+  ): Promise<[result: TnsConsultarNfsePorRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  ConsultarNfseServicoTomadoAsync(consultarNfseServicoTomado: TnsConsultarNfseServicoTomado, options?: Record<string, any>): Promise<[result: TnsConsultarNfseServicoTomadoResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  ConsultarNfseServicoTomadoAsync(
+    consultarNfseServicoTomado: TnsConsultarNfseServicoTomado,
+    options?: Record<string, any>,
+  ): Promise<[result: TnsConsultarNfseServicoTomadoResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  RecepcionarLoteRpsAsync(recepcionarLoteRps: TnsRecepcionarLoteRps, options?: Record<string, any>): Promise<[result: TnsRecepcionarLoteRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  RecepcionarLoteRpsAsync(
+    recepcionarLoteRps: TnsRecepcionarLoteRps,
+    options?: Record<string, any>,
+  ): Promise<[result: TnsRecepcionarLoteRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  RecepcionarLoteRpsSincronoAsync(recepcionarLoteRpsSincrono: TnsRecepcionarLoteRpsSincrono, options?: Record<string, any>): Promise<[result: TnsRecepcionarLoteRpsSincronoResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  RecepcionarLoteRpsSincronoAsync(
+    recepcionarLoteRpsSincrono: TnsRecepcionarLoteRpsSincrono,
+    options?: Record<string, any>,
+  ): Promise<[result: TnsRecepcionarLoteRpsSincronoResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  ConsultarNfseServicoPrestadoAsync(consultarNfseServicoPrestado: TnsConsultarNfseServicoPrestado, options?: Record<string, any>): Promise<[result: TnsConsultarNfseServicoPrestadoResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  ConsultarNfseServicoPrestadoAsync(
+    consultarNfseServicoPrestado: TnsConsultarNfseServicoPrestado,
+    options?: Record<string, any>,
+  ): Promise<[result: TnsConsultarNfseServicoPrestadoResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  CancelarNfseAsync(cancelarNfse: TnsCancelarNfse, options?: Record<string, any>): Promise<[result: TnsCancelarNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  CancelarNfseAsync(
+    cancelarNfse: TnsCancelarNfse,
+    options?: Record<string, any>,
+  ): Promise<[result: TnsCancelarNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  ConsultarLoteRpsAsync(consultarLoteRps: TnsConsultarLoteRps, options?: Record<string, any>): Promise<[result: TnsConsultarLoteRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  ConsultarLoteRpsAsync(
+    consultarLoteRps: TnsConsultarLoteRps,
+    options?: Record<string, any>,
+  ): Promise<[result: TnsConsultarLoteRpsResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  ConsultarNfseFaixaAsync(consultarNfseFaixa: TnsConsultarNfseFaixa, options?: Record<string, any>): Promise<[result: TnsConsultarNfseFaixaResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  ConsultarNfseFaixaAsync(
+    consultarNfseFaixa: TnsConsultarNfseFaixa,
+    options?: Record<string, any>,
+  ): Promise<[result: TnsConsultarNfseFaixaResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  GerarNfseAsync(gerarNfse: TnsGerarNfse, options?: Record<string, any>): Promise<[result: TnsGerarNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  GerarNfseAsync(
+    gerarNfse: TnsGerarNfse,
+    options?: Record<string, any>,
+  ): Promise<[result: TnsGerarNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 
-  SubstituirNfseAsync(substituirNfse: TnsSubstituirNfse, options?: Record<string, any>): Promise<[result: TnsSubstituirNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
+  SubstituirNfseAsync(
+    substituirNfse: TnsSubstituirNfse,
+    options?: Record<string, any>,
+  ): Promise<[result: TnsSubstituirNfseResponse, rawResponse: any, soapHeader: any, rawRequest: any]>;
 }
 
 /** Create NotaFiscalSoapClient */

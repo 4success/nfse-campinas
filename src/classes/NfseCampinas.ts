@@ -35,24 +35,23 @@ export class NfseCampinas {
     protected certificate: Buffer,
     protected certPassword: string,
     protected debug: boolean = false,
-  ) {
-  }
+  ) {}
 
   public async ConsultarNfsePorRps(input: TnsConsultarNfsePorRps) {
-    const [client, pemCert] = await Promise.all([
-      this.getSoapClient(),
-      this.getPemCert(),
-    ]);
+    const [client, pemCert] = await Promise.all([this.getSoapClient(), this.getPemCert()]);
 
     try {
       return await client.ConsultarNfsePorRpsAsync(input, {
         postProcess: (originalXML: string) => {
-          return this.getSignedXml(originalXML, {
+          return this.getSignedXml(
+            originalXML,
+            {
               location: {
                 reference: `//*[local-name(.)='ConsultarNfseRpsEnvio']`,
                 action: 'append',
               },
-            }, {
+            },
+            {
               xpath: `//*[local-name(.)='ConsultarNfseRpsEnvio']`,
               isEmptyUri: true,
             },
@@ -68,20 +67,20 @@ export class NfseCampinas {
   }
 
   public async ConsultarNfseServicoTomado(input: TnsConsultarNfseServicoTomado) {
-    const [client, pemCert] = await Promise.all([
-      this.getSoapClient(),
-      this.getPemCert(),
-    ]);
+    const [client, pemCert] = await Promise.all([this.getSoapClient(), this.getPemCert()]);
 
     try {
       return await client.ConsultarNfseServicoTomadoAsync(input, {
         postProcess: (originalXML: string) => {
-          return this.getSignedXml(originalXML, {
+          return this.getSignedXml(
+            originalXML,
+            {
               location: {
                 reference: `//*[local-name(.)='ConsultarNfseServicoTomadoEnvio']`,
                 action: 'append',
               },
-            }, {
+            },
+            {
               xpath: `//*[local-name(.)='ConsultarNfseServicoTomadoEnvio']`,
               isEmptyUri: true,
             },
@@ -97,20 +96,20 @@ export class NfseCampinas {
   }
 
   public async RecepcionarLoteRps(input: TnsRecepcionarLoteRps) {
-    const [client, pemCert] = await Promise.all([
-      this.getSoapClient(),
-      this.getPemCert(),
-    ]);
+    const [client, pemCert] = await Promise.all([this.getSoapClient(), this.getPemCert()]);
 
     try {
       return await client.RecepcionarLoteRpsAsync(input, {
         postProcess: (originalXML: string) => {
-          return this.getSignedXml(originalXML, {
+          return this.getSignedXml(
+            originalXML,
+            {
               location: {
                 reference: `//*[local-name(.)='InfDeclaracaoPrestacaoServico']`,
                 action: 'after',
               },
-            }, {
+            },
+            {
               xpath: `//*[local-name(.)='InfDeclaracaoPrestacaoServico']`,
             },
             pemCert,
@@ -125,20 +124,20 @@ export class NfseCampinas {
   }
 
   public async RecepcionarLoteRpsSincrono(input: TnsRecepcionarLoteRpsSincrono) {
-    const [client, pemCert] = await Promise.all([
-      this.getSoapClient(),
-      this.getPemCert(),
-    ]);
+    const [client, pemCert] = await Promise.all([this.getSoapClient(), this.getPemCert()]);
 
     try {
       return await client.RecepcionarLoteRpsSincronoAsync(input, {
         postProcess: (originalXML: string) => {
-          return this.getSignedXml(originalXML, {
+          return this.getSignedXml(
+            originalXML,
+            {
               location: {
                 reference: `//*[local-name(.)='InfDeclaracaoPrestacaoServico']`,
                 action: 'after',
               },
-            }, {
+            },
+            {
               xpath: `//*[local-name(.)='InfDeclaracaoPrestacaoServico']`,
             },
             pemCert,
@@ -153,20 +152,20 @@ export class NfseCampinas {
   }
 
   public async ConsultarNfseServicoPrestado(input: TnsConsultarNfseServicoPrestado) {
-    const [client, pemCert] = await Promise.all([
-      this.getSoapClient(),
-      this.getPemCert(),
-    ]);
+    const [client, pemCert] = await Promise.all([this.getSoapClient(), this.getPemCert()]);
 
     try {
       return await client.ConsultarNfseServicoPrestadoAsync(input, {
         postProcess: (originalXML: string) => {
-          return this.getSignedXml(originalXML, {
+          return this.getSignedXml(
+            originalXML,
+            {
               location: {
                 reference: `//*[local-name(.)='ConsultarNfseServicoPrestadoEnvio']`,
                 action: 'append',
               },
-            }, {
+            },
+            {
               xpath: `//*[local-name(.)='ConsultarNfseServicoPrestadoEnvio']`,
               isEmptyUri: true,
             },
@@ -182,22 +181,23 @@ export class NfseCampinas {
   }
 
   public async CancelarNfse(input: TnsCancelarNfse) {
-    const [client, pemCert] = await Promise.all([
-      this.getSoapClient(),
-      this.getPemCert(),
-    ]);
+    const [client, pemCert] = await Promise.all([this.getSoapClient(), this.getPemCert()]);
     try {
       return await client.CancelarNfseAsync(input, {
-        postProcess: (xml: string) => this.getSignedXml(xml, {
-            location: {
-              reference: `//*[local-name(.)='InfPedidoCancelamento']`,
-              action: 'after',
+        postProcess: (xml: string) =>
+          this.getSignedXml(
+            xml,
+            {
+              location: {
+                reference: `//*[local-name(.)='InfPedidoCancelamento']`,
+                action: 'after',
+              },
             },
-          }, {
-            xpath: `//*[local-name(.)='InfPedidoCancelamento']`,
-          },
-          pemCert,
-        ),
+            {
+              xpath: `//*[local-name(.)='InfPedidoCancelamento']`,
+            },
+            pemCert,
+          ),
       });
     } catch (err) {
       throw err;
@@ -207,23 +207,24 @@ export class NfseCampinas {
   }
 
   public async ConsultarLoteRps(input: TnsConsultarLoteRps) {
-    const [client, pemCert] = await Promise.all([
-      this.getSoapClient(),
-      this.getPemCert(),
-    ]);
+    const [client, pemCert] = await Promise.all([this.getSoapClient(), this.getPemCert()]);
     try {
       return await client.ConsultarLoteRpsAsync(input, {
-        postProcess: (xml: string) => this.getSignedXml(xml, {
-            location: {
-              reference: `//*[local-name(.)='ConsultarLoteRpsEnvio']`,
-              action: 'append',
+        postProcess: (xml: string) =>
+          this.getSignedXml(
+            xml,
+            {
+              location: {
+                reference: `//*[local-name(.)='ConsultarLoteRpsEnvio']`,
+                action: 'append',
+              },
             },
-          }, {
-            xpath: `//*[local-name(.)='ConsultarLoteRpsEnvio']`,
-            isEmptyUri: true,
-          },
-          pemCert,
-        ),
+            {
+              xpath: `//*[local-name(.)='ConsultarLoteRpsEnvio']`,
+              isEmptyUri: true,
+            },
+            pemCert,
+          ),
       });
     } catch (err) {
       throw err;
@@ -233,51 +234,50 @@ export class NfseCampinas {
   }
 
   public async ConsultarNfseFaixa(input: TnsConsultarNfseFaixa) {
-    const [client, pemCert] = await Promise.all([
-      this.getSoapClient(),
-      this.getPemCert(),
-    ]);
+    const [client, pemCert] = await Promise.all([this.getSoapClient(), this.getPemCert()]);
     try {
       return await client.ConsultarNfseFaixaAsync(input, {
-        postProcess: (xml: string) => this.getSignedXml(xml, {
-            location: {
-              reference: `//*[local-name(.)='ConsultarNfseFaixaEnvio']`,
-              action: 'append',
+        postProcess: (xml: string) =>
+          this.getSignedXml(
+            xml,
+            {
+              location: {
+                reference: `//*[local-name(.)='ConsultarNfseFaixaEnvio']`,
+                action: 'append',
+              },
             },
-          }, {
-            xpath: `//*[local-name(.)='ConsultarNfseFaixaEnvio']`,
-            isEmptyUri: true,
-          },
-          pemCert,
-        ),
+            {
+              xpath: `//*[local-name(.)='ConsultarNfseFaixaEnvio']`,
+              isEmptyUri: true,
+            },
+            pemCert,
+          ),
       });
     } catch (err) {
       throw err;
     } finally {
       this.logLastRequestResponse(client);
     }
-
   }
 
   public async GerarNfse(input: TnsGerarNfse) {
-    const [client, pemCert] = await Promise.all([
-      this.getSoapClient(),
-      this.getPemCert(),
-    ]);
+    const [client, pemCert] = await Promise.all([this.getSoapClient(), this.getPemCert()]);
     try {
       return await client.GerarNfseAsync(input, {
         postProcess: (originalXML: string) => {
-          return this.getSignedXml(originalXML, {
+          return this.getSignedXml(
+            originalXML,
+            {
               location: {
                 reference: `//*[local-name(.)='InfDeclaracaoPrestacaoServico']`,
                 action: 'after',
               },
-            }, {
+            },
+            {
               xpath: `//*[local-name(.)='InfDeclaracaoPrestacaoServico']`,
             },
             pemCert,
           );
-
         },
       });
     } catch (err) {
@@ -288,19 +288,19 @@ export class NfseCampinas {
   }
 
   public async SubstituirNfse(input: TnsSubstituirNfse) {
-    const [client, pemCert] = await Promise.all([
-      this.getSoapClient(),
-      this.getPemCert(),
-    ]);
+    const [client, pemCert] = await Promise.all([this.getSoapClient(), this.getPemCert()]);
     try {
       return await client.SubstituirNfseAsync(input, {
         postProcess: (originalXML: string) => {
-          return this.getSignedXml(originalXML, {
+          return this.getSignedXml(
+            originalXML,
+            {
               location: {
                 reference: `//*[local-name(.)='InfDeclaracaoPrestacaoServico']`,
                 action: 'after',
               },
-            }, {
+            },
+            {
               xpath: `//*[local-name(.)='InfDeclaracaoPrestacaoServico']`,
             },
             pemCert,
@@ -326,7 +326,7 @@ export class NfseCampinas {
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Accept': 'application/pdf',
+          Accept: 'application/pdf',
         },
       });
 
@@ -350,7 +350,12 @@ export class NfseCampinas {
     }
   }
 
-  protected getSignedXml(xml: string, computeOptions: ComputeSignatureOptions, referenceOptions: ReferenceOptions, pemCert: pem.Pkcs12ReadResult) {
+  protected getSignedXml(
+    xml: string,
+    computeOptions: ComputeSignatureOptions,
+    referenceOptions: ReferenceOptions,
+    pemCert: pem.Pkcs12ReadResult,
+  ) {
     const sig = new SignedXml({
       privateKey: pemCert.key,
       publicCert: pemCert.cert,

@@ -18,5 +18,5 @@ export interface Rps {
 
 export enum StatusRps {
   NORMAL = '1',
-  CANCELADO = '2'
+  CANCELADO = '2',
 }

@@ -17,5 +17,5 @@ export enum CodigoCancelamento {
   ServicoNaoPrestado = '2',
   ErroAssinatura = '3',
   DuplicidadeNota = '4',
-  ErroProcessamento = '5'
+  ErroProcessamento = '5',
 }

@@ -1,4 +1,4 @@
 export enum Binario {
   SIM = '1',
-  NAO = '2'
+  NAO = '2',
 }
