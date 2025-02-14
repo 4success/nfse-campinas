@@ -318,7 +318,7 @@ export class NfseCampinas {
     try {
       // Constrói a URL com os parâmetros
       const url = new URL(
-        `/servico/notafiscal/autenticacao/cpfCnpj/${param.cnpj}/inscricaoMunicipal/${param.inscricaoMunicipal}/numeroNota/${param.numeroNfse}/codigoVerificacao/${param.codigoVerificacao}`,
+        `/notafiscal-ws/servico/notafiscal/autenticacao/cpfCnpj/${param.cnpj}/inscricaoMunicipal/${param.inscricaoMunicipal}/numeroNota/${param.numeroNfse}/codigoVerificacao/${param.codigoVerificacao}`,
         this.host,
       );
 
