@@ -28,6 +28,23 @@ Pacote de integração para os webservices da prefeitura de Campinas no padrão 
 Este pacote é compatível com municípios que utilizam o Padrão ABRASF 1.3 ou superior. É necessária a utilização de
 Certificado Digital A1.
 
+## API como Serviço (SaaS)
+
+Desenvolvemos uma API hospedada para facilitar a integração com NFSe Campinas para desenvolvedores que não trabalham com
+NodeJS ou precisam de uma solução mais rápida de implementar.
+
+🌐 **NFSe Hub**: https://nfsehub.4success.com.br
+
+**Principais benefícios:**
+
+- Integração independente de linguagem de programação
+- Sem necessidade de gerenciar certificados digitais
+- Documentação completa e exemplos de uso
+- Suporte para todos os endpoints do pacote NFSe Campinas
+- Ambiente de homologação e produção
+
+Visite nosso site para mais detalhes, documentação da API e planos de contratação.
+
 ## Como Usar
 
 ### Configuração Básica
