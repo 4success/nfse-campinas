@@ -1,0 +1,13 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <ns4:RecepcionarLoteRpsResponse
+                xmlns:ns4="http://nfse.abrasf.org.br">
+            <EnviarLoteRpsResposta>
+                <NumeroLote>ANON_NUMERO_LOTE</NumeroLote>
+                <DataRecebimento>ANON_DATA_RECEBIMENTO</DataRecebimento>
+                <Protocolo>ANON_PROTOCOLO</Protocolo>
+                <ListaMensagemRetorno/>
+            </EnviarLoteRpsResposta>
+        </ns4:RecepcionarLoteRpsResponse>
+    </soap:Body>
+</soap:Envelope>

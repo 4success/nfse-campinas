@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://nfse.abrasf.org.br"
+>
+    <soap:Body>
+        <tns:ConsultarNfseFaixa>
+            <ConsultarNfseFaixaEnvio>
+                <Prestador>
+                    <CpfCnpj>
+                        <Cnpj>ANON_123456789</Cnpj>
+                    </CpfCnpj>
+                    <InscricaoMunicipal>ANON_123456</InscricaoMunicipal>
+                </Prestador>
+                <Faixa>
+                    <NumeroNfseInicial>1946</NumeroNfseInicial>
+                    <NumeroNfseFinal>1946</NumeroNfseFinal>
+                </Faixa>
+                <Pagina>1</Pagina>
+                <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+                    <SignedInfo>
+                        <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+                        <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+                        <Reference URI="">
+                            <Transforms>
+                                <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+                                <Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+                            </Transforms>
+                            <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+                            <DigestValue>ANON_HASH_VALUE</DigestValue>
+                        </Reference>
+                    </SignedInfo>
+                    <SignatureValue>ANON_SIGNATURE_VALUE</SignatureValue>
+                    <KeyInfo>
+                        <X509Data>
+                            <X509Certificate>ANON_CERTIFICATE_VALUE</X509Certificate>
+                        </X509Data>
+                    </KeyInfo>
+                </Signature>
+            </ConsultarNfseFaixaEnvio>
+        </tns:ConsultarNfseFaixa>
+    </soap:Body>
+</soap:Envelope>

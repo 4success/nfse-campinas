@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://nfse.abrasf.org.br"
+>
+    <soap:Body>
+        <tns:RecepcionarLoteRpsSincrono>
+            <EnviarLoteRpsSincronoEnvio>
+                <LoteRps>
+                    <NumeroLote>ANON_NUMERO_LOTE</NumeroLote>
+                    <CpfCnpj>
+                        <Cnpj>ANON_CNPJ</Cnpj>
+                    </CpfCnpj>
+                    <InscricaoMunicipal>ANON_INSCRICAO_MUNICIPAL</InscricaoMunicipal>
+                    <QuantidadeRps>ANON_QUANTIDADE_RPS</QuantidadeRps>
+                    <ListaRps>
+                        <Rps>
+                            <InfDeclaracaoPrestacaoServico Id="_0">
+                                <Rps>
+                                    <IdentificacaoRps>
+                                        <Numero>ANON_NUMERO_RPS</Numero>
+                                        <Tipo>1</Tipo>
+                                        <Serie>99</Serie>
+                                    </IdentificacaoRps>
+                                    <Status>1</Status>
+                                    <DataEmissao>ANON_DATA_EMISSAO</DataEmissao>
+                                </Rps>
+                                <Competencia>ANON_COMPETENCIA</Competencia>
+                                <Servico>
+                                    <Valores>
+                                        <ValorServicos>ANON_VALOR_SERVICOS</ValorServicos>
+                                    </Valores>
+                                    <IssRetido>2</IssRetido>
+                                    <ItemListaServico>1.06</ItemListaServico>
+                                    <CodigoCnae>620400001</CodigoCnae>
+                                    <Discriminacao>ANON_DISCRIMINACAO</Discriminacao>
+                                    <CodigoMunicipio>3509502</CodigoMunicipio>
+                                    <ExigibilidadeISS>1</ExigibilidadeISS>
+                                    <MunicipioIncidencia>3509502</MunicipioIncidencia>
+                                </Servico>
+                                <Prestador>
+                                    <CpfCnpj>
+                                        <Cnpj>ANON_CNPJ_PRESTADOR</Cnpj>
+                                    </CpfCnpj>
+                                    <InscricaoMunicipal>ANON_INSCRICAO_MUNICIPAL_PRESTADOR</InscricaoMunicipal>
+                                </Prestador>
+                                <Tomador>
+                                    <IdentificacaoTomador>
+                                        <CpfCnpj>
+                                            <Cpf>ANON_CPF_TOMADOR</Cpf>
+                                        </CpfCnpj>
+                                    </IdentificacaoTomador>
+                                    <RazaoSocial>ANON_RAZAO_SOCIAL_TOMADOR</RazaoSocial>
+                                    <Endereco>
+                                        <Endereco>ANON_ENDERECO_TOMADOR</Endereco>
+                                        <Numero>ANON_NUMERO_ENDERECO_TOMADOR</Numero>
+                                        <Complemento>ANON_COMPLEMENTO_ENDERECO_TOMADOR</Complemento>
+                                        <Bairro>ANON_BAIRRO_TOMADOR</Bairro>
+                                        <Cep>ANON_CEP_TOMADOR</Cep>
+                                        <Uf>SP</Uf>
+                                        <CodigoMunicipio>3536505</CodigoMunicipio>
+                                    </Endereco>
+                                </Tomador>
+                                <OptanteSimplesNacional>2</OptanteSimplesNacional>
+                                <IncentivoFiscal>2</IncentivoFiscal>
+                            </InfDeclaracaoPrestacaoServico>
+                            <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+                                <SignedInfo>
+                                    <CanonicalizationMethod
+                                            Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+                                    <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+                                    <Reference URI="#_0">
+                                        <Transforms>
+                                            <Transform
+                                                    Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+                                            <Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+                                        </Transforms>
+                                        <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+                                        <DigestValue>ANON_DIGEST_VALUE</DigestValue>
+                                    </Reference>
+                                </SignedInfo>
+                                <SignatureValue>ANON_SIGNATURE_VALUE</SignatureValue>
+                                <KeyInfo>
+                                    <X509Data>
+                                        <X509Certificate>ANON_CERTIFICADO_X509</X509Certificate>
+                                    </X509Data>
+                                </KeyInfo>
+                            </Signature>
+                        </Rps>
+                    </ListaRps>
+                </LoteRps>
+            </EnviarLoteRpsSincronoEnvio>
+        </tns:RecepcionarLoteRpsSincrono>
+    </soap:Body>
+</soap:Envelope>

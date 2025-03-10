@@ -1,0 +1,53 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <ns4:CancelarNfseResponse xmlns:ns2="http://www.w3.org/2000/09/xmldsig#"
+                                  xmlns:ns4="http://nfse.abrasf.org.br">
+            <CancelarNfseResposta>
+                <RetCancelamento>
+                    <NfseCancelamento>
+                        <Confirmacao Id="_0">
+                            <Pedido>
+                                <InfPedidoCancelamento Id="_0">
+                                    <IdentificacaoNfse>
+                                        <Numero>ANON_NUMERO_NOTA</Numero>
+                                        <CpfCnpj>
+                                            <Cnpj>ANON_CNPJ_PRESTADOR</Cnpj>
+                                        </CpfCnpj>
+                                        <InscricaoMunicipal>ANON_INSCRICAO_MUNICIPAL</InscricaoMunicipal>
+                                        <CodigoMunicipio>3509502</CodigoMunicipio>
+                                    </IdentificacaoNfse>
+                                    <CodigoCancelamento>2</CodigoCancelamento>
+                                </InfPedidoCancelamento>
+                                <ns2:Signature>
+                                    <ns2:SignedInfo>
+                                        <ns2:CanonicalizationMethod
+                                                Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+                                        <ns2:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+                                        <ns2:Reference URI="#_0">
+                                            <ns2:Transforms>
+                                                <ns2:Transform
+                                                        Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+                                                <ns2:Transform
+                                                        Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+                                            </ns2:Transforms>
+                                            <ns2:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+                                            <ns2:DigestValue>ANON_DIGEST_VALUE</ns2:DigestValue>
+                                        </ns2:Reference>
+                                    </ns2:SignedInfo>
+                                    <ns2:SignatureValue>ANON_SIGNATURE_VALUE</ns2:SignatureValue>
+                                    <ns2:KeyInfo>
+                                        <ns2:X509Data>
+                                            <ns2:X509Certificate>ANON_CERTIFICADO_X509</ns2:X509Certificate>
+                                        </ns2:X509Data>
+                                    </ns2:KeyInfo>
+                                </ns2:Signature>
+                            </Pedido>
+                            <DataHora>ANON_DATA_HORA_CANCELAMENTO</DataHora>
+                        </Confirmacao>
+                    </NfseCancelamento>
+                </RetCancelamento>
+                <ListaMensagemRetorno/>
+            </CancelarNfseResposta>
+        </ns4:CancelarNfseResponse>
+    </soap:Body>
+</soap:Envelope>
