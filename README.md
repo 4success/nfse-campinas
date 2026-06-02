@@ -94,13 +94,7 @@ fs.writeFileSync('danfe.pdf', pdfBuffer);
 
 ### Configuração para Serverless (AWS Lambda)
 
-Para utilizar em ambientes serverless, adicione as seguintes configurações:
-
-1. No seu `serverless.yml`, adicione a layer necessária:
-```yaml
-layers:
-  - arn:aws:lambda:us-east-1:034541671702:layer:openssl-lambda:1
-```
+O pacote não depende de binário externo do OpenSSL para converter certificados `.pfx/.p12`, então não é necessário adicionar uma Lambda layer específica para OpenSSL.
 
 ## Funcionalidades
 

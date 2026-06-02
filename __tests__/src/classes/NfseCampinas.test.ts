@@ -1,11 +1,8 @@
-import fs from 'fs';
 import { createClientAsync, NfseCampinas } from '../../../src';
 import { SignedXml } from 'xml-crypto';
-import pem, { Pkcs12ReadResult } from 'pem';
+import forge from 'node-forge';
 
-// Mock das dependências
-jest.mock('fs');
-jest.mock('pem');
+jest.mock('node-forge');
 jest.mock('../../../src/soap/notafiscalsoap');
 jest.mock('xml-crypto');
 
@@ -33,15 +30,22 @@ describe('NfseCampinas', () => {
   });
 
   test('deve ler e converter o certificado PFX ao chamar getPemCert', async () => {
-    const mockCertResult = { key: 'mocked-key', cert: 'mocked-cert' };
-    const mockPfx = Buffer.from('mocked-pfx');
-    (fs.readFileSync as jest.Mock).mockReturnValue(mockPfx);
-    (pem.readPkcs12 as jest.Mock).mockImplementation((_, __, callback) => {
-      callback(null, mockCertResult);
+    const mockKey = { mocked: 'key' };
+    const mockCert = { mocked: 'cert' };
+
+    (forge.asn1.fromDer as jest.Mock).mockReturnValue('mocked-asn1');
+    (forge.pkcs12.pkcs12FromAsn1 as jest.Mock).mockReturnValue({
+      getBags: jest.fn(({ bagType }) => ({
+        [bagType]: bagType === forge.pki.oids.certBag ? [{ cert: mockCert }] : [{ key: mockKey }],
+      })),
     });
+    (forge.pki.privateKeyToPem as jest.Mock).mockReturnValue('mocked-key-pem');
+    (forge.pki.certificateToPem as jest.Mock).mockReturnValue('mocked-cert-pem');
 
     const pemCert = await instance['getPemCert']();
-    expect(pemCert).toBe(mockCertResult);
+    expect(forge.asn1.fromDer).toHaveBeenCalledWith(mockCertificate.toString('binary'));
+    expect(forge.pkcs12.pkcs12FromAsn1).toHaveBeenCalledWith('mocked-asn1', false, mockCertPassword);
+    expect(pemCert).toEqual({ key: 'mocked-key-pem', cert: 'mocked-cert-pem' });
   });
 
   test('deve assinar XML corretamente ao chamar getSignedXml', () => {
@@ -56,7 +60,7 @@ describe('NfseCampinas', () => {
     };
     jest.mocked(SignedXml).mockImplementation(() => mockSigInstance as unknown as SignedXml);
 
-    const signedXml = instance['getSignedXml'](mockXml, {}, {}, mockPemCert as Pkcs12ReadResult);
+    const signedXml = instance['getSignedXml'](mockXml, {}, {}, mockPemCert);
 
     expect(SignedXml).toHaveBeenCalledWith({
       privateKey: mockPemCert.key,
@@ -93,7 +97,7 @@ describe('NfseCampinas', () => {
     test('deve retornar um Buffer quando a requisição for bem sucedida', async () => {
       // Arrange
       const mockPdfContent = new Uint8Array([1, 2, 3, 4]);
-      const expectedUrlString = `${mockHost}/servico/notafiscal/autenticacao/cpfCnpj/${mockParams.cnpj}/inscricaoMunicipal/${mockParams.inscricaoMunicipal}/numeroNota/${mockParams.numeroNfse}/codigoVerificacao/${mockParams.codigoVerificacao}`;
+      const expectedUrlString = `${mockHost}/notafiscal-ws/servico/notafiscal/autenticacao/cpfCnpj/${mockParams.cnpj}/inscricaoMunicipal/${mockParams.inscricaoMunicipal}/numeroNota/${mockParams.numeroNfse}/codigoVerificacao/${mockParams.codigoVerificacao}`;
       const expectedOptions = {
         method: 'GET',
         headers: { 'Accept': 'application/pdf' },

@@ -1,4 +1,4 @@
-import pem from 'pem';
+import forge from 'node-forge';
 import { SignedXml } from 'xml-crypto';
 import {
   createClientAsync,
@@ -18,6 +18,11 @@ import { ImprimirNfseRequest, ReferenceOptions } from '../types/nfseCampinas';
 import { ComputeSignatureOptions } from 'xml-crypto/lib/types';
 import { XMLParser } from 'fast-xml-parser';
 import xmlbuilder from 'xmlbuilder';
+
+type PemCert = {
+  key: string;
+  cert: string;
+};
 
 export class NfseCampinas {
   readonly defaultOptions: ReferenceOptions = {
@@ -354,7 +359,7 @@ export class NfseCampinas {
     xml: string,
     computeOptions: ComputeSignatureOptions,
     referenceOptions: ReferenceOptions,
-    pemCert: pem.Pkcs12ReadResult,
+    pemCert: PemCert,
   ) {
     const sig = new SignedXml({
       privateKey: pemCert.key,
@@ -412,13 +417,33 @@ export class NfseCampinas {
     }
   }
 
-  private async getPemCert(): Promise<pem.Pkcs12ReadResult> {
-    return await new Promise((resolve, reject) => {
-      pem.readPkcs12(this.certificate, { p12Password: this.certPassword }, (err, cert) => {
-        if (err) reject(err);
-        else resolve(cert);
-      });
-    });
+  private async getPemCert(): Promise<PemCert> {
+    try {
+      const p12Asn1 = forge.asn1.fromDer(this.certificate.toString('binary'));
+      const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, false, this.certPassword);
+
+      const keyBags = [
+        ...(p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })[forge.pki.oids.pkcs8ShroudedKeyBag] ?? []),
+        ...(p12.getBags({ bagType: forge.pki.oids.keyBag })[forge.pki.oids.keyBag] ?? []),
+      ];
+      const certBags = p12.getBags({ bagType: forge.pki.oids.certBag })[forge.pki.oids.certBag] ?? [];
+
+      const key = keyBags.find((bag) => bag.key)?.key;
+      const cert = certBags.find((bag) => bag.cert)?.cert;
+
+      if (!key || !cert) {
+        throw new Error('Certificado PFX não contém chave privada e certificado válidos');
+      }
+
+      return {
+        key: forge.pki.privateKeyToPem(key),
+        cert: forge.pki.certificateToPem(cert),
+      };
+    } catch (error) {
+      throw new Error(
+        `Falha ao converter certificado PFX: ${error instanceof Error ? error.message : 'erro desconhecido'}`,
+      );
+    }
   }
 
   private async getSoapClient() {
