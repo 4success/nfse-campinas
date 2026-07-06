@@ -1,0 +1,110 @@
+import { isIsoDate, isIsoDateTimeWithTimezone } from '../utils/dates';
+import { ValidationIssue } from '../errors/ValidationError';
+import { DpsInput } from './types';
+import {
+  normalizeCodigoTributacaoMunicipal,
+  normalizeCodigoTributacaoNacional,
+  normalizeNbs,
+  onlyDigits,
+} from './normalize';
+
+function pushIssue(
+  issues: ValidationIssue[],
+  field: string,
+  message: string,
+  severity: ValidationIssue['severity'] = 'error',
+) {
+  issues.push({ field, message, severity });
+}
+
+function hasCpfOrCnpj(entity: { cpf?: string; cnpj?: string } | undefined, field: string, issues: ValidationIssue[]) {
+  if (!entity) {
+    pushIssue(issues, field, 'grupo obrigatório');
+    return;
+  }
+
+  const cpf = entity.cpf ? onlyDigits(entity.cpf) : undefined;
+  const cnpj = entity.cnpj ? onlyDigits(entity.cnpj) : undefined;
+
+  if (!cpf && !cnpj) {
+    pushIssue(issues, field, 'informe CPF ou CNPJ');
+  }
+  if (cpf && cpf.length !== 11) {
+    pushIssue(issues, `${field}.cpf`, 'CPF deve ter 11 dígitos');
+  }
+  if (cnpj && cnpj.length !== 14) {
+    pushIssue(issues, `${field}.cnpj`, 'CNPJ deve ter 14 dígitos');
+  }
+}
+
+export function ambienteToTpAmb(ambiente: DpsInput['ambiente']): 1 | 2 {
+  if (ambiente === 'producao' || ambiente === 1) {
+    return 1;
+  }
+  return 2;
+}
+
+export function validateDpsInput(input: DpsInput): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const dhEmi = input.dataHoraEmissao instanceof Date ? input.dataHoraEmissao.toISOString() : input.dataHoraEmissao;
+  const dCompet =
+    input.dataCompetencia instanceof Date ? input.dataCompetencia.toISOString().slice(0, 10) : input.dataCompetencia;
+
+  if (![1, 2, 'homologacao', 'producao', undefined].includes(input.ambiente)) {
+    pushIssue(issues, 'ambiente', 'ambiente deve ser 1, 2, homologacao ou producao');
+  }
+  if (!isIsoDateTimeWithTimezone(dhEmi)) {
+    pushIssue(issues, 'dataHoraEmissao', 'deve estar em ISO 8601 com timezone');
+  }
+  if (!isIsoDate(dCompet)) {
+    pushIssue(issues, 'dataCompetencia', 'deve estar em YYYY-MM-DD');
+  }
+  if (!/^\d{7}$/.test(onlyDigits(input.municipioEmissao))) {
+    pushIssue(issues, 'municipioEmissao', 'deve ter 7 dígitos');
+  }
+
+  hasCpfOrCnpj(input.prestador, 'prestador', issues);
+
+  if (!input.servico) {
+    pushIssue(issues, 'servico', 'grupo obrigatório');
+  } else {
+    if (!/^\d{7}$/.test(onlyDigits(input.servico.municipioPrestacao))) {
+      pushIssue(issues, 'servico.municipioPrestacao', 'deve ter 7 dígitos');
+    }
+    try {
+      if (!/^\d{6}$/.test(normalizeCodigoTributacaoNacional(input.servico.codigoTributacaoNacional || ''))) {
+        pushIssue(issues, 'servico.codigoTributacaoNacional', 'deve ter 6 dígitos');
+      }
+    } catch (error) {
+      pushIssue(issues, 'servico.codigoTributacaoNacional', (error as Error).message);
+    }
+    if (input.servico.codigoTributacaoMunicipal) {
+      try {
+        normalizeCodigoTributacaoMunicipal(input.servico.codigoTributacaoMunicipal);
+      } catch (error) {
+        pushIssue(issues, 'servico.codigoTributacaoMunicipal', (error as Error).message);
+      }
+    }
+    if (input.servico.codigoNbs && !/^\d{9}$/.test(normalizeNbs(input.servico.codigoNbs))) {
+      pushIssue(issues, 'servico.codigoNbs', 'deve ter 9 dígitos', 'warning');
+    }
+    if (!input.servico.descricao) {
+      pushIssue(issues, 'servico.descricao', 'descrição obrigatória');
+    }
+  }
+
+  if (!input.valores || input.valores.valorServico === undefined) {
+    pushIssue(issues, 'valores.valorServico', 'valor do serviço obrigatório');
+  }
+
+  if (input.ibsCbs) {
+    if (!/^\d+$/.test(onlyDigits(input.ibsCbs.codigoIndicadorOperacao))) {
+      pushIssue(issues, 'ibsCbs.codigoIndicadorOperacao', 'deve conter dígitos');
+    }
+    if (!/^\d+$/.test(onlyDigits(input.ibsCbs.classificacaoTributaria))) {
+      pushIssue(issues, 'ibsCbs.classificacaoTributaria', 'deve conter dígitos');
+    }
+  }
+
+  return issues;
+}

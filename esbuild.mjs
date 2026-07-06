@@ -2,7 +2,7 @@ import glob from 'glob';
 import { build } from 'esbuild';
 
 build({
-  entryPoints: glob.sync('./src/**/*.ts'),
+  entryPoints: ['./src/index.ts', ...glob.sync('./src/v3/**/*.ts')],
   bundle: true,
   minify: true,
   platform: 'node',
