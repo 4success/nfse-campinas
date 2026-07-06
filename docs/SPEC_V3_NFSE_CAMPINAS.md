@@ -827,7 +827,7 @@ docs/references/v3/domains/
 E script opcional:
 
 ```bash
-yarn docs:sync-v3
+pnpm docs:sync-v3
 ```
 
 O script pode baixar e armazenar:
@@ -857,10 +857,10 @@ Não chamar esses sites automaticamente no SDK.
 Manter comandos do `AGENTS.md` atual:
 
 ```bash
-yarn build
-yarn test
-yarn lint
-yarn format
+pnpm build
+pnpm test
+pnpm lint
+pnpm format
 ```
 
 ### 13.2. Testes unitários
@@ -929,7 +929,7 @@ NFSE_CAMPINAS_RUN_INTEGRATION=1 \
 NFSE_CAMPINAS_CERT_PATH=./cert.pfx \
 NFSE_CAMPINAS_CERT_PASSWORD=... \
 NFSE_CAMPINAS_CNPJ=... \
-yarn test -- src/__tests__/v3/integration/enviar-dps-homologacao.test.ts
+pnpm test -- src/__tests__/v3/integration/enviar-dps-homologacao.test.ts
 ```
 
 O teste deve:
@@ -1021,7 +1021,7 @@ Aceite:
 
 - Branch v2 preservada.
 - `docs/references/v3/README.md` criado.
-- `yarn test` ainda passa antes das mudanças funcionais.
+- `pnpm test` ainda passa antes das mudanças funcionais.
 
 ### Agente 1 — Tipos, normalização e Id DPS
 
@@ -1129,7 +1129,7 @@ Tarefas:
 2. Criar docs v3.
 3. Atualizar `package.json` para `3.0.0`.
 4. Atualizar keywords/description.
-5. Rodar `yarn format`, `yarn lint`, `yarn test`, `yarn build`.
+5. Rodar `pnpm format`, `pnpm lint`, `pnpm test`, `pnpm build`.
 6. Criar changelog.
 
 Aceite:
@@ -1147,9 +1147,9 @@ A release só pode ser considerada pronta quando todos estes itens forem verdade
 
 - [ ] Branch/tag v2 preservada.
 - [ ] `package.json` versão `3.0.0`.
-- [ ] `yarn build` passa.
-- [ ] `yarn test` passa.
-- [ ] `yarn lint` passa ou a regra legada foi ajustada de forma documentada.
+- [ ] `pnpm build` passa.
+- [ ] `pnpm test` passa.
+- [ ] `pnpm lint` passa ou a regra legada foi ajustada de forma documentada.
 - [ ] README informa que v3 é Padrão Nacional/DPS.
 - [ ] README informa que v2 é ABRASF 2.03.
 - [ ] Homologação endpoint configurado.
@@ -1204,4 +1204,3 @@ Sem endpoint municipal publicado, a v3.0.0 não consegue recuperar automaticamen
 8. POST no endpoint de homologação.
 9. Salvar request e response.
 10. Se rejeitar assinatura, testar a alternância `idAttributeTarget: 'DPS'` vs `'infDPS'` e namespace ligado/desligado, sempre comparando com XSD.
-

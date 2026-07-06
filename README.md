@@ -9,7 +9,7 @@ A versão `3.x` não usa mais ABRASF 2.03, RPS, SOAP ou WSDL. A API pública pas
 Para continuar usando ABRASF 2.03, instale a linha anterior:
 
 ```bash
-yarn add @4success/nfse-campinas@^2
+pnpm add @4success/nfse-campinas@^2
 ```
 
 Para DSFNET legacy, use a linha `1.x`.
@@ -17,7 +17,7 @@ Para DSFNET legacy, use a linha `1.x`.
 ## Instalação
 
 ```bash
-yarn add @4success/nfse-campinas
+pnpm add @4success/nfse-campinas
 ```
 
 ## Status dos Endpoints

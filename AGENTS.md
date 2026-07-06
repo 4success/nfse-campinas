@@ -2,11 +2,11 @@
 
 ## Commands
 
-- **Build**: `yarn build` - TypeScript compilation + esbuild bundling
-- **Test**: `yarn test` - Run all Jest tests
-- **Single test**: `yarn test -- path/to/test.test.ts` - Run specific test file
-- **Lint**: `yarn lint` - TSLint checking
-- **Format**: `yarn format` - Prettier formatting
+- **Build**: `pnpm build` - TypeScript compilation + esbuild bundling
+- **Test**: `pnpm test` - Run all Jest tests
+- **Single test**: `pnpm test -- path/to/test.test.ts` - Run specific test file
+- **Lint**: `pnpm lint` - TSLint checking
+- **Format**: `pnpm format` - Prettier formatting
 
 ## Code Style Guidelines
 
@@ -16,5 +16,5 @@
 - **Naming**: PascalCase for classes, camelCase for methods/variables, UPPER_SNAKE_CASE for constants
 - **Error handling**: Try-catch blocks with meaningful error messages, re-throw when appropriate
 - **Tests**: Jest with ts-jest, describe/it/test structure, mock external dependencies
-- **File structure**: Classes in `src/classes/`, types in `src/types/`, SOAP definitions in `src/soap/`
+- **File structure**: v3 implementation in `src/v3/`, public exports in `src/index.ts`
 - **Comments**: Portuguese comments for business logic, English for technical documentation
