@@ -1,4 +1,4 @@
-import { DpsInput } from '../../src/v3/dps/types';
+import { DpsInput } from '../src/dps/types';
 
 export const sampleDpsInput: DpsInput = {
   ambiente: 'homologacao',

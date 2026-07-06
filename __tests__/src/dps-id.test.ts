@@ -1,4 +1,4 @@
-import { buildDpsId } from '../../../src/v3/dps/buildDpsId';
+import { buildDpsId } from '../../src/dps/buildDpsId';
 
 describe('buildDpsId', () => {
   test('gera Id determinístico com CNPJ, série e número normalizados', () => {

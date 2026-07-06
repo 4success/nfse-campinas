@@ -19,7 +19,7 @@
     "postversion": "git push && git push --tags",
     "test": "jest",
     "build": "tsc --emitDeclarationOnly && node esbuild.mjs",
-    "format": "prettier --write \"src/index.ts\" \"src/v3/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json"
   },
   "files": [

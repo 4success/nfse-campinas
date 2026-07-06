@@ -1,7 +1,7 @@
 import nock from 'nock';
-import { CampinasDpsClient } from '../../../src/v3/client/CampinasDpsClient';
-import { HOMOLOGACAO_DPS_ENDPOINT, resolveDpsEndpoint } from '../../../src/v3/client/endpoints';
-import { MissingProductionEndpointError } from '../../../src/v3/errors/MissingProductionEndpointError';
+import { CampinasDpsClient } from '../../src/client/CampinasDpsClient';
+import { HOMOLOGACAO_DPS_ENDPOINT, resolveDpsEndpoint } from '../../src/client/endpoints';
+import { MissingProductionEndpointError } from '../../src/errors/MissingProductionEndpointError';
 
 describe('CampinasDpsClient', () => {
   afterEach(() => nock.cleanAll());

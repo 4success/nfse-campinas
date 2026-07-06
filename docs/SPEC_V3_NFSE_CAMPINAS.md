@@ -421,7 +421,7 @@ export type DpsInput = {
 };
 ```
 
-Detalhar em `src/v3/dps/types.ts` todos os subtipos, mesmo que inicialmente sejam amplos. Preferir union types e strings para códigos fiscais, pois muitos códigos têm zeros à esquerda.
+Detalhar em `src/dps/types.ts` todos os subtipos, mesmo que inicialmente sejam amplos. Preferir union types e strings para códigos fiscais, pois muitos códigos têm zeros à esquerda.
 
 ### 6.3. Código de Tributação Nacional, Código Municipal e NBS
 
@@ -1029,7 +1029,7 @@ Objetivo: criar fundação de tipos e validação.
 
 Tarefas:
 
-1. Criar `src/v3/dps/types.ts`.
+1. Criar `src/dps/types.ts`.
 2. Criar `normalize.ts` para CPF/CNPJ, códigos e dinheiro.
 3. Criar `buildDpsId.ts`.
 4. Criar `validators.ts`.

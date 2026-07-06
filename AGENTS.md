@@ -16,5 +16,5 @@
 - **Naming**: PascalCase for classes, camelCase for methods/variables, UPPER_SNAKE_CASE for constants
 - **Error handling**: Try-catch blocks with meaningful error messages, re-throw when appropriate
 - **Tests**: Jest with ts-jest, describe/it/test structure, mock external dependencies
-- **File structure**: v3 implementation in `src/v3/`, public exports in `src/index.ts`
+- **File structure**: implementation modules under `src/`, public exports in `src/index.ts`
 - **Comments**: Portuguese comments for business logic, English for technical documentation

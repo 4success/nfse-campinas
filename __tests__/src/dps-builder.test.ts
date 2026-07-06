@@ -1,10 +1,10 @@
-import { DpsXmlBuilder } from '../../../src/v3/dps/DpsXmlBuilder';
+import { DpsXmlBuilder } from '../../src/dps/DpsXmlBuilder';
 import {
   normalizeCodigoTributacaoMunicipal,
   normalizeCodigoTributacaoNacional,
   normalizeNbs,
-} from '../../../src/v3/dps/normalize';
-import { sampleDpsInput } from '../../../test-support/v3/fixtures';
+} from '../../src/dps/normalize';
+import { sampleDpsInput } from '../../test-support/fixtures';
 
 describe('DpsXmlBuilder', () => {
   test('gera XML DPS v1.01 em ordem determinística', () => {

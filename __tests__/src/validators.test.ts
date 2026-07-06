@@ -1,5 +1,5 @@
-import { validateDpsInput } from '../../../src/v3/dps/validators';
-import { sampleDpsInput } from '../../../test-support/v3/fixtures';
+import { validateDpsInput } from '../../src/dps/validators';
+import { sampleDpsInput } from '../../test-support/fixtures';
 
 describe('validateDpsInput', () => {
   test('aceita fixture mínima válida', () => {

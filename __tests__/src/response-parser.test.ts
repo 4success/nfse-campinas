@@ -1,4 +1,4 @@
-import { parseEnviarDpsResponse } from '../../../src/v3/client/responseParser';
+import { parseEnviarDpsResponse } from '../../src/client/responseParser';
 
 describe('parseEnviarDpsResponse', () => {
   test('interpreta resposta XML de sucesso preservando bruto', () => {

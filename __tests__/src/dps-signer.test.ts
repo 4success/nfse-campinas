@@ -1,6 +1,6 @@
 import { SignedXml } from 'xml-crypto';
-import { PfxCertificate } from '../../../src/v3/certificate/PfxCertificate';
-import { DpsSigner } from '../../../src/v3/signature/DpsSigner';
+import { PfxCertificate } from '../../src/certificate/PfxCertificate';
+import { DpsSigner } from '../../src/signature/DpsSigner';
 
 jest.mock('xml-crypto');
 

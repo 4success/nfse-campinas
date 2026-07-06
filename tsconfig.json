@@ -9,7 +9,7 @@
   },
   "include": [
     "src/index.ts",
-    "src/v3/**/*.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",
