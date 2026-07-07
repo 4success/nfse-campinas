@@ -45,6 +45,32 @@ describe('DpsSigner', () => {
     expect(signedXml).toContain('<Signature>');
   });
 
+  test.each([
+    ['aspas simples', "<DPS versao='1.01'><infDPS Id='DPS350950221234567800019900001000000000000001'></infDPS></DPS>"],
+    [
+      'prefixo namespace',
+      '<nfse:DPS versao="1.01"><nfse:infDPS Id="DPS350950221234567800019900001000000000000001"></nfse:infDPS></nfse:DPS>',
+    ],
+  ])('extrai Id ao assinar XML externo com %s', (_caseName, xml) => {
+    const certificate = { toPem: () => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }) } as PfxCertificate;
+    const sigInstance = {
+      addReference: jest.fn(),
+      computeSignature: jest.fn(),
+      getSignedXml: jest.fn().mockReturnValue('<DPS><infDPS></infDPS><Signature></Signature></DPS>'),
+    };
+
+    jest.mocked(SignedXml).mockImplementation(() => sigInstance as unknown as SignedXml);
+
+    new DpsSigner(certificate).sign(xml);
+
+    expect(sigInstance.addReference).toHaveBeenCalledWith(
+      expect.objectContaining({
+        xpath: "//*[local-name(.)='infDPS' and @Id='DPS350950221234567800019900001000000000000001']",
+        uri: '#DPS350950221234567800019900001000000000000001',
+      }),
+    );
+  });
+
   test('verifica assinatura com prefixo ds', () => {
     const xml = '<DPS><infDPS Id="DPS1"></infDPS><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"></ds:Signature></DPS>';
     const certificate = { toPem: () => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }) } as PfxCertificate;

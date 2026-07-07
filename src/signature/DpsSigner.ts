@@ -56,11 +56,13 @@ export class DpsSigner {
 
   private extractId(xml: string, options: DpsSignatureOptions): string {
     const targetMatch = xml.match(
-      new RegExp(`<${options.idAttributeTarget}[^>]*\\s${options.idAttributeName}="([^"]+)"`),
+      new RegExp(
+        `<(?:[A-Za-z_][\\w.-]*:)?${options.idAttributeTarget}\\b[^>]*\\s${options.idAttributeName}\\s*=\\s*(["'])([^"']+)\\1`,
+      ),
     );
     if (!targetMatch) {
       throw new Error(`XML da DPS não contém ${options.idAttributeName} em ${options.idAttributeTarget}`);
     }
-    return targetMatch[1];
+    return targetMatch[2];
   }
 }
