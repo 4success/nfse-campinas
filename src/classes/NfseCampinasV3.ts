@@ -54,12 +54,12 @@ export class NfseCampinasV3 {
 
   async enviarDps(input: DpsInput | string, options: EnviarDpsOptions = {}): Promise<EnviarDpsResult> {
     const built = typeof input === 'string' ? undefined : this.buildDpsXmlWithId(input);
+    const endpoint = resolveDpsEndpoint(built?.environment || this.environment, this.options.endpoints);
     const signedXml =
       typeof input === 'string'
         ? input
         : await this.signDpsXml(built!.xml, { idAttributeTarget: built!.idAttributeTarget });
     const idDps = built?.idDps || this.extractIdDpsFromSignedXml(signedXml);
-    const endpoint = resolveDpsEndpoint(built?.environment || this.environment, this.options.endpoints);
     const clientCertificate = this.certificate.toPem();
     const client = new CampinasDpsClient({
       endpoint,

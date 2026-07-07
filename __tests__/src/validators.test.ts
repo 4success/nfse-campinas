@@ -130,6 +130,15 @@ describe('validateDpsInput', () => {
     expect(issues.map((issue) => issue.field)).toEqual(expect.arrayContaining(['serie', 'numeroDps']));
   });
 
+  test.each([undefined, null, ''])('rejeita tipoEmitente obrigatório: %s', (tipoEmitente) => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      tipoEmitente: tipoEmitente as any,
+    });
+
+    expect(issues.map((issue) => issue.field)).toContain('tipoEmitente');
+  });
+
   test('rejeita idDps manual com formato inválido', () => {
     const issues = validateDpsInput({ ...sampleDpsInput, idDps: 'ABC' });
 

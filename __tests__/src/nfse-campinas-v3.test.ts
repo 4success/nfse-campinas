@@ -52,6 +52,7 @@ describe('NfseCampinasV3', () => {
     await expect(nfse.enviarDps({ ...sampleDpsInput, ambiente: 'producao' })).rejects.toThrow(
       MissingProductionEndpointError,
     );
+    expect(DpsSigner).not.toHaveBeenCalled();
   });
 
   test('rejeita ambiente inválido informado na DPS', async () => {

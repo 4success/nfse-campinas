@@ -105,4 +105,13 @@ describe('DpsXmlBuilder', () => {
       }),
     ).toThrow('DPS inválida');
   });
+
+  test('bloqueia tipoEmitente ausente antes de gerar XML', () => {
+    expect(() =>
+      new DpsXmlBuilder().build({
+        ...sampleDpsInput,
+        tipoEmitente: undefined as any,
+      }),
+    ).toThrow('DPS inválida');
+  });
 });

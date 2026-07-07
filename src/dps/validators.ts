@@ -141,6 +141,10 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
   if (![1, 2, 'homologacao', 'producao', undefined].includes(input.ambiente)) {
     pushIssue(issues, 'ambiente', 'ambiente deve ser 1, 2, homologacao ou producao');
   }
+  const tipoEmitente = input.tipoEmitente as unknown;
+  if (tipoEmitente === undefined || tipoEmitente === null || tipoEmitente === '') {
+    pushIssue(issues, 'tipoEmitente', 'tipo de emitente obrigatório');
+  }
   validateIdDpsWhenPresent(input, issues);
   try {
     normalizeSerie(input.serie);
