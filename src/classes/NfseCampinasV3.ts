@@ -132,10 +132,13 @@ export class NfseCampinasV3 {
   }
 
   private extractIdDpsFromSignedXml(xml: string): string {
-    const match = xml.match(/\sId="(DPS[^"]+)"/) || xml.match(/<Reference[^>]+URI="#(DPS[^"]+)"/);
-    if (!match) {
+    const idMatch = xml.match(/\sId=(["'])(DPS[^"']+)\1/);
+    const referenceMatch = xml.match(/<Reference[^>]+URI=(["'])#(DPS[^"']+)\1/);
+    const idDps = idMatch?.[2] || referenceMatch?.[2];
+
+    if (!idDps) {
       throw new Error('XML assinado não contém Id da DPS');
     }
-    return match[1];
+    return idDps;
   }
 }

@@ -19,6 +19,8 @@ jest.mock('../../src/signature/DpsSigner', () => ({
 }));
 
 describe('NfseCampinasV3', () => {
+  const externalSignedDpsId = 'DPS350950221234567800019900001000000000000001';
+
   afterEach(() => {
     nock.cleanAll();
     jest.clearAllMocks();
@@ -76,6 +78,27 @@ describe('NfseCampinasV3', () => {
 
     const signer = jest.mocked(DpsSigner).mock.results[0].value as { sign: jest.Mock };
     expect(signer.sign).toHaveBeenCalledWith(expect.stringContaining('<DPS'), { idAttributeTarget: 'DPS' });
+    expect(scope.isDone()).toBe(true);
+  });
+
+  test.each([
+    ['Id', `<DPS><infDPS Id='${externalSignedDpsId}'></infDPS></DPS>`],
+    [
+      'Reference URI',
+      `<DPS><infDPS></infDPS><Signature><SignedInfo><Reference URI='#${externalSignedDpsId}'></Reference></SignedInfo></Signature></DPS>`,
+    ],
+  ])('envia XML assinado externo com aspas simples em %s', async (_attribute, signedXml) => {
+    const scope = nock('https://campinas.local').post('/dps').reply(200, '<ret>ok</ret>');
+    const nfse = new NfseCampinasV3({
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      endpoints: { dps: 'https://campinas.local/dps' },
+      transport: { useClientCertificate: false },
+    });
+
+    const result = await nfse.enviarDps(signedXml);
+
+    expect(result.idDps).toBe(externalSignedDpsId);
     expect(scope.isDone()).toBe(true);
   });
 });
