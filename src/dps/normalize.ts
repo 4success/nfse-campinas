@@ -18,8 +18,8 @@ export function normalizeCodigoTributacaoNacional(value: string): string {
 
 export function normalizeCodigoTributacaoMunicipal(value: string | number): string {
   const digits = onlyDigits(value);
-  if (digits.length > 3) {
-    throw new Error('Código de tributação municipal deve ter até 3 dígitos');
+  if (!digits || digits.length > 3) {
+    throw new Error('Código de tributação municipal deve ter de 1 a 3 dígitos');
   }
   return digits.padStart(3, '0');
 }

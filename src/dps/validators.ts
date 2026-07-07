@@ -23,16 +23,31 @@ function hasCpfOrCnpj(entity: { cpf?: string; cnpj?: string } | undefined, field
     return;
   }
 
-  const cpf = entity.cpf ? onlyDigits(entity.cpf) : undefined;
-  const cnpj = entity.cnpj ? onlyDigits(entity.cnpj) : undefined;
+  validateCpfCnpjWhenPresent(entity, field, issues);
 
-  if (!cpf && !cnpj) {
+  if (!entity.cpf && !entity.cnpj) {
     pushIssue(issues, field, 'informe CPF ou CNPJ');
   }
-  if (cpf && cpf.length !== 11) {
+}
+
+function validateCpfCnpjWhenPresent(
+  entity: { cpf?: string; cnpj?: string } | undefined,
+  field: string,
+  issues: ValidationIssue[],
+) {
+  if (!entity) {
+    return;
+  }
+
+  const hasCpf = entity.cpf !== undefined && entity.cpf !== '';
+  const hasCnpj = entity.cnpj !== undefined && entity.cnpj !== '';
+  const cpf = hasCpf ? onlyDigits(entity.cpf!) : undefined;
+  const cnpj = hasCnpj ? onlyDigits(entity.cnpj!) : undefined;
+
+  if (hasCpf && cpf!.length !== 11) {
     pushIssue(issues, `${field}.cpf`, 'CPF deve ter 11 dígitos');
   }
-  if (cnpj && cnpj.length !== 14) {
+  if (hasCnpj && cnpj!.length !== 14) {
     pushIssue(issues, `${field}.cnpj`, 'CNPJ deve ter 14 dígitos');
   }
 }
@@ -64,6 +79,8 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
   }
 
   hasCpfOrCnpj(input.prestador, 'prestador', issues);
+  validateCpfCnpjWhenPresent(input.tomador, 'tomador', issues);
+  validateCpfCnpjWhenPresent(input.destinatario, 'destinatario', issues);
 
   if (!input.servico) {
     pushIssue(issues, 'servico', 'grupo obrigatório');
