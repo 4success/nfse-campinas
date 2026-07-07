@@ -29,7 +29,7 @@ export class PfxCertificate {
 
       this.pem = {
         privateKey: forge.pki.privateKeyToPem(key),
-        publicCert: forge.pki.certificateToPem(cert),
+        publicCert: this.buildCertificateChainPem(cert, certBags),
       };
 
       return this.pem;
@@ -69,6 +69,25 @@ export class PfxCertificate {
       return localKeyId.toString('hex');
     }
     return String(localKeyId);
+  }
+
+  private buildCertificateChainPem(leafCert: forge.pki.Certificate, certBags: forge.pkcs12.Bag[]): string {
+    const certificates = [
+      leafCert,
+      ...certBags
+        .map((bag) => bag.cert)
+        .filter((cert): cert is forge.pki.Certificate => Boolean(cert && cert !== leafCert)),
+    ];
+    const pems: string[] = [];
+
+    certificates.forEach((cert) => {
+      const pem = forge.pki.certificateToPem(cert);
+      if (!pems.includes(pem)) {
+        pems.push(pem);
+      }
+    });
+
+    return pems.join('');
   }
 
   private publicKeyMatchesPrivateKey(publicKey: forge.pki.PublicKey, privateKey: forge.pki.PrivateKey): boolean {

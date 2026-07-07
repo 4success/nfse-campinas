@@ -8,8 +8,24 @@ export function normalizeCpfCnpj(value: string): string {
   return onlyDigits(value);
 }
 
+function ensureOnlyDigitsAndDots(value: string | number, message: string): string {
+  const text = String(value);
+  if (!/^\d+(?:\.\d+)*$/.test(text)) {
+    throw new Error(message);
+  }
+  return onlyDigits(text);
+}
+
+function ensureOnlyDigits(value: string | number, message: string): string {
+  const text = String(value);
+  if (!/^\d+$/.test(text)) {
+    throw new Error(message);
+  }
+  return text;
+}
+
 export function normalizeCodigoTributacaoNacional(value: string): string {
-  const digits = onlyDigits(value);
+  const digits = ensureOnlyDigitsAndDots(value, 'Código de tributação nacional deve conter apenas dígitos e pontos');
   if (!digits || digits.length > 6) {
     throw new Error('Código de tributação nacional deve ter de 1 a 6 dígitos');
   }
@@ -29,7 +45,7 @@ export function normalizeNbs(value: string | number): string {
 }
 
 export function normalizeSerie(value: string | number): string {
-  const digits = onlyDigits(value);
+  const digits = ensureOnlyDigits(value, 'Série da DPS deve conter apenas dígitos');
   if (!digits || digits.length > 5) {
     throw new Error('Série da DPS deve ter de 1 a 5 dígitos');
   }
@@ -37,7 +53,7 @@ export function normalizeSerie(value: string | number): string {
 }
 
 export function normalizeNumeroDps(value: string | number): string {
-  const digits = onlyDigits(value);
+  const digits = ensureOnlyDigits(value, 'Número da DPS deve conter apenas dígitos');
   if (!digits || digits.length > 15) {
     throw new Error('Número da DPS deve ter de 1 a 15 dígitos');
   }

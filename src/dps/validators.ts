@@ -5,6 +5,8 @@ import {
   normalizeCodigoTributacaoMunicipal,
   normalizeCodigoTributacaoNacional,
   normalizeNbs,
+  normalizeNumeroDps,
+  normalizeSerie,
   onlyDigits,
 } from './normalize';
 
@@ -92,6 +94,16 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
   }
   if (input.idDps && !/^DPS\d{42}$/.test(input.idDps)) {
     pushIssue(issues, 'idDps', 'deve seguir o formato DPS + 42 dígitos');
+  }
+  try {
+    normalizeSerie(input.serie);
+  } catch (error) {
+    pushIssue(issues, 'serie', (error as Error).message);
+  }
+  try {
+    normalizeNumeroDps(input.numeroDps);
+  } catch (error) {
+    pushIssue(issues, 'numeroDps', (error as Error).message);
   }
   if (!isIsoDateTimeWithTimezone(dhEmi)) {
     pushIssue(issues, 'dataHoraEmissao', 'deve estar em ISO 8601 com timezone');

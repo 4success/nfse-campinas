@@ -68,6 +68,25 @@ describe('validateDpsInput', () => {
     expect(issues.map((issue) => issue.field)).toContain('servico.codigoTributacaoMunicipal');
   });
 
+  test('rejeita código nacional com caracteres que não são formatação', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      servico: { ...sampleDpsInput.servico, codigoTributacaoNacional: 'ABC010301' },
+    });
+
+    expect(issues.map((issue) => issue.field)).toContain('servico.codigoTributacaoNacional');
+  });
+
+  test('rejeita série e número DPS com caracteres não numéricos', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      serie: 'A1',
+      numeroDps: 'RPS10',
+    });
+
+    expect(issues.map((issue) => issue.field)).toEqual(expect.arrayContaining(['serie', 'numeroDps']));
+  });
+
   test('rejeita idDps manual com formato inválido', () => {
     const issues = validateDpsInput({ ...sampleDpsInput, idDps: 'ABC' });
 

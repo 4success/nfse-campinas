@@ -104,7 +104,7 @@ export class DpsXmlBuilder {
   build(input: DpsInput): BuildDpsXmlResult {
     const validationMode = input.validationMode || 'strict';
     const issues = validationMode === 'off' ? [] : validateDpsInput(input);
-    const errors = validationMode === 'strict' ? issues.filter((issue) => issue.severity === 'error') : [];
+    const errors = validationMode === 'off' ? [] : issues.filter((issue) => issue.severity === 'error');
 
     if (errors.length > 0) {
       throw new ValidationError(errors);

@@ -57,4 +57,24 @@ describe('DpsXmlBuilder', () => {
     expect(xml).toContain('<cIndOp>ABC100301</cIndOp>');
     expect(xml).toContain('<cClassTrib>ABC000001</cClassTrib>');
   });
+
+  test('modo warn ainda bloqueia erros estruturais', () => {
+    expect(() =>
+      new DpsXmlBuilder().build({
+        ...sampleDpsInput,
+        validationMode: 'warn',
+        dataHoraEmissao: '2026-13-40T99:99:99-03:00',
+      }),
+    ).toThrow('DPS inválida');
+  });
+
+  test('modo off permite pular validações locais', () => {
+    const { xml } = new DpsXmlBuilder().build({
+      ...sampleDpsInput,
+      validationMode: 'off',
+      dataHoraEmissao: '2026-13-40T99:99:99-03:00',
+    });
+
+    expect(xml).toContain('<dhEmi>2026-13-40T99:99:99-03:00</dhEmi>');
+  });
 });

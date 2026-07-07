@@ -39,8 +39,9 @@ describe('PfxCertificate', () => {
   test('seleciona o certificado correspondente à chave privada pelo localKeyId', () => {
     const pem = new PfxCertificate(Buffer.from('PFX'), 'secret').toPem();
 
-    expect(pem).toEqual({ privateKey: 'PRIVATE', publicCert: 'CERT:leaf' });
+    expect(pem).toEqual({ privateKey: 'PRIVATE', publicCert: 'CERT:leafCERT:intermediate' });
     expect(mockForge.pki.certificateToPem).toHaveBeenCalledWith(mockLeafCert);
+    expect(mockForge.pki.certificateToPem).toHaveBeenCalledWith(mockIntermediateCert);
   });
 });
 
