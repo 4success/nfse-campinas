@@ -12,6 +12,7 @@ export * from './certificate/PfxCertificate';
 export * from './signature/DpsSigner';
 export * from './signature/signatureTypes';
 export * from './signature/verifySignature';
+export * from './utils/nfseXml';
 export * from './errors/NfseCampinasV3Error';
 export * from './errors/ValidationError';
 export * from './errors/MissingProductionEndpointError';

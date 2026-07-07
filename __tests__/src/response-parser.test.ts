@@ -1,4 +1,6 @@
+import { gzipSync } from 'zlib';
 import { parseEnviarDpsResponse } from '../../src/client/responseParser';
+import { decodeNfseXmlGZipB64 } from '../../src/utils/nfseXml';
 
 describe('parseEnviarDpsResponse', () => {
   test('interpreta resposta XML de sucesso preservando bruto', () => {
@@ -15,6 +17,7 @@ describe('parseEnviarDpsResponse', () => {
     expect(result.chaveAcesso).toBe('abc');
     expect(result.numeroNfse).toBe('10');
     expect(result.rawResponse).toContain('<ret>');
+    expect(result.parsedResponse).toEqual({ ret: { chaveAcesso: 'abc', numeroNfse: '10' } });
   });
 
   test('interpreta campos e mensagens em XML com namespace', () => {
@@ -89,15 +92,20 @@ describe('parseEnviarDpsResponse', () => {
   });
 
   test('interpreta sucesso por campos estruturados nacionais', () => {
+    const nfseXml = '<NFSe><infNFSe><nNFSe>10</nNFSe></infNFSe></NFSe>';
+    const nfseXmlGZipB64 = gzipSync(Buffer.from(nfseXml, 'utf8')).toString('base64');
     const result = parseEnviarDpsResponse({
       idDps: 'DPS1',
       signedXml: '<DPS/>',
       rawRequest: '<DPS/>',
-      rawResponse: '{"cStat":"100","nfseXmlGZipB64":"abc"}',
+      rawResponse: JSON.stringify({ cStat: '100', nfseXmlGZipB64, campoNovoPrefeitura: 'valor' }),
       httpStatus: 200,
       headers: {},
     });
 
     expect(result.status).toBe('autorizada');
+    expect(result.nfseXmlGZipB64).toBe(nfseXmlGZipB64);
+    expect(decodeNfseXmlGZipB64(result.nfseXmlGZipB64!)).toBe(nfseXml);
+    expect(result.parsedResponse).toEqual({ cStat: '100', nfseXmlGZipB64, campoNovoPrefeitura: 'valor' });
   });
 });

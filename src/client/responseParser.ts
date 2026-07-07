@@ -12,7 +12,9 @@ export type EnviarDpsResult = {
   chaveAcesso?: string;
   numeroNfse?: string;
   codigoVerificacao?: string;
+  nfseXmlGZipB64?: string;
   mensagens: EnviarDpsMessage[];
+  parsedResponse: unknown;
   signedXml: string;
   rawRequest: string;
   rawResponse: string;
@@ -129,7 +131,7 @@ export function parseEnviarDpsResponse(input: ParseEnviarDpsResponseInput): Envi
   const chaveAcesso = asString(findFirstByKey(parsed, ['chaveAcesso', 'chNFSe', 'ChaveAcesso']));
   const numeroNfse = asString(findFirstByKey(parsed, ['numeroNfse', 'nNFSe', 'NumeroNfse']));
   const codigoVerificacao = asString(findFirstByKey(parsed, ['codigoVerificacao', 'cVerif', 'CodigoVerificacao']));
-  const nfseXmlGZipB64 = findFirstByKey(parsed, ['nfseXmlGZipB64']);
+  const nfseXmlGZipB64 = asString(findFirstByKey(parsed, ['nfseXmlGZipB64']));
   const cStat = findFirstByKey(parsed, ['cStat']);
   const hasSuccessFields = Boolean(
     chaveAcesso || numeroNfse || codigoVerificacao || nfseXmlGZipB64 || isSuccessCStat(cStat),
@@ -151,7 +153,9 @@ export function parseEnviarDpsResponse(input: ParseEnviarDpsResponseInput): Envi
     chaveAcesso,
     numeroNfse,
     codigoVerificacao,
+    nfseXmlGZipB64,
     mensagens,
+    parsedResponse: parsed,
     signedXml: input.signedXml,
     rawRequest: input.rawRequest,
     rawResponse: input.rawResponse,

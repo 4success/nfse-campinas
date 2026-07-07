@@ -30,7 +30,7 @@ pnpm add @4success/nfse-campinas
 
 ```ts
 import fs from 'node:fs';
-import { NfseCampinas } from '@4success/nfse-campinas';
+import { decodeNfseXmlGZipB64, NfseCampinas } from '@4success/nfse-campinas';
 
 const nfse = new NfseCampinas({
   environment: 'homologacao',
@@ -79,7 +79,15 @@ const result = await nfse.enviarDps({
 console.log(result.status);
 console.log(result.idDps);
 console.log(result.rawResponse);
+
+if (result.nfseXmlGZipB64) {
+  const nfseXml = decodeNfseXmlGZipB64(result.nfseXmlGZipB64);
+  console.log(nfseXml);
+}
 ```
+
+`rawResponse` preserva a resposta original da Prefeitura, `parsedResponse` expõe o corpo parseado quando possível, e
+`nfseXmlGZipB64` traz o XML autorizado da NFSe compactado em GZip/Base64.
 
 ## Segurança
 
