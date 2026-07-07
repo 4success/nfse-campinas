@@ -43,4 +43,18 @@ describe('DpsXmlBuilder', () => {
     expect(xml).toContain('<DPS versao="1.01" xmlns="http://www.sped.fazenda.gov.br/nfse" Id="DPS');
     expect(xml).toContain('<infDPS>');
   });
+
+  test('emite códigos IBS/CBS exatamente como informados', () => {
+    const { xml } = new DpsXmlBuilder().build({
+      ...sampleDpsInput,
+      ibsCbs: {
+        ...sampleDpsInput.ibsCbs!,
+        codigoIndicadorOperacao: 'ABC100301',
+        classificacaoTributaria: 'ABC000001',
+      },
+    });
+
+    expect(xml).toContain('<cIndOp>ABC100301</cIndOp>');
+    expect(xml).toContain('<cClassTrib>ABC000001</cClassTrib>');
+  });
 });

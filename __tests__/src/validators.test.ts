@@ -32,6 +32,33 @@ describe('validateDpsInput', () => {
     );
   });
 
+  test('rejeita datas impossíveis e Date inválido', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      dataHoraEmissao: '2026-13-40T99:99:99-03:00',
+      dataCompetencia: '2026-02-30',
+    });
+    const invalidDateIssues = validateDpsInput({ ...sampleDpsInput, dataHoraEmissao: new Date('invalid') });
+
+    expect(issues.map((issue) => issue.field)).toEqual(expect.arrayContaining(['dataHoraEmissao', 'dataCompetencia']));
+    expect(invalidDateIssues.map((issue) => issue.field)).toContain('dataHoraEmissao');
+  });
+
+  test('não valida domínio nem normaliza códigos IBS/CBS', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      ibsCbs: {
+        ...sampleDpsInput.ibsCbs!,
+        codigoIndicadorOperacao: 'ABC100301',
+        classificacaoTributaria: 'ABC000001',
+      },
+    });
+
+    expect(issues.map((issue) => issue.field)).not.toEqual(
+      expect.arrayContaining(['ibsCbs.codigoIndicadorOperacao', 'ibsCbs.classificacaoTributaria']),
+    );
+  });
+
   test('rejeita código municipal sem dígitos em modo estrito', () => {
     const issues = validateDpsInput({
       ...sampleDpsInput,

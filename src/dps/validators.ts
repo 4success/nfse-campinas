@@ -74,9 +74,18 @@ export function ambienteToTpAmb(ambiente: DpsInput['ambiente']): 1 | 2 {
 
 export function validateDpsInput(input: DpsInput): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const dhEmi = input.dataHoraEmissao instanceof Date ? input.dataHoraEmissao.toISOString() : input.dataHoraEmissao;
+  const dhEmi =
+    input.dataHoraEmissao instanceof Date
+      ? Number.isNaN(input.dataHoraEmissao.getTime())
+        ? undefined
+        : input.dataHoraEmissao.toISOString()
+      : input.dataHoraEmissao;
   const dCompet =
-    input.dataCompetencia instanceof Date ? input.dataCompetencia.toISOString().slice(0, 10) : input.dataCompetencia;
+    input.dataCompetencia instanceof Date
+      ? Number.isNaN(input.dataCompetencia.getTime())
+        ? undefined
+        : input.dataCompetencia.toISOString().slice(0, 10)
+      : input.dataCompetencia;
 
   if (![1, 2, 'homologacao', 'producao', undefined].includes(input.ambiente)) {
     pushIssue(issues, 'ambiente', 'ambiente deve ser 1, 2, homologacao ou producao');
@@ -130,15 +139,6 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
 
   if (!input.valores || input.valores.valorServico === undefined) {
     pushIssue(issues, 'valores.valorServico', 'valor do serviço obrigatório');
-  }
-
-  if (input.ibsCbs) {
-    if (!/^\d+$/.test(onlyDigits(input.ibsCbs.codigoIndicadorOperacao))) {
-      pushIssue(issues, 'ibsCbs.codigoIndicadorOperacao', 'deve conter dígitos');
-    }
-    if (!/^\d+$/.test(onlyDigits(input.ibsCbs.classificacaoTributaria))) {
-      pushIssue(issues, 'ibsCbs.classificacaoTributaria', 'deve conter dígitos');
-    }
   }
 
   return issues;
