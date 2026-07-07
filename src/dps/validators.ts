@@ -68,6 +68,9 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
   if (![1, 2, 'homologacao', 'producao', undefined].includes(input.ambiente)) {
     pushIssue(issues, 'ambiente', 'ambiente deve ser 1, 2, homologacao ou producao');
   }
+  if (input.idDps && !/^DPS\d{42}$/.test(input.idDps)) {
+    pushIssue(issues, 'idDps', 'deve seguir o formato DPS + 42 dígitos');
+  }
   if (!isIsoDateTimeWithTimezone(dhEmi)) {
     pushIssue(issues, 'dataHoraEmissao', 'deve estar em ISO 8601 com timezone');
   }

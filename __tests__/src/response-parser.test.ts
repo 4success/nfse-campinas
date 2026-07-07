@@ -17,6 +17,32 @@ describe('parseEnviarDpsResponse', () => {
     expect(result.rawResponse).toContain('<ret>');
   });
 
+  test('interpreta campos e mensagens em XML com namespace', () => {
+    const result = parseEnviarDpsResponse({
+      idDps: 'DPS1',
+      signedXml: '<DPS/>',
+      rawRequest: '<DPS/>',
+      rawResponse: [
+        '<ns:ret xmlns:ns="urn:test">',
+        '<ns:chaveAcesso>abc</ns:chaveAcesso>',
+        '<ns:numeroNfse>10</ns:numeroNfse>',
+        '<ns:mensagem>',
+        '<ns:codigo>E1</ns:codigo>',
+        '<ns:descricao>Autorizada</ns:descricao>',
+        '<ns:campo>DPS</ns:campo>',
+        '</ns:mensagem>',
+        '</ns:ret>',
+      ].join(''),
+      httpStatus: 200,
+      headers: { 'content-type': 'application/xml' },
+    });
+
+    expect(result.status).toBe('autorizada');
+    expect(result.chaveAcesso).toBe('abc');
+    expect(result.numeroNfse).toBe('10');
+    expect(result.mensagens[0]).toEqual({ codigo: 'E1', descricao: 'Autorizada', campo: 'DPS' });
+  });
+
   test('interpreta rejeição JSON e erro HTTP', () => {
     const rejeicao = parseEnviarDpsResponse({
       idDps: 'DPS1',

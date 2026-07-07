@@ -38,4 +38,10 @@ describe('validateDpsInput', () => {
 
     expect(issues.map((issue) => issue.field)).toContain('servico.codigoTributacaoMunicipal');
   });
+
+  test('rejeita idDps manual com formato inválido', () => {
+    const issues = validateDpsInput({ ...sampleDpsInput, idDps: 'ABC' });
+
+    expect(issues.map((issue) => issue.field)).toContain('idDps');
+  });
 });

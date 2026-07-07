@@ -36,6 +36,19 @@ function asString(value: unknown): string | undefined {
   return String(value);
 }
 
+function localName(key: string): string {
+  return key.includes(':') ? key.slice(key.lastIndexOf(':') + 1) : key;
+}
+
+function getByKey(value: Record<string, unknown>, keys: string[]): unknown {
+  for (const key of Object.keys(value)) {
+    if (keys.includes(localName(key))) {
+      return value[key];
+    }
+  }
+  return undefined;
+}
+
 function findFirstByKey(value: unknown, keys: string[]): unknown {
   if (!value || typeof value !== 'object') {
     return undefined;
@@ -43,7 +56,7 @@ function findFirstByKey(value: unknown, keys: string[]): unknown {
 
   const record = value as Record<string, unknown>;
   for (const key of Object.keys(record)) {
-    if (keys.includes(key)) {
+    if (keys.includes(localName(key))) {
       return record[key];
     }
     const nested = findFirstByKey(record[key], keys);
@@ -67,12 +80,12 @@ function collectMessages(value: unknown): EnviarDpsMessage[] {
     }
 
     const record = node as Record<string, unknown>;
-    const descricao = record.descricao || record.xMotivo || record.mensagem || record.Message || record.message;
-    if (descricao) {
+    const descricao = getByKey(record, ['descricao', 'xMotivo', 'mensagem', 'Message', 'message']);
+    if (descricao && typeof descricao !== 'object') {
       messages.push({
-        codigo: asString(record.codigo || record.cStat || record.Code || record.code),
+        codigo: asString(getByKey(record, ['codigo', 'cStat', 'Code', 'code'])),
         descricao: String(descricao),
-        campo: asString(record.campo || record.field),
+        campo: asString(getByKey(record, ['campo', 'field'])),
       });
     }
     Object.keys(record).forEach((key) => walk(record[key]));
