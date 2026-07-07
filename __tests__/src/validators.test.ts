@@ -59,10 +59,10 @@ describe('validateDpsInput', () => {
     );
   });
 
-  test('rejeita código municipal sem dígitos em modo estrito', () => {
+  test.each(['ABC', 'ABC12', '-1'])('rejeita código municipal malformado em modo estrito: %s', (codigo) => {
     const issues = validateDpsInput({
       ...sampleDpsInput,
-      servico: { ...sampleDpsInput.servico, codigoTributacaoMunicipal: 'ABC' },
+      servico: { ...sampleDpsInput.servico, codigoTributacaoMunicipal: codigo },
     });
 
     expect(issues.map((issue) => issue.field)).toContain('servico.codigoTributacaoMunicipal');
