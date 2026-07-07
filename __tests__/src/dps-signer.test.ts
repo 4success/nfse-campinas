@@ -44,4 +44,21 @@ describe('DpsSigner', () => {
     });
     expect(signedXml).toContain('<Signature>');
   });
+
+  test('verifica assinatura com prefixo ds', () => {
+    const xml = '<DPS><infDPS Id="DPS1"></infDPS><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"></ds:Signature></DPS>';
+    const certificate = { toPem: () => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }) } as PfxCertificate;
+    const sigInstance = {
+      loadSignature: jest.fn(),
+      checkSignature: jest.fn().mockReturnValue(true),
+    };
+
+    jest.mocked(SignedXml).mockImplementation(() => sigInstance as unknown as SignedXml);
+
+    expect(new DpsSigner(certificate).verify(xml)).toBe(true);
+    expect(sigInstance.loadSignature).toHaveBeenCalledWith(
+      '<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"></ds:Signature>',
+    );
+    expect(sigInstance.checkSignature).toHaveBeenCalledWith(xml);
+  });
 });

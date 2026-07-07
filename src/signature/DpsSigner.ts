@@ -41,7 +41,7 @@ export class DpsSigner {
   }
 
   verify(xml: string): boolean {
-    const signatureMatch = xml.match(/<Signature[\s\S]*?<\/Signature>/);
+    const signatureMatch = xml.match(/<([A-Za-z_][\w.-]*:)?Signature\b[\s\S]*?<\/\1Signature>/);
     if (!signatureMatch) {
       return false;
     }
