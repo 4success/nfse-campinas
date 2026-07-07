@@ -34,6 +34,16 @@ describe('DpsXmlBuilder', () => {
     expect(xml).not.toContain('<dest>');
   });
 
+  test('emite CNPJ alfanumérico preservando letras', () => {
+    const { xml, idDps } = new DpsXmlBuilder().build({
+      ...sampleDpsInput,
+      prestador: { ...sampleDpsInput.prestador, cnpj: 'AB.345.678/0001-99' },
+    });
+
+    expect(idDps).toContain('AB345678000199');
+    expect(xml).toContain('<CNPJ>AB345678000199</CNPJ>');
+  });
+
   test('suporta Id no elemento DPS e namespace configurável', () => {
     const { xml } = new DpsXmlBuilder({ idAttributeTarget: 'DPS', namespace: 'http://www.sped.fazenda.gov.br/nfse' }).build({
       ...sampleDpsInput,

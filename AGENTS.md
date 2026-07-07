@@ -49,7 +49,8 @@
 - `serie`, `numeroDps`, and `codigoTributacaoMunicipal` accept only digits before padding; do not silently strip
   letters/signs.
 - `codigoTributacaoNacional` accepts digits and dot formatting like `01.03.01`; reject letters before normalization.
-- `idDps` override must match `DPS` + 42 digits.
+- CNPJ may be alphanumeric (`[A-Z0-9]{12}` + 2 numeric check digits); preserve uppercase letters in XML and DPS IDs.
+- `idDps` override must match the DPS structure, allowing alphanumeric CNPJ in the 14-character federal-inscription block.
 - Validate optional `tomador`/`destinatario` CPF/CNPJ and address municipality when supplied, but do not make optional
   parties mandatory.
 - `servico.codigoNbs` is only a warning when not 9 digits after normalization.

@@ -59,6 +59,38 @@ describe('validateDpsInput', () => {
     );
   });
 
+  test('aceita CNPJ alfanumérico válido', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      prestador: { ...sampleDpsInput.prestador, cnpj: 'AB.345.678/0001-99' },
+    });
+
+    expect(issues.map((issue) => issue.field)).not.toContain('prestador.cnpj');
+  });
+
+  test('rejeita CPF e CNPJ malformados antes de normalizar', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      prestador: { ...sampleDpsInput.prestador, cnpj: 'ABC12345678000199' },
+      tomador: { cpf: 'ABC12345678901' },
+    });
+
+    expect(issues.map((issue) => issue.field)).toEqual(expect.arrayContaining(['prestador.cnpj', 'tomador.cpf']));
+  });
+
+  test('rejeita municípios malformados antes de normalizar', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      municipioEmissao: 'ABC3509502',
+      tomador: { ...sampleDpsInput.tomador!, endereco: { ...sampleDpsInput.tomador!.endereco!, municipio: 'ABC3509502' } },
+      servico: { ...sampleDpsInput.servico, municipioPrestacao: 'ABC3509502' },
+    });
+
+    expect(issues.map((issue) => issue.field)).toEqual(
+      expect.arrayContaining(['municipioEmissao', 'tomador.endereco.municipio', 'servico.municipioPrestacao']),
+    );
+  });
+
   test.each(['ABC', 'ABC12', '-1'])('rejeita código municipal malformado em modo estrito: %s', (codigo) => {
     const issues = validateDpsInput({
       ...sampleDpsInput,

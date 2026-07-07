@@ -4,10 +4,12 @@ import { DpsInput } from './types';
 import {
   normalizeCodigoTributacaoMunicipal,
   normalizeCodigoTributacaoNacional,
+  normalizeCnpj,
+  normalizeCpf,
+  normalizeMunicipio,
   normalizeNbs,
   normalizeNumeroDps,
   normalizeSerie,
-  onlyDigits,
 } from './normalize';
 
 function pushIssue(
@@ -43,14 +45,20 @@ function validateCpfCnpjWhenPresent(
 
   const hasCpf = entity.cpf !== undefined && entity.cpf !== '';
   const hasCnpj = entity.cnpj !== undefined && entity.cnpj !== '';
-  const cpf = hasCpf ? onlyDigits(entity.cpf!) : undefined;
-  const cnpj = hasCnpj ? onlyDigits(entity.cnpj!) : undefined;
 
-  if (hasCpf && cpf!.length !== 11) {
-    pushIssue(issues, `${field}.cpf`, 'CPF deve ter 11 dígitos');
+  if (hasCpf) {
+    try {
+      normalizeCpf(entity.cpf!);
+    } catch (error) {
+      pushIssue(issues, `${field}.cpf`, (error as Error).message);
+    }
   }
-  if (hasCnpj && cnpj!.length !== 14) {
-    pushIssue(issues, `${field}.cnpj`, 'CNPJ deve ter 14 dígitos');
+  if (hasCnpj) {
+    try {
+      normalizeCnpj(entity.cnpj!);
+    } catch (error) {
+      pushIssue(issues, `${field}.cnpj`, (error as Error).message);
+    }
   }
 }
 
@@ -62,8 +70,10 @@ function validateEnderecoMunicipioWhenPresent(
   if (!entity?.endereco) {
     return;
   }
-  if (!/^\d{7}$/.test(onlyDigits(entity.endereco.municipio || ''))) {
-    pushIssue(issues, `${field}.endereco.municipio`, 'deve ter 7 dígitos');
+  try {
+    normalizeMunicipio(entity.endereco.municipio || '');
+  } catch (error) {
+    pushIssue(issues, `${field}.endereco.municipio`, (error as Error).message);
   }
 }
 
@@ -111,8 +121,10 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
   if (!isIsoDate(dCompet)) {
     pushIssue(issues, 'dataCompetencia', 'deve estar em YYYY-MM-DD');
   }
-  if (!/^\d{7}$/.test(onlyDigits(input.municipioEmissao))) {
-    pushIssue(issues, 'municipioEmissao', 'deve ter 7 dígitos');
+  try {
+    normalizeMunicipio(input.municipioEmissao);
+  } catch (error) {
+    pushIssue(issues, 'municipioEmissao', (error as Error).message);
   }
 
   hasCpfOrCnpj(input.prestador, 'prestador', issues);
@@ -124,8 +136,10 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
   if (!input.servico) {
     pushIssue(issues, 'servico', 'grupo obrigatório');
   } else {
-    if (!/^\d{7}$/.test(onlyDigits(input.servico.municipioPrestacao))) {
-      pushIssue(issues, 'servico.municipioPrestacao', 'deve ter 7 dígitos');
+    try {
+      normalizeMunicipio(input.servico.municipioPrestacao);
+    } catch (error) {
+      pushIssue(issues, 'servico.municipioPrestacao', (error as Error).message);
     }
     try {
       if (!/^\d{6}$/.test(normalizeCodigoTributacaoNacional(input.servico.codigoTributacaoNacional || ''))) {

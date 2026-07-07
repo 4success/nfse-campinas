@@ -3,7 +3,10 @@ import { buildDpsId } from './buildDpsId';
 import {
   normalizeCodigoTributacaoMunicipal,
   normalizeCodigoTributacaoNacional,
+  normalizeCnpj,
+  normalizeCpf,
   normalizeMoney,
+  normalizeMunicipio,
   normalizeNbs,
   normalizeNumeroDps,
   normalizeSerie,
@@ -33,11 +36,11 @@ function addText(parent: XMLElement, name: string, value: unknown): XMLElement |
 
 function addCpfCnpj(parent: XMLElement, entity: { cpf?: string; cnpj?: string }) {
   if (entity.cnpj) {
-    addText(parent, 'CNPJ', onlyDigits(entity.cnpj));
+    addText(parent, 'CNPJ', normalizeCnpj(entity.cnpj));
     return;
   }
   if (entity.cpf) {
-    addText(parent, 'CPF', onlyDigits(entity.cpf));
+    addText(parent, 'CPF', normalizeCpf(entity.cpf));
   }
 }
 
@@ -48,7 +51,7 @@ function addEndereco(parent: XMLElement, entity: TomadorDps) {
 
   const end = parent.ele('end');
   const endNac = end.ele('endNac');
-  addText(endNac, 'cMun', onlyDigits(entity.endereco.municipio));
+  addText(endNac, 'cMun', normalizeMunicipio(entity.endereco.municipio));
   addText(endNac, 'CEP', entity.endereco.cep ? onlyDigits(entity.endereco.cep) : undefined);
   addText(end, 'xLgr', entity.endereco.logradouro);
   addText(end, 'nro', entity.endereco.numero);
@@ -133,7 +136,7 @@ export class DpsXmlBuilder {
     addText(infDps, 'nDPS', normalizeNumeroDps(input.numeroDps));
     addText(infDps, 'dCompet', formatDpsDate(input.dataCompetencia));
     addText(infDps, 'tpEmit', input.tipoEmitente);
-    addText(infDps, 'cLocEmi', onlyDigits(input.municipioEmissao));
+    addText(infDps, 'cLocEmi', normalizeMunicipio(input.municipioEmissao));
 
     addPrestador(infDps, input.prestador);
     addTomador(infDps, 'toma', input.tomador);
@@ -141,7 +144,7 @@ export class DpsXmlBuilder {
 
     const serv = infDps.ele('serv');
     const locPrest = serv.ele('locPrest');
-    addText(locPrest, 'cLocPrestacao', onlyDigits(input.servico.municipioPrestacao));
+    addText(locPrest, 'cLocPrestacao', normalizeMunicipio(input.servico.municipioPrestacao));
     const cServ = serv.ele('cServ');
     addText(cServ, 'cTribNac', normalizeCodigoTributacaoNacional(input.servico.codigoTributacaoNacional));
     addText(

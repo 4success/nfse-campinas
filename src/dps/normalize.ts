@@ -4,8 +4,39 @@ export function onlyDigits(value: string | number): string {
   return String(value).replace(/\D/g, '');
 }
 
+export function normalizeCpf(value: string): string {
+  const text = String(value);
+  if (!/^\d{11}$/.test(text) && !/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(text)) {
+    throw new Error('CPF deve conter 11 dígitos ou estar no formato 000.000.000-00');
+  }
+  return onlyDigits(text);
+}
+
+export function normalizeCnpj(value: string): string {
+  const text = String(value);
+  if (/^[A-Z0-9]{12}\d{2}$/.test(text)) {
+    return text;
+  }
+  if (/^[A-Z0-9]{2}\.[A-Z0-9]{3}\.[A-Z0-9]{3}\/[A-Z0-9]{4}-\d{2}$/.test(text)) {
+    return text.replace(/[./-]/g, '');
+  }
+  throw new Error('CNPJ deve conter 14 caracteres alfanuméricos com 2 dígitos verificadores numéricos');
+}
+
 export function normalizeCpfCnpj(value: string): string {
-  return onlyDigits(value);
+  try {
+    return normalizeCpf(value);
+  } catch (error) {
+    return normalizeCnpj(value);
+  }
+}
+
+export function normalizeMunicipio(value: string): string {
+  const text = String(value);
+  if (!/^\d{7}$/.test(text)) {
+    throw new Error('Código do município deve ter 7 dígitos');
+  }
+  return text;
 }
 
 function ensureOnlyDigitsAndDots(value: string | number, message: string): string {

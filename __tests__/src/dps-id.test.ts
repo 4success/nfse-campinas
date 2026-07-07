@@ -14,6 +14,19 @@ describe('buildDpsId', () => {
     expect(id).toHaveLength(45);
   });
 
+  test('preserva CNPJ alfanumérico no Id da DPS', () => {
+    const id = buildDpsId({
+      codigoMunicipioEmissao: '3509502',
+      tipoInscricaoFederal: '2',
+      inscricaoFederal: 'AB.345.678/0001-99',
+      serie: 1,
+      numeroDps: 1,
+    });
+
+    expect(id).toBe(`DPS35095022AB34567800019900001000000000000001`);
+    expect(id).toHaveLength(45);
+  });
+
   test('preenche CPF à esquerda até 14 posições', () => {
     expect(
       buildDpsId({
@@ -35,7 +48,7 @@ describe('buildDpsId', () => {
         serie: 1,
         numeroDps: 1,
       }),
-    ).toThrow('CNPJ deve ter 14 dígitos');
+    ).toThrow('CNPJ deve conter 14 caracteres alfanuméricos');
 
     expect(() =>
       buildDpsId({
