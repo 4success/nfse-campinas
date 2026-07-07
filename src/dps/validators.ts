@@ -1,5 +1,6 @@
 import { isIsoDate, isIsoDateTimeWithTimezone } from '../utils/dates';
 import { ValidationIssue } from '../errors/ValidationError';
+import { buildDpsId } from './buildDpsId';
 import { DpsInput } from './types';
 import {
   normalizeCodigoTributacaoMunicipal,
@@ -48,6 +49,10 @@ function validateCpfCnpjWhenPresent(
   const hasCpf = entity.cpf !== undefined && entity.cpf !== '';
   const hasCnpj = entity.cnpj !== undefined && entity.cnpj !== '';
 
+  if (hasCpf && hasCnpj) {
+    pushIssue(issues, field, 'informe CPF ou CNPJ, não ambos');
+  }
+
   if (hasCpf) {
     try {
       normalizeCpf(entity.cpf!);
@@ -79,6 +84,38 @@ function validateEnderecoMunicipioWhenPresent(
   }
 }
 
+function validateIdDpsWhenPresent(input: DpsInput, issues: ValidationIssue[]) {
+  if (!input.idDps) {
+    return;
+  }
+  if (!DPS_ID_PATTERN.test(input.idDps)) {
+    pushIssue(issues, 'idDps', 'deve seguir o formato de Id da DPS');
+    return;
+  }
+
+  const hasCpf = input.prestador?.cpf !== undefined && input.prestador.cpf !== '';
+  const hasCnpj = input.prestador?.cnpj !== undefined && input.prestador.cnpj !== '';
+  if (hasCpf === hasCnpj) {
+    return;
+  }
+
+  try {
+    const expectedId = buildDpsId({
+      codigoMunicipioEmissao: input.municipioEmissao,
+      tipoInscricaoFederal: hasCnpj ? '2' : '1',
+      inscricaoFederal: hasCnpj ? input.prestador.cnpj! : input.prestador.cpf!,
+      serie: input.serie,
+      numeroDps: input.numeroDps,
+    });
+
+    if (input.idDps !== expectedId) {
+      pushIssue(issues, 'idDps', 'deve corresponder aos dados da DPS');
+    }
+  } catch (_error) {
+    return;
+  }
+}
+
 export function ambienteToTpAmb(ambiente: DpsInput['ambiente']): 1 | 2 {
   if (ambiente === 'producao' || ambiente === 1) {
     return 1;
@@ -104,9 +141,7 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
   if (![1, 2, 'homologacao', 'producao', undefined].includes(input.ambiente)) {
     pushIssue(issues, 'ambiente', 'ambiente deve ser 1, 2, homologacao ou producao');
   }
-  if (input.idDps && !DPS_ID_PATTERN.test(input.idDps)) {
-    pushIssue(issues, 'idDps', 'deve seguir o formato de Id da DPS');
-  }
+  validateIdDpsWhenPresent(input, issues);
   try {
     normalizeSerie(input.serie);
   } catch (error) {

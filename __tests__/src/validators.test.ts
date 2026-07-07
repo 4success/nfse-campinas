@@ -78,6 +78,17 @@ describe('validateDpsInput', () => {
     expect(issues.map((issue) => issue.field)).toEqual(expect.arrayContaining(['prestador.cnpj', 'tomador.cpf']));
   });
 
+  test('rejeita entidades com CPF e CNPJ simultâneos', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      prestador: { ...sampleDpsInput.prestador, cpf: '123.456.789-01' },
+      tomador: { ...sampleDpsInput.tomador!, cpf: '123.456.789-01' },
+      destinatario: { cpf: '123.456.789-01', cnpj: '12.345.678/0001-99' },
+    });
+
+    expect(issues.map((issue) => issue.field)).toEqual(expect.arrayContaining(['prestador', 'tomador', 'destinatario']));
+  });
+
   test('rejeita municípios malformados antes de normalizar', () => {
     const issues = validateDpsInput({
       ...sampleDpsInput,
@@ -128,10 +139,20 @@ describe('validateDpsInput', () => {
   test('aceita idDps manual com CNPJ alfanumérico', () => {
     const issues = validateDpsInput({
       ...sampleDpsInput,
+      prestador: { ...sampleDpsInput.prestador, cnpj: 'AB.345.678/0001-99' },
       idDps: 'DPS35095022AB34567800019900001000000000000001',
     });
 
     expect(issues.map((issue) => issue.field)).not.toContain('idDps');
+  });
+
+  test('rejeita idDps manual inconsistente com os dados da DPS', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      idDps: 'DPS350950221234567800019900001000000000000002',
+    });
+
+    expect(issues.map((issue) => issue.field)).toContain('idDps');
   });
 
   test('rejeita idDps manual com letras no bloco de CPF', () => {

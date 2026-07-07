@@ -87,4 +87,22 @@ describe('DpsXmlBuilder', () => {
 
     expect(xml).toContain('<dhEmi>2026-13-40T99:99:99-03:00</dhEmi>');
   });
+
+  test('bloqueia CPF e CNPJ simultâneos antes de gerar XML', () => {
+    expect(() =>
+      new DpsXmlBuilder().build({
+        ...sampleDpsInput,
+        prestador: { ...sampleDpsInput.prestador, cpf: '123.456.789-01' },
+      }),
+    ).toThrow('DPS inválida');
+  });
+
+  test('bloqueia idDps manual inconsistente antes de gerar XML', () => {
+    expect(() =>
+      new DpsXmlBuilder().build({
+        ...sampleDpsInput,
+        idDps: 'DPS350950221234567800019900001000000000000002',
+      }),
+    ).toThrow('DPS inválida');
+  });
 });
