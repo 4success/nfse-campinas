@@ -65,4 +65,39 @@ describe('parseEnviarDpsResponse', () => {
     expect(rejeicao.mensagens[0]).toEqual({ codigo: 'E1', descricao: 'DPS rejeitada', campo: 'cTribNac' });
     expect(erroHttp.status).toBe('erro_http');
   });
+
+  test('não classifica status por texto livre', () => {
+    const naoAutorizada = parseEnviarDpsResponse({
+      idDps: 'DPS1',
+      signedXml: '<DPS/>',
+      rawRequest: '<DPS/>',
+      rawResponse: 'DPS não autorizada',
+      httpStatus: 200,
+      headers: {},
+    });
+    const semSucesso = parseEnviarDpsResponse({
+      idDps: 'DPS1',
+      signedXml: '<DPS/>',
+      rawRequest: '<DPS/>',
+      rawResponse: 'processado sem sucesso',
+      httpStatus: 200,
+      headers: {},
+    });
+
+    expect(naoAutorizada.status).toBe('desconhecida');
+    expect(semSucesso.status).toBe('desconhecida');
+  });
+
+  test('interpreta sucesso por campos estruturados nacionais', () => {
+    const result = parseEnviarDpsResponse({
+      idDps: 'DPS1',
+      signedXml: '<DPS/>',
+      rawRequest: '<DPS/>',
+      rawResponse: '{"cStat":"100","nfseXmlGZipB64":"abc"}',
+      httpStatus: 200,
+      headers: {},
+    });
+
+    expect(result.status).toBe('autorizada');
+  });
 });

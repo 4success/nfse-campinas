@@ -12,8 +12,8 @@ describe('validateDpsInput', () => {
       dataHoraEmissao: '2026-06-30T21:41:28',
       municipioEmissao: '123',
       prestador: { cnpj: '123' },
-      tomador: { cpf: '123' },
-      destinatario: { cnpj: 'abc' },
+      tomador: { cpf: '123', endereco: { municipio: 'ABC' } },
+      destinatario: { cnpj: 'abc', endereco: { municipio: '123' } },
       servico: { ...sampleDpsInput.servico, codigoTributacaoNacional: 'abc', descricao: '' },
     });
 
@@ -23,7 +23,9 @@ describe('validateDpsInput', () => {
         'municipioEmissao',
         'prestador.cnpj',
         'tomador.cpf',
+        'tomador.endereco.municipio',
         'destinatario.cnpj',
+        'destinatario.endereco.municipio',
         'servico.codigoTributacaoNacional',
         'servico.descricao',
       ]),

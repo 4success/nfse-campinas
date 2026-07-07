@@ -67,6 +67,14 @@ function findFirstByKey(value: unknown, keys: string[]): unknown {
   return undefined;
 }
 
+function hasKey(value: unknown, keys: string[]): boolean {
+  return findFirstByKey(value, keys) !== undefined;
+}
+
+function isSuccessCStat(value: unknown): boolean {
+  return asString(value) === '100';
+}
+
 function collectMessages(value: unknown): EnviarDpsMessage[] {
   const messages: EnviarDpsMessage[] = [];
 
@@ -121,13 +129,19 @@ export function parseEnviarDpsResponse(input: ParseEnviarDpsResponseInput): Envi
   const chaveAcesso = asString(findFirstByKey(parsed, ['chaveAcesso', 'chNFSe', 'ChaveAcesso']));
   const numeroNfse = asString(findFirstByKey(parsed, ['numeroNfse', 'nNFSe', 'NumeroNfse']));
   const codigoVerificacao = asString(findFirstByKey(parsed, ['codigoVerificacao', 'cVerif', 'CodigoVerificacao']));
+  const nfseXmlGZipB64 = findFirstByKey(parsed, ['nfseXmlGZipB64']);
+  const cStat = findFirstByKey(parsed, ['cStat']);
+  const hasSuccessFields = Boolean(
+    chaveAcesso || numeroNfse || codigoVerificacao || nfseXmlGZipB64 || isSuccessCStat(cStat),
+  );
+  const hasStructuredErrors = hasKey(parsed, ['erros', 'erro', 'mensagens', 'listaMensagens', 'ListaMensagemRetorno']);
   let status: EnviarDpsResult['status'] = 'desconhecida';
 
   if (input.httpStatus < 200 || input.httpStatus >= 300) {
     status = 'erro_http';
-  } else if (chaveAcesso || numeroNfse || /autorizad[ao]|sucesso/i.test(input.rawResponse)) {
+  } else if (hasSuccessFields) {
     status = 'autorizada';
-  } else if (mensagens.length > 0 || /rejeitad[ao]|erro|falha/i.test(input.rawResponse)) {
+  } else if (hasStructuredErrors || mensagens.length > 0) {
     status = 'rejeitada';
   }
 

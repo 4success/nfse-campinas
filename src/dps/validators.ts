@@ -52,6 +52,19 @@ function validateCpfCnpjWhenPresent(
   }
 }
 
+function validateEnderecoMunicipioWhenPresent(
+  entity: { endereco?: { municipio?: string } } | undefined,
+  field: string,
+  issues: ValidationIssue[],
+) {
+  if (!entity?.endereco) {
+    return;
+  }
+  if (!/^\d{7}$/.test(onlyDigits(entity.endereco.municipio || ''))) {
+    pushIssue(issues, `${field}.endereco.municipio`, 'deve ter 7 dígitos');
+  }
+}
+
 export function ambienteToTpAmb(ambiente: DpsInput['ambiente']): 1 | 2 {
   if (ambiente === 'producao' || ambiente === 1) {
     return 1;
@@ -84,6 +97,8 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
   hasCpfOrCnpj(input.prestador, 'prestador', issues);
   validateCpfCnpjWhenPresent(input.tomador, 'tomador', issues);
   validateCpfCnpjWhenPresent(input.destinatario, 'destinatario', issues);
+  validateEnderecoMunicipioWhenPresent(input.tomador, 'tomador', issues);
+  validateEnderecoMunicipioWhenPresent(input.destinatario, 'destinatario', issues);
 
   if (!input.servico) {
     pushIssue(issues, 'servico', 'grupo obrigatório');
