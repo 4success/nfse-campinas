@@ -85,7 +85,7 @@ console.log(result.rawResponse);
 
 - Use certificado A1 `.pfx/.p12` do prestador.
 - Nunca versionar certificados, senhas, XML real de cliente ou respostas com dados pessoais.
-- `debug=true` redige CPF/CNPJ e certificado em logs do SDK.
+- `debug=true` imprime XML e resposta brutos para diagnóstico local.
 
 ## Migração
 

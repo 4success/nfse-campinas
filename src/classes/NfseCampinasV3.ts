@@ -6,9 +6,9 @@ import { buildDpsId } from '../dps/buildDpsId';
 import { DpsXmlBuilder } from '../dps/DpsXmlBuilder';
 import { BuildDpsIdInput, DpsInput, NfseCampinasV3Environment } from '../dps/types';
 import { NotImplementedError } from '../errors/NotImplementedError';
+import { ValidationError } from '../errors/ValidationError';
 import { DpsSigner } from '../signature/DpsSigner';
 import { defaultDpsSignatureOptions, DpsSignatureOptions } from '../signature/signatureTypes';
-import { redactSensitiveXml } from '../utils/redact';
 
 export type EnviarDpsOptions = {
   timeoutMs?: number;
@@ -76,7 +76,7 @@ export class NfseCampinasV3 {
       // tslint:disable-next-line:no-console
       console.log(`POST ${endpoint}`);
       // tslint:disable-next-line:no-console
-      console.log(redactSensitiveXml(signedXml));
+      console.log(signedXml);
     }
 
     const result = await client.sendSignedDps({ signedXml, idDps, timeoutMs: options.timeoutMs });
@@ -85,7 +85,7 @@ export class NfseCampinasV3 {
       // tslint:disable-next-line:no-console
       console.log(`HTTP ${result.httpStatus}`);
       // tslint:disable-next-line:no-console
-      console.log(redactSensitiveXml(result.rawResponse));
+      console.log(result.rawResponse);
     }
 
     return result;
@@ -123,7 +123,12 @@ export class NfseCampinasV3 {
     if (ambiente === 'homologacao' || ambiente === 2) {
       return 'homologacao';
     }
-    return this.environment;
+    if (ambiente === undefined) {
+      return this.environment;
+    }
+    throw new ValidationError([
+      { field: 'ambiente', message: 'ambiente deve ser 1, 2, homologacao ou producao', severity: 'error' },
+    ]);
   }
 
   private extractIdDpsFromSignedXml(xml: string): string {

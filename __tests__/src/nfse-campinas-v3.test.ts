@@ -1,6 +1,7 @@
 import nock from 'nock';
 import { DpsSigner } from '../../src/signature/DpsSigner';
 import { MissingProductionEndpointError } from '../../src/errors/MissingProductionEndpointError';
+import { ValidationError } from '../../src/errors/ValidationError';
 import { NfseCampinasV3 } from '../../src/classes/NfseCampinasV3';
 import { HOMOLOGACAO_DPS_ENDPOINT } from '../../src/client/endpoints';
 import { sampleDpsInput } from '../../test-support/fixtures';
@@ -49,6 +50,17 @@ describe('NfseCampinasV3', () => {
     await expect(nfse.enviarDps({ ...sampleDpsInput, ambiente: 'producao' })).rejects.toThrow(
       MissingProductionEndpointError,
     );
+  });
+
+  test('rejeita ambiente inválido informado na DPS', async () => {
+    const nfse = new NfseCampinasV3({
+      environment: 'homologacao',
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      transport: { useClientCertificate: false },
+    });
+
+    await expect(nfse.enviarDps({ ...sampleDpsInput, ambiente: 'produção' as any })).rejects.toThrow(ValidationError);
   });
 
   test('assina usando o target efetivo do XML da DPS', async () => {

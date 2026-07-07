@@ -184,7 +184,6 @@ src/
       decimals.ts
       dates.ts
       xml.ts
-      redact.ts
   schemas/
     nacional/v1.01-20260209/
       README.md
@@ -771,15 +770,13 @@ Quando `debug=true`, logar:
 
 - URL.
 - HTTP status.
-- Headers não sensíveis.
-- XML request/response com opção de redigir CNPJ/CPF.
+- XML request/response brutos.
 
 Nunca logar:
 
 - Senha do certificado.
 - Chave privada.
 - PFX em base64.
-- `X509Certificate` completo se `redactCertificates=true`.
 
 ---
 
