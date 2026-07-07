@@ -12,6 +12,8 @@ import {
   normalizeSerie,
 } from './normalize';
 
+const DPS_ID_PATTERN = /^DPS\d{7}(?:1\d{14}|2[A-Z0-9]{12}\d{2})\d{20}$/;
+
 function pushIssue(
   issues: ValidationIssue[],
   field: string,
@@ -102,8 +104,8 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
   if (![1, 2, 'homologacao', 'producao', undefined].includes(input.ambiente)) {
     pushIssue(issues, 'ambiente', 'ambiente deve ser 1, 2, homologacao ou producao');
   }
-  if (input.idDps && !/^DPS\d{42}$/.test(input.idDps)) {
-    pushIssue(issues, 'idDps', 'deve seguir o formato DPS + 42 dígitos');
+  if (input.idDps && !DPS_ID_PATTERN.test(input.idDps)) {
+    pushIssue(issues, 'idDps', 'deve seguir o formato de Id da DPS');
   }
   try {
     normalizeSerie(input.serie);

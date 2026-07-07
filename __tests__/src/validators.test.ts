@@ -124,4 +124,22 @@ describe('validateDpsInput', () => {
 
     expect(issues.map((issue) => issue.field)).toContain('idDps');
   });
+
+  test('aceita idDps manual com CNPJ alfanumérico', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      idDps: 'DPS35095022AB34567800019900001000000000000001',
+    });
+
+    expect(issues.map((issue) => issue.field)).not.toContain('idDps');
+  });
+
+  test('rejeita idDps manual com letras no bloco de CPF', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      idDps: 'DPS35095021AB34567800019900001000000000000001',
+    });
+
+    expect(issues.map((issue) => issue.field)).toContain('idDps');
+  });
 });
