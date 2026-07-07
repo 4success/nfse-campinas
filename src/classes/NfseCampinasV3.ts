@@ -132,8 +132,8 @@ export class NfseCampinasV3 {
   }
 
   private extractIdDpsFromSignedXml(xml: string): string {
-    const idMatch = xml.match(/\sId=(["'])(DPS[^"']+)\1/);
-    const referenceMatch = xml.match(/<Reference[^>]+URI=(["'])#(DPS[^"']+)\1/);
+    const idMatch = xml.match(/\sId\s*=\s*(["'])(DPS[^"']+)\1/);
+    const referenceMatch = xml.match(/<Reference[^>]+URI\s*=\s*(["'])#(DPS[^"']+)\1/);
     const idDps = idMatch?.[2] || referenceMatch?.[2];
 
     if (!idDps) {

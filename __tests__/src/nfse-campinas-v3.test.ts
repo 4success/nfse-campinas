@@ -84,9 +84,14 @@ describe('NfseCampinasV3', () => {
 
   test.each([
     ['Id', `<DPS><infDPS Id='${externalSignedDpsId}'></infDPS></DPS>`],
+    ['Id com whitespace', `<DPS><infDPS Id = '${externalSignedDpsId}'></infDPS></DPS>`],
     [
       'Reference URI',
       `<DPS><infDPS></infDPS><Signature><SignedInfo><Reference URI='#${externalSignedDpsId}'></Reference></SignedInfo></Signature></DPS>`,
+    ],
+    [
+      'Reference URI com whitespace',
+      `<DPS><infDPS></infDPS><Signature><SignedInfo><Reference URI = '#${externalSignedDpsId}'></Reference></SignedInfo></Signature></DPS>`,
     ],
   ])('envia XML assinado externo com aspas simples em %s', async (_attribute, signedXml) => {
     const scope = nock('https://campinas.local').post('/dps').reply(200, '<ret>ok</ret>');
