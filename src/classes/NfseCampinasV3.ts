@@ -45,11 +45,7 @@ export class NfseCampinasV3 {
   }
 
   buildDpsXml(input: DpsInput): string {
-    return new DpsXmlBuilder({ idAttributeTarget: this.signatureOptions.idAttributeTarget }).build({
-      ...input,
-      versaoAplicativo: input.versaoAplicativo || this.options.applicationVersion || '3.0.0',
-      ambiente: input.ambiente || this.environment,
-    }).xml;
+    return this.buildDpsXmlWithId(input).xml;
   }
 
   async signDpsXml(xml: string, options: Partial<DpsSignatureOptions> = {}): Promise<string> {
@@ -58,9 +54,12 @@ export class NfseCampinasV3 {
 
   async enviarDps(input: DpsInput | string, options: EnviarDpsOptions = {}): Promise<EnviarDpsResult> {
     const built = typeof input === 'string' ? undefined : this.buildDpsXmlWithId(input);
-    const signedXml = typeof input === 'string' ? input : await this.signDpsXml(built!.xml);
+    const signedXml =
+      typeof input === 'string'
+        ? input
+        : await this.signDpsXml(built!.xml, { idAttributeTarget: built!.idAttributeTarget });
     const idDps = built?.idDps || this.extractIdDpsFromSignedXml(signedXml);
-    const endpoint = resolveDpsEndpoint(this.environment, this.options.endpoints);
+    const endpoint = resolveDpsEndpoint(built?.environment || this.environment, this.options.endpoints);
     const client = new CampinasDpsClient({
       endpoint,
       certificate: this.options.certificate,
@@ -97,12 +96,31 @@ export class NfseCampinasV3 {
     throw new NotImplementedError('cancelarNfse');
   }
 
-  private buildDpsXmlWithId(input: DpsInput): { xml: string; idDps: string } {
-    return new DpsXmlBuilder({ idAttributeTarget: this.signatureOptions.idAttributeTarget }).build({
+  private buildDpsXmlWithId(input: DpsInput): {
+    xml: string;
+    idDps: string;
+    environment: NfseCampinasV3Environment;
+    idAttributeTarget: DpsSignatureOptions['idAttributeTarget'];
+  } {
+    const environment = this.resolveEffectiveEnvironment(input.ambiente);
+    const idAttributeTarget = input.xml?.idAttributeTarget || this.signatureOptions.idAttributeTarget;
+    const built = new DpsXmlBuilder({ idAttributeTarget: this.signatureOptions.idAttributeTarget }).build({
       ...input,
       versaoAplicativo: input.versaoAplicativo || this.options.applicationVersion || '3.0.0',
-      ambiente: input.ambiente || this.environment,
+      ambiente: environment,
     });
+
+    return { ...built, environment, idAttributeTarget };
+  }
+
+  private resolveEffectiveEnvironment(ambiente: DpsInput['ambiente']): NfseCampinasV3Environment {
+    if (ambiente === 'producao' || ambiente === 1) {
+      return 'producao';
+    }
+    if (ambiente === 'homologacao' || ambiente === 2) {
+      return 'homologacao';
+    }
+    return this.environment;
   }
 
   private extractIdDpsFromSignedXml(xml: string): string {

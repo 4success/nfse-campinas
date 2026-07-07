@@ -1,5 +1,8 @@
 export function roundHalfEven(value: string | number, scale = 2): string {
   const normalized = String(value).trim().replace(',', '.');
+  if (!Number.isInteger(scale) || scale < 0) {
+    throw new Error(`Escala decimal inválida: ${scale}`);
+  }
   if (!/^-?\d+(\.\d+)?$/.test(normalized)) {
     throw new Error(`Valor decimal inválido: ${value}`);
   }
@@ -7,21 +10,26 @@ export function roundHalfEven(value: string | number, scale = 2): string {
   const negative = normalized.startsWith('-');
   const unsigned = negative ? normalized.slice(1) : normalized;
   const [integerPart, decimalPart = ''] = unsigned.split('.');
-  const digits = `${integerPart}${decimalPart.padEnd(scale + 1, '0')}`.replace(/^0+(?=\d)/, '');
-  const factor = 10 ** scale;
-  const scaled = Math.trunc(Number(digits.slice(0, Math.max(digits.length - (decimalPart.length - scale), 0))) || 0);
-  const numeric = Number(unsigned);
-  const shifted = numeric * factor;
-  const floor = Math.floor(shifted);
-  const diff = shifted - floor;
-  let rounded = floor;
+  const keptDecimals = decimalPart.padEnd(scale, '0').slice(0, scale);
+  const roundingDigit = Number(decimalPart[scale] || '0');
+  const remainingDecimals = decimalPart.slice(scale + 1);
+  let rounded = BigInt(`${integerPart}${keptDecimals}` || '0');
+  const isTie = roundingDigit === 5 && !/[1-9]/.test(remainingDecimals);
 
-  if (diff > 0.5 || (Math.abs(diff - 0.5) < Number.EPSILON && floor % 2 === 1)) {
-    rounded = floor + 1;
+  if (roundingDigit > 5 || (isTie && rounded % 2n === 1n) || (roundingDigit === 5 && !isTie)) {
+    rounded += 1n;
   }
 
-  const result = (rounded / factor).toFixed(scale);
-  return negative && result !== '0'.padEnd(scale + 2, '.0') ? `-${result}` : result;
+  if (scale === 0) {
+    const result = rounded.toString();
+    return negative && rounded !== 0n ? `-${result}` : result;
+  }
+
+  const digits = rounded.toString().padStart(scale + 1, '0');
+  const integer = digits.slice(0, -scale);
+  const decimals = digits.slice(-scale);
+  const result = `${integer}.${decimals}`;
+  return negative && rounded !== 0n ? `-${result}` : result;
 }
 
 export function formatDecimal(value: string | number, scale = 2): string {
