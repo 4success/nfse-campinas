@@ -16,6 +16,7 @@
   "scripts": {
     "version": "pnpm run format && git add -A src",
     "prepare": "pnpm run build",
+    "prebuild": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
     "postversion": "git push && git push --tags",
     "test": "jest",
     "build": "tsc --emitDeclarationOnly && node esbuild.mjs",

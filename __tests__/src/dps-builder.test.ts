@@ -18,6 +18,7 @@ describe('DpsXmlBuilder', () => {
     expect(xml.indexOf('<toma>')).toBeLessThan(xml.indexOf('<serv>'));
     expect(xml.indexOf('<serv>')).toBeLessThan(xml.indexOf('<valores>'));
     expect(xml.indexOf('<valores>')).toBeLessThan(xml.indexOf('<IBSCBS>'));
+    expect(xml.indexOf('<vServPrest>')).toBeLessThan(xml.indexOf('<trib><tribMun>'));
   });
 
   test('normaliza códigos fiscais e escapa XML', () => {

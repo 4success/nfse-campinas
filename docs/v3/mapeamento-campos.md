@@ -14,9 +14,12 @@ Campos principais de entrada e XML:
 | `municipioEmissao` | `cLocEmi` |
 | `prestador` | `prest` |
 | `tomador` | `toma` |
-| `servico.codigoTributacaoNacional` | `serv/cTribNac` |
-| `servico.codigoTributacaoMunicipal` | `serv/cTribMun` |
-| `servico.codigoNbs` | `serv/cNBS` |
-| `valores.valorServico` | `valores/vServPrest` |
+| `tomador.endereco.municipio` | `toma/end/endNac/cMun` |
+| `tomador.endereco.cep` | `toma/end/endNac/CEP` |
+| `servico.municipioPrestacao` | `serv/locPrest/cLocPrestacao` |
+| `servico.codigoTributacaoNacional` | `serv/cServ/cTribNac` |
+| `servico.codigoTributacaoMunicipal` | `serv/cServ/cTribMun` |
+| `servico.codigoNbs` | `serv/cServ/cNBS` |
+| `valores.valorServico` | `valores/vServPrest/vServ` |
 | `ibsCbs.codigoIndicadorOperacao` | `IBSCBS/cIndOp` |
 | `ibsCbs.classificacaoTributaria` | `IBSCBS/cClassTrib` |

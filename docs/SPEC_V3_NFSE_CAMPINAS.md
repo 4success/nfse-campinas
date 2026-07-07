@@ -704,10 +704,12 @@ Request:
 
 ```txt
 POST /notafiscal-adn-ws/api/adn/dps
-Content-Type: application/xml; charset=utf-8
+Content-Type: application/json
 Accept: application/xml, application/json, text/plain, */*
-Body: DPS XML assinado
+Body: { "dpsXmlGZipB64": "<XML DPS assinado compactado com gzip e codificado em base64>" }
 ```
+
+Validado em homologação de Campinas: XML bruto com `application/xml` retorna `HTTP 415`; o endpoint processa o payload JSON `dpsXmlGZipB64`.
 
 ### 10.2. Certificado no transporte
 

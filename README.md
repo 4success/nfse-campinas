@@ -4,7 +4,7 @@ Pacote de integração para NFSe Campinas no Padrão Nacional NFS-e / DPS v1.01,
 
 ## Aviso de Breaking Change
 
-A versão `3.x` não usa mais ABRASF 2.03, RPS, SOAP ou WSDL. A API pública passa a trabalhar com DPS e envio REST/XML municipal.
+A versão `3.x` não usa mais ABRASF 2.03, RPS, SOAP ou WSDL. A API pública passa a trabalhar com DPS e envio REST/JSON municipal.
 
 Para continuar usando ABRASF 2.03, instale a linha anterior:
 
@@ -61,7 +61,7 @@ const result = await nfse.enviarDps({
     codigoTributacaoNacional: '010301',
     codigoTributacaoMunicipal: '001',
     descricao: 'descricao do servico prestado para fins de homologacao',
-    codigoNbs: '115069000',
+    codigoNbs: '1.1501.10.00',
   },
   valores: {
     valorServico: '26947.27',

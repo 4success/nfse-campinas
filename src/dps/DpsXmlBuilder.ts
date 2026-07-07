@@ -47,14 +47,13 @@ function addEndereco(parent: XMLElement, entity: TomadorDps) {
   }
 
   const end = parent.ele('end');
-  addText(end, 'cMun', onlyDigits(entity.endereco.municipio));
-  addText(end, 'CEP', entity.endereco.cep ? onlyDigits(entity.endereco.cep) : undefined);
+  const endNac = end.ele('endNac');
+  addText(endNac, 'cMun', onlyDigits(entity.endereco.municipio));
+  addText(endNac, 'CEP', entity.endereco.cep ? onlyDigits(entity.endereco.cep) : undefined);
   addText(end, 'xLgr', entity.endereco.logradouro);
   addText(end, 'nro', entity.endereco.numero);
   addText(end, 'xCpl', entity.endereco.complemento);
   addText(end, 'xBairro', entity.endereco.bairro);
-  addText(end, 'UF', entity.endereco.uf);
-  addText(end, 'cPais', entity.endereco.pais);
 }
 
 function addPrestador(parent: XMLElement, prestador: PrestadorDps) {
@@ -141,39 +140,51 @@ export class DpsXmlBuilder {
     addTomador(infDps, 'dest', input.destinatario);
 
     const serv = infDps.ele('serv');
-    addText(serv, 'cLocPrestacao', onlyDigits(input.servico.municipioPrestacao));
-    addText(serv, 'cTribNac', normalizeCodigoTributacaoNacional(input.servico.codigoTributacaoNacional));
+    const locPrest = serv.ele('locPrest');
+    addText(locPrest, 'cLocPrestacao', onlyDigits(input.servico.municipioPrestacao));
+    const cServ = serv.ele('cServ');
+    addText(cServ, 'cTribNac', normalizeCodigoTributacaoNacional(input.servico.codigoTributacaoNacional));
     addText(
-      serv,
+      cServ,
       'cTribMun',
       input.servico.codigoTributacaoMunicipal
         ? normalizeCodigoTributacaoMunicipal(input.servico.codigoTributacaoMunicipal)
         : undefined,
     );
-    addText(serv, 'xDescServ', input.servico.descricao);
-    addText(serv, 'cNBS', input.servico.codigoNbs ? normalizeNbs(input.servico.codigoNbs) : undefined);
-    addText(serv, 'cNAE', input.servico.codigoCnae ? onlyDigits(input.servico.codigoCnae) : undefined);
-    addText(serv, 'cCBO', input.servico.codigoCbo ? onlyDigits(input.servico.codigoCbo) : undefined);
+    addText(cServ, 'xDescServ', input.servico.descricao);
+    addText(cServ, 'cNBS', input.servico.codigoNbs ? normalizeNbs(input.servico.codigoNbs) : undefined);
 
     const valores = infDps.ele('valores');
-    addText(valores, 'vServPrest', normalizeMoney(input.valores.valorServico));
-    addText(
-      valores,
-      'vDescIncond',
-      input.valores.valorDescontoIncondicionado !== undefined
-        ? normalizeMoney(input.valores.valorDescontoIncondicionado)
-        : undefined,
-    );
-    addText(
-      valores,
-      'vDescCond',
+    const vServPrest = valores.ele('vServPrest');
+    addText(vServPrest, 'vServ', normalizeMoney(input.valores.valorServico));
+    if (
+      input.valores.valorDescontoIncondicionado !== undefined ||
       input.valores.valorDescontoCondicionado !== undefined
-        ? normalizeMoney(input.valores.valorDescontoCondicionado)
-        : undefined,
-    );
+    ) {
+      const vDescCondIncond = valores.ele('vDescCondIncond');
+      addText(
+        vDescCondIncond,
+        'vDescIncond',
+        input.valores.valorDescontoIncondicionado !== undefined
+          ? normalizeMoney(input.valores.valorDescontoIncondicionado)
+          : undefined,
+      );
+      addText(
+        vDescCondIncond,
+        'vDescCond',
+        input.valores.valorDescontoCondicionado !== undefined
+          ? normalizeMoney(input.valores.valorDescontoCondicionado)
+          : undefined,
+      );
+    }
 
-    if (input.valores.tributacaoMunicipal) {
-      const tribMun = valores.ele('tribMun');
+    const hasTributacao = Boolean(
+      input.valores.tributacaoMunicipal || input.valores.tributacaoFederal || input.valores.totalTributos,
+    );
+    const trib = hasTributacao ? valores.ele('trib') : undefined;
+
+    if (input.valores.tributacaoMunicipal && trib) {
+      const tribMun = trib.ele('tribMun');
       addText(tribMun, 'tribISSQN', input.valores.tributacaoMunicipal.tributacaoIssqn);
       addText(tribMun, 'tpRetISSQN', input.valores.tributacaoMunicipal.tipoRetencaoIssqn);
       addText(
@@ -185,8 +196,8 @@ export class DpsXmlBuilder {
       );
     }
 
-    if (input.valores.tributacaoFederal) {
-      const tribFed = valores.ele('tribFed');
+    if (input.valores.tributacaoFederal && trib) {
+      const tribFed = trib.ele('tribFed');
       const pisCofins = input.valores.tributacaoFederal.pisCofins;
       if (pisCofins) {
         const piscofins = tribFed.ele('piscofins');
@@ -237,8 +248,8 @@ export class DpsXmlBuilder {
       );
     }
 
-    if (input.valores.totalTributos) {
-      const totTrib = valores.ele('totTrib');
+    if (input.valores.totalTributos && trib) {
+      const totTrib = trib.ele('totTrib');
       addText(totTrib, 'indTotTrib', input.valores.totalTributos.indicadorTotalTributos);
       addText(
         totTrib,
