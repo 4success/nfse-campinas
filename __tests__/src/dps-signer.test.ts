@@ -87,4 +87,35 @@ describe('DpsSigner', () => {
     );
     expect(sigInstance.checkSignature).toHaveBeenCalledWith(xml);
   });
+
+  test('retorna false quando loadSignature falha', () => {
+    const xml = '<DPS><infDPS Id="DPS1"></infDPS><Signature></Signature></DPS>';
+    const certificate = { toPem: () => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }) } as PfxCertificate;
+    const sigInstance = {
+      loadSignature: jest.fn().mockImplementation(() => {
+        throw new Error('invalid signature');
+      }),
+      checkSignature: jest.fn(),
+    };
+
+    jest.mocked(SignedXml).mockImplementation(() => sigInstance as unknown as SignedXml);
+
+    expect(new DpsSigner(certificate).verify(xml)).toBe(false);
+    expect(sigInstance.checkSignature).not.toHaveBeenCalled();
+  });
+
+  test('retorna false quando checkSignature falha', () => {
+    const xml = '<DPS><infDPS Id="DPS1"></infDPS><Signature></Signature></DPS>';
+    const certificate = { toPem: () => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }) } as PfxCertificate;
+    const sigInstance = {
+      loadSignature: jest.fn(),
+      checkSignature: jest.fn().mockImplementation(() => {
+        throw new Error('bad signature value');
+      }),
+    };
+
+    jest.mocked(SignedXml).mockImplementation(() => sigInstance as unknown as SignedXml);
+
+    expect(new DpsSigner(certificate).verify(xml)).toBe(false);
+  });
 });

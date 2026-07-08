@@ -50,8 +50,12 @@ export class DpsSigner {
       publicCert: this.certificate.toPem().publicCert,
       idAttribute: this.options.idAttributeName,
     });
-    sig.loadSignature(signatureMatch[0]);
-    return sig.checkSignature(xml);
+    try {
+      sig.loadSignature(signatureMatch[0]);
+      return sig.checkSignature(xml);
+    } catch {
+      return false;
+    }
   }
 
   private extractId(xml: string, options: DpsSignatureOptions): string {
