@@ -145,6 +145,50 @@ describe('CampinasDpsClient', () => {
     expect(logger).not.toHaveBeenCalled();
   });
 
+  test('falha no trace HTTP não impede envio nem altera sucesso', async () => {
+    const endpoint = 'https://trace-throws.local/dps';
+    const scope = nock('https://trace-throws.local')
+      .post('/dps')
+      .reply(201, JSON.stringify({ chaveAcesso: 'abc' }), { 'content-type': 'application/json' });
+
+    const result = await new CampinasDpsClient({
+      endpoint,
+      debug: true,
+      traceLogger: () => {
+        throw new Error('logger failed');
+      },
+      transport: { useClientCertificate: false },
+    }).sendSignedDps({
+      idDps: 'DPS1',
+      signedXml: '<DPS/>',
+    });
+
+    expect(result.status).toBe('autorizada');
+    expect(scope.isDone()).toBe(true);
+  });
+
+  test('falha no trace HTTP não substitui erro de transporte', async () => {
+    const endpoint = 'https://trace-error-throws.local/dps';
+    nock('https://trace-error-throws.local').post('/dps').reply(400, 'DPS rejeitada');
+
+    await expect(
+      new CampinasDpsClient({
+        endpoint,
+        debug: true,
+        traceLogger: () => {
+          throw new Error('logger failed');
+        },
+        transport: { useClientCertificate: false },
+      }).sendSignedDps({
+        idDps: 'DPS1',
+        signedXml: '<DPS/>',
+      }),
+    ).rejects.toMatchObject({
+      idDps: 'DPS1',
+      message: 'Falha ao enviar DPS DPS1: HTTP 400: DPS rejeitada',
+    });
+  });
+
   test('timeout preserva idDps e XML assinado', async () => {
     const endpoint = 'https://timeout.local/dps';
     nock('https://timeout.local').post('/dps').delay(100).reply(200, 'ok');

@@ -47,7 +47,11 @@ export function createHttpTracer(options: CreateHttpTracerOptions = {}): HttpTra
       return;
     }
 
-    await logger(prefix, data);
+    try {
+      await logger(prefix, data);
+    } catch (_error) {
+      return;
+    }
   }
 
   return {
