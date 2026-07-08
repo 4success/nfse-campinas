@@ -6,9 +6,11 @@ import { NfseCampinasV3 } from '../../src/classes/NfseCampinasV3';
 import { HOMOLOGACAO_DPS_ENDPOINT } from '../../src/client/endpoints';
 import { sampleDpsInput } from '../../test-support/fixtures';
 
+const mockToPem = jest.fn(() => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }));
+
 jest.mock('../../src/certificate/PfxCertificate', () => ({
   PfxCertificate: jest.fn().mockImplementation(() => ({
-    toPem: () => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }),
+    toPem: mockToPem,
   })),
 }));
 
@@ -105,6 +107,22 @@ describe('NfseCampinasV3', () => {
     const result = await nfse.enviarDps(signedXml);
 
     expect(result.idDps).toBe(externalSignedDpsId);
+    expect(scope.isDone()).toBe(true);
+  });
+
+  test('não extrai PEM ao enviar XML assinado externo sem certificado de transporte', async () => {
+    const signedXml = `<DPS><infDPS Id='${externalSignedDpsId}'></infDPS></DPS>`;
+    const scope = nock('https://campinas.local').post('/dps').reply(200, '<ret>ok</ret>');
+    const nfse = new NfseCampinasV3({
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      endpoints: { dps: 'https://campinas.local/dps' },
+      transport: { useClientCertificate: false },
+    });
+
+    await nfse.enviarDps(signedXml);
+
+    expect(mockToPem).not.toHaveBeenCalled();
     expect(scope.isDone()).toBe(true);
   });
 });

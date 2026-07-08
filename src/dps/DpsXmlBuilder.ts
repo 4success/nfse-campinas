@@ -3,6 +3,7 @@ import { buildDpsId } from './buildDpsId';
 import {
   normalizeCodigoTributacaoMunicipal,
   normalizeCodigoTributacaoNacional,
+  normalizeCep,
   normalizeCnpj,
   normalizeCpf,
   normalizeMoney,
@@ -10,7 +11,6 @@ import {
   normalizeNbs,
   normalizeNumeroDps,
   normalizeSerie,
-  onlyDigits,
 } from './normalize';
 import { ambienteToTpAmb, validateDpsInput } from './validators';
 import { DpsInput, DpsXmlOptions, PrestadorDps, TomadorDps } from './types';
@@ -52,7 +52,7 @@ function addEndereco(parent: XMLElement, entity: TomadorDps) {
   const end = parent.ele('end');
   const endNac = end.ele('endNac');
   addText(endNac, 'cMun', normalizeMunicipio(entity.endereco.municipio));
-  addText(endNac, 'CEP', entity.endereco.cep ? onlyDigits(entity.endereco.cep) : undefined);
+  addText(endNac, 'CEP', entity.endereco.cep ? normalizeCep(entity.endereco.cep) : undefined);
   addText(end, 'xLgr', entity.endereco.logradouro);
   addText(end, 'nro', entity.endereco.numero);
   addText(end, 'xCpl', entity.endereco.complemento);

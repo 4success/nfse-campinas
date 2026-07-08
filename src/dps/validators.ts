@@ -5,6 +5,7 @@ import { DpsInput } from './types';
 import {
   normalizeCodigoTributacaoMunicipal,
   normalizeCodigoTributacaoNacional,
+  normalizeCep,
   normalizeCnpj,
   normalizeCpf,
   normalizeMoney,
@@ -71,7 +72,7 @@ function validateCpfCnpjWhenPresent(
 }
 
 function validateEnderecoMunicipioWhenPresent(
-  entity: { endereco?: { municipio?: string } } | undefined,
+  entity: { endereco?: { municipio?: string; cep?: string } } | undefined,
   field: string,
   issues: ValidationIssue[],
 ) {
@@ -82,6 +83,13 @@ function validateEnderecoMunicipioWhenPresent(
     normalizeMunicipio(entity.endereco.municipio || '');
   } catch (error) {
     pushIssue(issues, `${field}.endereco.municipio`, (error as Error).message);
+  }
+  if (entity.endereco.cep !== undefined && entity.endereco.cep !== '') {
+    try {
+      normalizeCep(entity.endereco.cep);
+    } catch (error) {
+      pushIssue(issues, `${field}.endereco.cep`, (error as Error).message);
+    }
   }
 }
 
@@ -231,6 +239,16 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
     validateMoneyWhenPresent(input.valores.valorDescontoCondicionado, 'valores.valorDescontoCondicionado', issues);
 
     if (input.valores.tributacaoMunicipal) {
+      validateRequiredWhenPresent(
+        input.valores.tributacaoMunicipal.tributacaoIssqn,
+        'valores.tributacaoMunicipal.tributacaoIssqn',
+        issues,
+      );
+      validateRequiredWhenPresent(
+        input.valores.tributacaoMunicipal.tipoRetencaoIssqn,
+        'valores.tributacaoMunicipal.tipoRetencaoIssqn',
+        issues,
+      );
       validateMoneyWhenPresent(
         input.valores.tributacaoMunicipal.aliquota,
         'valores.tributacaoMunicipal.aliquota',

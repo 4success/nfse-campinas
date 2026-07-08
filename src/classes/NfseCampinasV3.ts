@@ -63,13 +63,14 @@ export class NfseCampinasV3 {
         ? input
         : await this.signDpsXml(built!.xml, { idAttributeTarget: built!.idAttributeTarget });
     const idDps = built?.idDps || this.extractIdDpsFromSignedXml(signedXml);
-    const clientCertificate = this.certificate.toPem();
+    const useClientCertificate = this.options.transport?.useClientCertificate !== false;
+    const clientCertificate = useClientCertificate ? this.certificate.toPem() : undefined;
     const client = new CampinasDpsClient({
       endpoint,
       certificate: this.options.certificate,
       certPassword: this.options.certPassword,
-      clientKeyPem: clientCertificate.privateKey,
-      clientCertPem: clientCertificate.publicCert,
+      clientKeyPem: clientCertificate?.privateKey,
+      clientCertPem: clientCertificate?.publicCert,
       timeoutMs: this.options.timeoutMs,
       requestHeaders: this.options.requestHeaders,
       debug: this.options.debug,

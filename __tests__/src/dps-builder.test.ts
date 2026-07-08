@@ -34,6 +34,27 @@ describe('DpsXmlBuilder', () => {
     expect(xml).not.toContain('<dest>');
   });
 
+  test('normaliza CEP somente quando o formato básico é válido', () => {
+    const { xml } = new DpsXmlBuilder().build({
+      ...sampleDpsInput,
+      tomador: {
+        ...sampleDpsInput.tomador!,
+        endereco: { ...sampleDpsInput.tomador!.endereco!, cep: '13000-000' },
+      },
+    });
+
+    expect(xml).toContain('<CEP>13000000</CEP>');
+    expect(() =>
+      new DpsXmlBuilder().build({
+        ...sampleDpsInput,
+        tomador: {
+          ...sampleDpsInput.tomador!,
+          endereco: { ...sampleDpsInput.tomador!.endereco!, cep: 'ABC13000-000' },
+        },
+      }),
+    ).toThrow('DPS inválida');
+  });
+
   test('emite CNPJ alfanumérico preservando letras', () => {
     const { xml, idDps } = new DpsXmlBuilder().build({
       ...sampleDpsInput,
@@ -138,6 +159,15 @@ describe('DpsXmlBuilder', () => {
       new DpsXmlBuilder().build({
         ...sampleDpsInput,
         ibsCbs: {} as any,
+      }),
+    ).toThrow('DPS inválida');
+  });
+
+  test('bloqueia tributação municipal incompleta antes de gerar XML', () => {
+    expect(() =>
+      new DpsXmlBuilder().build({
+        ...sampleDpsInput,
+        valores: { ...sampleDpsInput.valores, tributacaoMunicipal: {} as any },
       }),
     ).toThrow('DPS inválida');
   });

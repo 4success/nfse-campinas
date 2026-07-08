@@ -39,6 +39,14 @@ export function normalizeMunicipio(value: string): string {
   return text;
 }
 
+export function normalizeCep(value: string): string {
+  const text = String(value);
+  if (!/^\d{8}$/.test(text) && !/^\d{5}-\d{3}$/.test(text)) {
+    throw new Error('CEP deve conter 8 dígitos ou estar no formato 00000-000');
+  }
+  return text.replace('-', '');
+}
+
 function ensureOnlyDigitsAndDots(value: string | number, message: string): string {
   const text = String(value);
   if (!/^\d+(?:\.\d+)*$/.test(text)) {

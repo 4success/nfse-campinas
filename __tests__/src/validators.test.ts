@@ -118,6 +118,42 @@ describe('validateDpsInput', () => {
     );
   });
 
+  test('rejeita CEP malformado antes de normalizar', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      tomador: {
+        ...sampleDpsInput.tomador!,
+        endereco: { ...sampleDpsInput.tomador!.endereco!, cep: 'ABC13000-000' },
+      },
+      destinatario: {
+        cpf: '123.456.789-01',
+        endereco: { municipio: '3509502', cep: '13000-000ABC' },
+      },
+    });
+
+    expect(issues.map((issue) => issue.field)).toEqual(
+      expect.arrayContaining(['tomador.endereco.cep', 'destinatario.endereco.cep']),
+    );
+  });
+
+  test('aceita CEP sem pontuação ou no formato padrão', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      tomador: {
+        ...sampleDpsInput.tomador!,
+        endereco: { ...sampleDpsInput.tomador!.endereco!, cep: '13000000' },
+      },
+      destinatario: {
+        cpf: '123.456.789-01',
+        endereco: { municipio: '3509502', cep: '13000-000' },
+      },
+    });
+
+    expect(issues.map((issue) => issue.field)).not.toEqual(
+      expect.arrayContaining(['tomador.endereco.cep', 'destinatario.endereco.cep']),
+    );
+  });
+
   test.each(['ABC', 'ABC12', '-1'])('rejeita código municipal malformado em modo estrito: %s', (codigo) => {
     const issues = validateDpsInput({
       ...sampleDpsInput,
@@ -192,6 +228,23 @@ describe('validateDpsInput', () => {
 
     expect(issues.map((issue) => issue.field)).toEqual(
       expect.arrayContaining(['valores.valorServico', 'valores.tributacaoFederal.pisCofins.valorPis']),
+    );
+  });
+
+  test('rejeita tributação municipal incompleta quando informada', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      valores: {
+        ...sampleDpsInput.valores,
+        tributacaoMunicipal: {} as any,
+      },
+    });
+
+    expect(issues.map((issue) => issue.field)).toEqual(
+      expect.arrayContaining([
+        'valores.tributacaoMunicipal.tributacaoIssqn',
+        'valores.tributacaoMunicipal.tipoRetencaoIssqn',
+      ]),
     );
   });
 
