@@ -97,5 +97,10 @@ export function normalizeMoney(value: string | number, scale = 2): string {
     throw new Error('Valor decimal não pode ser negativo');
   }
 
+  const decimalPart = normalized.split('.')[1];
+  if (decimalPart && decimalPart.length > scale) {
+    throw new Error(`Valor decimal deve ter no máximo ${scale} casas decimais`);
+  }
+
   return formatDecimal(value, scale);
 }

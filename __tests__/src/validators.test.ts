@@ -174,6 +174,27 @@ describe('validateDpsInput', () => {
     );
   });
 
+  test('rejeita valores monetários com casas decimais acima da escala', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      valores: {
+        ...sampleDpsInput.valores,
+        valorServico: '1.005',
+        tributacaoFederal: {
+          ...sampleDpsInput.valores.tributacaoFederal,
+          pisCofins: {
+            ...sampleDpsInput.valores.tributacaoFederal!.pisCofins!,
+            valorPis: '175.165',
+          },
+        },
+      },
+    });
+
+    expect(issues.map((issue) => issue.field)).toEqual(
+      expect.arrayContaining(['valores.valorServico', 'valores.tributacaoFederal.pisCofins.valorPis']),
+    );
+  });
+
   test.each([undefined, null, ''])('rejeita tipoEmitente obrigatório: %s', (tipoEmitente) => {
     const issues = validateDpsInput({
       ...sampleDpsInput,

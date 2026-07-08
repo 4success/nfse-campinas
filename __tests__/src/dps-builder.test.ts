@@ -124,6 +124,15 @@ describe('DpsXmlBuilder', () => {
     ).toThrow('DPS inválida');
   });
 
+  test('bloqueia valor de serviço com precisão excessiva antes de gerar XML', () => {
+    expect(() =>
+      new DpsXmlBuilder().build({
+        ...sampleDpsInput,
+        valores: { ...sampleDpsInput.valores, valorServico: '1.005' },
+      }),
+    ).toThrow('DPS inválida');
+  });
+
   test('bloqueia IBS/CBS incompleto antes de gerar XML', () => {
     expect(() =>
       new DpsXmlBuilder().build({
