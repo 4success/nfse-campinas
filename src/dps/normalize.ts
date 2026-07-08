@@ -92,5 +92,10 @@ export function normalizeNumeroDps(value: string | number): string {
 }
 
 export function normalizeMoney(value: string | number, scale = 2): string {
+  const normalized = String(value).trim().replace(',', '.');
+  if (normalized.startsWith('-')) {
+    throw new Error('Valor decimal não pode ser negativo');
+  }
+
   return formatDecimal(value, scale);
 }

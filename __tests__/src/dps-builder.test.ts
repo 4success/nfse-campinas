@@ -114,4 +114,13 @@ describe('DpsXmlBuilder', () => {
       }),
     ).toThrow('DPS inválida');
   });
+
+  test('bloqueia valor de serviço negativo antes de gerar XML', () => {
+    expect(() =>
+      new DpsXmlBuilder().build({
+        ...sampleDpsInput,
+        valores: { ...sampleDpsInput.valores, valorServico: '-1' },
+      }),
+    ).toThrow('DPS inválida');
+  });
 });

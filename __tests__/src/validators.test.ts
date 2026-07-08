@@ -130,6 +130,34 @@ describe('validateDpsInput', () => {
     expect(issues.map((issue) => issue.field)).toEqual(expect.arrayContaining(['serie', 'numeroDps']));
   });
 
+  test('rejeita valores monetários negativos', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      valores: {
+        ...sampleDpsInput.valores,
+        valorServico: '-1',
+        valorDescontoIncondicionado: '-0.01',
+        tributacaoFederal: {
+          ...sampleDpsInput.valores.tributacaoFederal,
+          valorRetidoIrrf: '-1',
+          pisCofins: {
+            ...sampleDpsInput.valores.tributacaoFederal!.pisCofins!,
+            valorPis: '-1',
+          },
+        },
+      },
+    });
+
+    expect(issues.map((issue) => issue.field)).toEqual(
+      expect.arrayContaining([
+        'valores.valorServico',
+        'valores.valorDescontoIncondicionado',
+        'valores.tributacaoFederal.valorRetidoIrrf',
+        'valores.tributacaoFederal.pisCofins.valorPis',
+      ]),
+    );
+  });
+
   test.each([undefined, null, ''])('rejeita tipoEmitente obrigatório: %s', (tipoEmitente) => {
     const issues = validateDpsInput({
       ...sampleDpsInput,

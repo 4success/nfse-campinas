@@ -7,6 +7,7 @@ import {
   normalizeCodigoTributacaoNacional,
   normalizeCnpj,
   normalizeCpf,
+  normalizeMoney,
   normalizeMunicipio,
   normalizeNbs,
   normalizeNumeroDps,
@@ -81,6 +82,18 @@ function validateEnderecoMunicipioWhenPresent(
     normalizeMunicipio(entity.endereco.municipio || '');
   } catch (error) {
     pushIssue(issues, `${field}.endereco.municipio`, (error as Error).message);
+  }
+}
+
+function validateMoneyWhenPresent(value: string | number | undefined, field: string, issues: ValidationIssue[]) {
+  if (value === undefined) {
+    return;
+  }
+
+  try {
+    normalizeMoney(value);
+  } catch (error) {
+    pushIssue(issues, field, (error as Error).message);
   }
 }
 
@@ -206,6 +219,58 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
 
   if (!input.valores || input.valores.valorServico === undefined) {
     pushIssue(issues, 'valores.valorServico', 'valor do serviço obrigatório');
+  } else {
+    validateMoneyWhenPresent(input.valores.valorServico, 'valores.valorServico', issues);
+    validateMoneyWhenPresent(input.valores.valorDescontoIncondicionado, 'valores.valorDescontoIncondicionado', issues);
+    validateMoneyWhenPresent(input.valores.valorDescontoCondicionado, 'valores.valorDescontoCondicionado', issues);
+
+    if (input.valores.tributacaoMunicipal) {
+      validateMoneyWhenPresent(
+        input.valores.tributacaoMunicipal.aliquota,
+        'valores.tributacaoMunicipal.aliquota',
+        issues,
+      );
+    }
+
+    if (input.valores.tributacaoFederal?.pisCofins) {
+      const pisCofins = input.valores.tributacaoFederal.pisCofins;
+      validateMoneyWhenPresent(pisCofins.baseCalculo, 'valores.tributacaoFederal.pisCofins.baseCalculo', issues);
+      validateMoneyWhenPresent(pisCofins.aliquotaPis, 'valores.tributacaoFederal.pisCofins.aliquotaPis', issues);
+      validateMoneyWhenPresent(pisCofins.aliquotaCofins, 'valores.tributacaoFederal.pisCofins.aliquotaCofins', issues);
+      validateMoneyWhenPresent(pisCofins.valorPis, 'valores.tributacaoFederal.pisCofins.valorPis', issues);
+      validateMoneyWhenPresent(pisCofins.valorCofins, 'valores.tributacaoFederal.pisCofins.valorCofins', issues);
+    }
+
+    if (input.valores.tributacaoFederal) {
+      validateMoneyWhenPresent(
+        input.valores.tributacaoFederal.valorRetidoIrrf,
+        'valores.tributacaoFederal.valorRetidoIrrf',
+        issues,
+      );
+      validateMoneyWhenPresent(
+        input.valores.tributacaoFederal.valorRetidoCsll,
+        'valores.tributacaoFederal.valorRetidoCsll',
+        issues,
+      );
+      validateMoneyWhenPresent(
+        input.valores.tributacaoFederal.valorRetidoInss,
+        'valores.tributacaoFederal.valorRetidoInss',
+        issues,
+      );
+    }
+
+    if (input.valores.totalTributos) {
+      validateMoneyWhenPresent(
+        input.valores.totalTributos.percentualTotalTributos,
+        'valores.totalTributos.percentualTotalTributos',
+        issues,
+      );
+      validateMoneyWhenPresent(
+        input.valores.totalTributos.valorTotalTributos,
+        'valores.totalTributos.valorTotalTributos',
+        issues,
+      );
+    }
   }
 
   return issues;
