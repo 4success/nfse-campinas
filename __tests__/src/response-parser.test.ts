@@ -69,6 +69,34 @@ describe('parseEnviarDpsResponse', () => {
     expect(erroHttp.status).toBe('erro_http');
   });
 
+  test('interpreta alertas JSON de rejeição Campinas v3', () => {
+    const result = parseEnviarDpsResponse({
+      idDps: 'DPS1',
+      signedXml: '<DPS/>',
+      rawRequest: '<DPS/>',
+      rawResponse: JSON.stringify({
+        alertas: [
+          {
+            codigo: 'L0005',
+            mensagem: 'CNPJ/Indicador Municipal do prestador informado na DPS é inválido.',
+          },
+        ],
+        dataHoraProcessamento: '2026-07-08T16:13:36.707848125-03:00',
+        idDps: 'DPS1',
+        tipoAmbiente: 2,
+        versaoAplicativo: '1.0',
+      }),
+      httpStatus: 200,
+      headers: {},
+    });
+
+    expect(result.status).toBe('rejeitada');
+    expect(result.mensagens[0]).toEqual({
+      codigo: 'L0005',
+      descricao: 'CNPJ/Indicador Municipal do prestador informado na DPS é inválido.',
+    });
+  });
+
   test('não classifica status por texto livre', () => {
     const naoAutorizada = parseEnviarDpsResponse({
       idDps: 'DPS1',

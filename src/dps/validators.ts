@@ -97,6 +97,12 @@ function validateMoneyWhenPresent(value: string | number | undefined, field: str
   }
 }
 
+function validateRequiredWhenPresent(value: unknown, field: string, issues: ValidationIssue[]) {
+  if (value === undefined || value === null || value === '') {
+    pushIssue(issues, field, 'campo obrigatório');
+  }
+}
+
 function validateIdDpsWhenPresent(input: DpsInput, issues: ValidationIssue[]) {
   if (!input.idDps) {
     return;
@@ -271,6 +277,13 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
         issues,
       );
     }
+  }
+
+  if (input.ibsCbs) {
+    validateRequiredWhenPresent(input.ibsCbs.finalidadeNfse, 'ibsCbs.finalidadeNfse', issues);
+    validateRequiredWhenPresent(input.ibsCbs.codigoIndicadorOperacao, 'ibsCbs.codigoIndicadorOperacao', issues);
+    validateRequiredWhenPresent(input.ibsCbs.indicadorDestinatario, 'ibsCbs.indicadorDestinatario', issues);
+    validateRequiredWhenPresent(input.ibsCbs.classificacaoTributaria, 'ibsCbs.classificacaoTributaria', issues);
   }
 
   return issues;

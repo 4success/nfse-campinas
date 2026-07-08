@@ -59,6 +59,22 @@ describe('validateDpsInput', () => {
     );
   });
 
+  test('rejeita grupo IBS/CBS incompleto quando informado', () => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      ibsCbs: {} as any,
+    });
+
+    expect(issues.map((issue) => issue.field)).toEqual(
+      expect.arrayContaining([
+        'ibsCbs.finalidadeNfse',
+        'ibsCbs.codigoIndicadorOperacao',
+        'ibsCbs.indicadorDestinatario',
+        'ibsCbs.classificacaoTributaria',
+      ]),
+    );
+  });
+
   test('aceita CNPJ alfanumérico válido', () => {
     const issues = validateDpsInput({
       ...sampleDpsInput,

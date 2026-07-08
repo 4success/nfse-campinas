@@ -123,4 +123,13 @@ describe('DpsXmlBuilder', () => {
       }),
     ).toThrow('DPS inválida');
   });
+
+  test('bloqueia IBS/CBS incompleto antes de gerar XML', () => {
+    expect(() =>
+      new DpsXmlBuilder().build({
+        ...sampleDpsInput,
+        ibsCbs: {} as any,
+      }),
+    ).toThrow('DPS inválida');
+  });
 });
