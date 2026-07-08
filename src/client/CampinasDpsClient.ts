@@ -3,6 +3,7 @@ import https from 'https';
 import { gzipSync } from 'zlib';
 import { HttpError } from '../errors/HttpError';
 import { parseEnviarDpsResponse, EnviarDpsResult } from './responseParser';
+import { createHttpTracer, formatTraceBody, HttpTraceLogger } from './httpTrace';
 
 export type CampinasDpsClientOptions = {
   endpoint: string;
@@ -12,6 +13,8 @@ export type CampinasDpsClientOptions = {
   clientCertPem?: string;
   timeoutMs?: number;
   requestHeaders?: Record<string, string>;
+  debug?: boolean;
+  traceLogger?: HttpTraceLogger;
   transport?: {
     useClientCertificate?: boolean;
   };
@@ -66,6 +69,19 @@ export class CampinasDpsClient {
       ...this.options.requestHeaders,
     };
     const httpsAgent = createHttpsAgent(this.options);
+    const tracer = createHttpTracer({ enabled: this.options.debug, logger: this.options.traceLogger });
+    const startedAt = Date.now();
+
+    await tracer.logRequest({
+      timestamp: new Date().toISOString(),
+      requestId,
+      idDps: input.idDps,
+      method: 'POST',
+      url: this.options.endpoint,
+      headers,
+      body: formatTraceBody(rawRequest),
+      signedXml: input.signedXml,
+    });
 
     try {
       const response = await axios.post(this.options.endpoint, rawRequest, {
@@ -75,6 +91,17 @@ export class CampinasDpsClient {
         responseType: 'text',
         transformResponse: [(data) => data],
       });
+      const normalizedHeaders = normalizeHeaders(response.headers);
+
+      await tracer.logResponse({
+        timestamp: new Date().toISOString(),
+        requestId,
+        idDps: input.idDps,
+        durationMs: Date.now() - startedAt,
+        status: response.status,
+        headers: normalizedHeaders,
+        body: formatTraceBody(String(response.data || '')),
+      });
 
       return parseEnviarDpsResponse({
         idDps: input.idDps,
@@ -82,13 +109,23 @@ export class CampinasDpsClient {
         rawRequest,
         rawResponse: String(response.data || ''),
         httpStatus: response.status,
-        headers: normalizeHeaders(response.headers),
+        headers: normalizedHeaders,
       });
     } catch (error) {
       const axiosError = error as AxiosError;
       const status = axiosError.response?.status;
       const responseBody = axiosError.response?.data === undefined ? '' : `: ${String(axiosError.response.data)}`;
       const httpMessage = status ? `HTTP ${status}${responseBody}` : axiosError.message || 'erro HTTP desconhecido';
+      await tracer.logError({
+        timestamp: new Date().toISOString(),
+        requestId,
+        idDps: input.idDps,
+        durationMs: Date.now() - startedAt,
+        message: axiosError.message || String(error),
+        status,
+        headers: axiosError.response ? normalizeHeaders(axiosError.response.headers) : undefined,
+        body: axiosError.response?.data === undefined ? undefined : formatTraceBody(String(axiosError.response.data)),
+      });
       throw new HttpError(
         `Falha ao enviar DPS ${input.idDps}: ${httpMessage}`,
         input.idDps,

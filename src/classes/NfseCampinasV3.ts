@@ -1,6 +1,7 @@
 import { PfxCertificate } from '../certificate/PfxCertificate';
 import { CampinasDpsClient } from '../client/CampinasDpsClient';
 import { NfseCampinasV3Endpoints, resolveDpsEndpoint } from '../client/endpoints';
+import { HttpTraceLogger } from '../client/httpTrace';
 import { EnviarDpsResult } from '../client/responseParser';
 import { buildDpsId } from '../dps/buildDpsId';
 import { DpsXmlBuilder } from '../dps/DpsXmlBuilder';
@@ -23,6 +24,7 @@ export type NfseCampinasV3Options = {
   endpoints?: NfseCampinasV3Endpoints;
   applicationVersion?: string;
   requestHeaders?: Record<string, string>;
+  traceLogger?: HttpTraceLogger;
   signature?: Partial<DpsSignatureOptions>;
   transport?: {
     useClientCertificate?: boolean;
@@ -69,24 +71,12 @@ export class NfseCampinasV3 {
       clientCertPem: clientCertificate.publicCert,
       timeoutMs: this.options.timeoutMs,
       requestHeaders: this.options.requestHeaders,
+      debug: this.options.debug,
+      traceLogger: this.options.traceLogger,
       transport: this.options.transport,
     });
 
-    if (this.options.debug) {
-      // tslint:disable-next-line:no-console
-      console.log(`POST ${endpoint}`);
-      // tslint:disable-next-line:no-console
-      console.log(signedXml);
-    }
-
     const result = await client.sendSignedDps({ signedXml, idDps, timeoutMs: options.timeoutMs });
-
-    if (this.options.debug) {
-      // tslint:disable-next-line:no-console
-      console.log(`HTTP ${result.httpStatus}`);
-      // tslint:disable-next-line:no-console
-      console.log(result.rawResponse);
-    }
 
     return result;
   }

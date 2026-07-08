@@ -74,6 +74,77 @@ describe('CampinasDpsClient', () => {
     });
   });
 
+  test('registra trace HTTP de request e response quando debug está ativo', async () => {
+    const endpoint = 'https://trace.local/dps';
+    const logs: Array<{ prefix: string; data: any }> = [];
+    nock('https://trace.local').post('/dps').reply(201, JSON.stringify({ chaveAcesso: 'abc' }), {
+      'content-type': 'application/json',
+    });
+
+    const result = await new CampinasDpsClient({
+      endpoint,
+      debug: true,
+      traceLogger: (prefix, data) => {
+        logs.push({ prefix, data });
+      },
+      transport: { useClientCertificate: false },
+    }).sendSignedDps({
+      idDps: 'DPS1',
+      signedXml: '<DPS><Signature></Signature></DPS>',
+    });
+
+    expect(result.status).toBe('autorizada');
+    expect(logs.map((log) => log.prefix)).toEqual(['Request:', 'Response:']);
+    expect(logs[0].data).toMatchObject({ method: 'POST', url: endpoint, idDps: 'DPS1' });
+    expect(logs[0].data.body.dpsXmlGZipB64).toBeDefined();
+    expect(logs[0].data.signedXml).toContain('<Signature>');
+    expect(logs[1].data).toMatchObject({ status: 201, body: { chaveAcesso: 'abc' } });
+    expect(typeof logs[1].data.durationMs).toBe('number');
+  });
+
+  test('registra trace HTTP de erro quando debug está ativo', async () => {
+    const endpoint = 'https://trace-error.local/dps';
+    const logs: Array<{ prefix: string; data: any }> = [];
+    nock('https://trace-error.local').post('/dps').reply(400, JSON.stringify({ alertas: [{ codigo: 'E1' }] }), {
+      'content-type': 'application/json',
+    });
+
+    await expect(
+      new CampinasDpsClient({
+        endpoint,
+        debug: true,
+        traceLogger: (prefix, data) => {
+          logs.push({ prefix, data });
+        },
+        transport: { useClientCertificate: false },
+      }).sendSignedDps({
+        idDps: 'DPS1',
+        signedXml: '<DPS/>',
+      }),
+    ).rejects.toMatchObject({ idDps: 'DPS1' });
+
+    expect(logs.map((log) => log.prefix)).toEqual(['Request:', 'Error:']);
+    expect(logs[1].data).toMatchObject({ status: 400, body: { alertas: [{ codigo: 'E1' }] }, idDps: 'DPS1' });
+    expect(typeof logs[1].data.durationMs).toBe('number');
+  });
+
+  test('não registra trace HTTP quando debug está inativo', async () => {
+    const endpoint = 'https://no-trace.local/dps';
+    const logger = jest.fn();
+    nock('https://no-trace.local').post('/dps').reply(200, '<ret><chaveAcesso>abc</chaveAcesso></ret>');
+
+    await new CampinasDpsClient({
+      endpoint,
+      traceLogger: logger,
+      transport: { useClientCertificate: false },
+    }).sendSignedDps({
+      idDps: 'DPS1',
+      signedXml: '<DPS/>',
+    });
+
+    expect(logger).not.toHaveBeenCalled();
+  });
+
   test('timeout preserva idDps e XML assinado', async () => {
     const endpoint = 'https://timeout.local/dps';
     nock('https://timeout.local').post('/dps').delay(100).reply(200, 'ok');

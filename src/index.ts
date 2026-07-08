@@ -6,6 +6,7 @@ export * from './dps/normalize';
 export * from './dps/validators';
 export * from './dps/DpsXmlBuilder';
 export * from './client/endpoints';
+export * from './client/httpTrace';
 export * from './client/responseParser';
 export * from './client/CampinasDpsClient';
 export * from './certificate/PfxCertificate';
