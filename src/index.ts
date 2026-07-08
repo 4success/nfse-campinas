@@ -9,6 +9,7 @@ export * from './client/endpoints';
 export * from './client/httpTrace';
 export * from './client/responseParser';
 export * from './client/CampinasDpsClient';
+export * from './danfse/imprimirDanfse';
 export * from './certificate/PfxCertificate';
 export * from './signature/DpsSigner';
 export * from './signature/signatureTypes';

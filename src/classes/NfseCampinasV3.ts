@@ -3,6 +3,7 @@ import { CampinasDpsClient } from '../client/CampinasDpsClient';
 import { NfseCampinasV3Endpoints, resolveDpsEndpoint } from '../client/endpoints';
 import { HttpTraceLogger } from '../client/httpTrace';
 import { EnviarDpsResult } from '../client/responseParser';
+import { imprimirDanfse, ImprimirDanfseInput } from '../danfse/imprimirDanfse';
 import { buildDpsId } from '../dps/buildDpsId';
 import { DpsXmlBuilder } from '../dps/DpsXmlBuilder';
 import { BuildDpsIdInput, DpsInput, NfseCampinasV3Environment } from '../dps/types';
@@ -87,6 +88,10 @@ export class NfseCampinasV3 {
 
   async cancelarNfse(_input: unknown): Promise<never> {
     throw new NotImplementedError('cancelarNfse');
+  }
+
+  async imprimirDanfse(input: ImprimirDanfseInput): Promise<string> {
+    return imprimirDanfse(input);
   }
 
   private buildDpsXmlWithId(input: DpsInput): {

@@ -83,11 +83,31 @@ console.log(result.rawResponse);
 if (result.nfseXmlGZipB64) {
   const nfseXml = decodeNfseXmlGZipB64(result.nfseXmlGZipB64);
   console.log(nfseXml);
+
+  const danfseHtml = await nfse.imprimirDanfse({ nfseXmlGZipB64: result.nfseXmlGZipB64 });
+  console.log(danfseHtml);
 }
 ```
 
 `rawResponse` preserva a resposta original da Prefeitura, `parsedResponse` expõe o corpo parseado quando possível, e
 `nfseXmlGZipB64` traz o XML autorizado da NFSe compactado em GZip/Base64.
+
+## DANFSe
+
+Depois que a Prefeitura autoriza a NFSe, use o XML autorizado para gerar o HTML imprimível do DANFSe:
+
+```ts
+const html = await nfse.imprimirDanfse({ nfseXmlGZipB64: result.nfseXmlGZipB64! });
+```
+
+Também é possível informar o XML autorizado já descompactado:
+
+```ts
+const html = await nfse.imprimirDanfse({ xml: nfseXml });
+```
+
+O método retorna HTML. A geração de PDF deve ser feita pelo consumidor a partir desse HTML, usando o renderer apropriado
+para o ambiente de execução.
 
 ## Segurança
 
