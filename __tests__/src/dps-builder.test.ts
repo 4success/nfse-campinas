@@ -171,4 +171,16 @@ describe('DpsXmlBuilder', () => {
       }),
     ).toThrow('DPS inválida');
   });
+
+  test('bloqueia PIS/COFINS incompleto antes de gerar XML', () => {
+    expect(() =>
+      new DpsXmlBuilder().build({
+        ...sampleDpsInput,
+        valores: {
+          ...sampleDpsInput.valores,
+          tributacaoFederal: { ...sampleDpsInput.valores.tributacaoFederal, pisCofins: {} as any },
+        },
+      }),
+    ).toThrow('DPS inválida');
+  });
 });
