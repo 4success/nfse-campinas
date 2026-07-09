@@ -1,4 +1,4 @@
-import { isIsoDate, isIsoDateTimeWithTimezone } from '../utils/dates';
+import { isIsoDate, isIsoDateTime } from '../utils/dates';
 import { ValidationIssue } from '../errors/ValidationError';
 import { buildDpsId } from './buildDpsId';
 import { DpsInput } from './types';
@@ -180,8 +180,8 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
   } catch (error) {
     pushIssue(issues, 'numeroDps', (error as Error).message);
   }
-  if (!isIsoDateTimeWithTimezone(dhEmi)) {
-    pushIssue(issues, 'dataHoraEmissao', 'deve estar em ISO 8601 com timezone');
+  if (!isIsoDateTime(dhEmi)) {
+    pushIssue(issues, 'dataHoraEmissao', 'deve estar em ISO 8601');
   }
   if (!isIsoDate(dCompet)) {
     pushIssue(issues, 'dataCompetencia', 'deve estar em YYYY-MM-DD');
@@ -237,7 +237,12 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
     }
   }
 
-  if (!input.valores || input.valores.valorServico === undefined) {
+  if (
+    !input.valores ||
+    input.valores.valorServico === undefined ||
+    input.valores.valorServico === null ||
+    input.valores.valorServico === ''
+  ) {
     pushIssue(issues, 'valores.valorServico', 'valor do serviço obrigatório');
   } else {
     validateMoneyWhenPresent(input.valores.valorServico, 'valores.valorServico', issues);

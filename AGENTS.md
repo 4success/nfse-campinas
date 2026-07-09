@@ -57,8 +57,7 @@
   `codigoTributacaoMunicipal`, and `codigoNbs` should be serialized exactly as supplied; use warnings if helpful, but do
   not reformat, pad, strip punctuation, round, or otherwise canonicalize them before signing.
 - `validationMode: 'warn'` still blocks `severity: 'error'`; only `off` bypasses local validation.
-- Dates must be real ISO dates/date-times with timezone; validation uses Luxon to reject impossible values and invalid
-  `Date` objects.
+- Dates must be real ISO dates/date-times; validation uses Luxon to reject impossible values and invalid `Date` objects.
 - `serie` and `numeroDps` accept only digits before padding because they are used to build the DPS ID; do not silently
   strip letters/signs.
 - CNPJ may be alphanumeric (`[A-Z0-9]{12}` + 2 numeric check digits); preserve uppercase letters in XML and DPS IDs.

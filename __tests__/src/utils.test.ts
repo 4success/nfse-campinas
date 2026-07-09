@@ -1,6 +1,6 @@
 import { gzipSync } from 'zlib';
 import { formatDecimal, roundHalfEven } from '../../src/utils/decimals';
-import { isIsoDate, isIsoDateTimeWithTimezone } from '../../src/utils/dates';
+import { isIsoDate, isIsoDateTime } from '../../src/utils/dates';
 import { decodeNfseXmlGZipB64 } from '../../src/utils/nfseXml';
 import { sanitizeXmlText } from '../../src/utils/xml';
 
@@ -14,9 +14,10 @@ describe('utils', () => {
   test('valida datas ISO por componentes reais', () => {
     expect(isIsoDate('2026-06-30')).toBe(true);
     expect(isIsoDate('2026-02-30')).toBe(false);
-    expect(isIsoDateTimeWithTimezone('2026-06-30T21:41:28-03:00')).toBe(true);
-    expect(isIsoDateTimeWithTimezone('2026-06-30T21:41:28Z')).toBe(true);
-    expect(isIsoDateTimeWithTimezone('2026-13-40T99:99:99-03:00')).toBe(false);
+    expect(isIsoDateTime('2026-06-30T21:41:28-03:00')).toBe(true);
+    expect(isIsoDateTime('2026-06-30T21:41:28')).toBe(true);
+    expect(isIsoDateTime('2026-07-08T16:13:36.707848125-03:00')).toBe(true);
+    expect(isIsoDateTime('2026-13-40T99:99:99-03:00')).toBe(false);
   });
 
   test('decodifica XML da NFSe retornado em gzip base64', () => {

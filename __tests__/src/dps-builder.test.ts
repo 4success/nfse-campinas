@@ -119,6 +119,24 @@ describe('DpsXmlBuilder', () => {
     expect(xml).toContain('<dhEmi>2026-13-40T99:99:99-03:00</dhEmi>');
   });
 
+  test('preserva timestamp ISO com precisão maior que milissegundos', () => {
+    const { xml } = new DpsXmlBuilder().build({
+      ...sampleDpsInput,
+      dataHoraEmissao: '2026-07-08T16:13:36.707848125-03:00',
+    });
+
+    expect(xml).toContain('<dhEmi>2026-07-08T16:13:36.707848125-03:00</dhEmi>');
+  });
+
+  test.each([null, ''])('bloqueia valorServico %p antes de gerar XML', (valorServico) => {
+    expect(() =>
+      new DpsXmlBuilder().build({
+        ...sampleDpsInput,
+        valores: { ...sampleDpsInput.valores, valorServico: valorServico as any },
+      }),
+    ).toThrow('DPS inválida');
+  });
+
   test('bloqueia CPF e CNPJ simultâneos antes de gerar XML', () => {
     expect(() =>
       new DpsXmlBuilder().build({

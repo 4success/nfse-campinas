@@ -22,11 +22,8 @@ export function isIsoDate(value: unknown): boolean {
   return DateTime.fromISO(value, { zone: 'utc' }).isValid;
 }
 
-export function isIsoDateTimeWithTimezone(value: unknown): boolean {
-  if (
-    typeof value !== 'string' ||
-    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?(Z|[+-]\d{2}:\d{2})$/.test(value)
-  ) {
+export function isIsoDateTime(value: unknown): boolean {
+  if (typeof value !== 'string') {
     return false;
   }
 

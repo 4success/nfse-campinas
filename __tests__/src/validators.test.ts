@@ -9,7 +9,7 @@ describe('validateDpsInput', () => {
   test('retorna erros estruturais', () => {
     const issues = validateDpsInput({
       ...sampleDpsInput,
-      dataHoraEmissao: '2026-06-30T21:41:28',
+      dataHoraEmissao: 'data inválida',
       municipioEmissao: '123',
       prestador: { cnpj: '123' },
       tomador: { cpf: '123', endereco: { municipio: 'ABC' } },
@@ -41,6 +41,15 @@ describe('validateDpsInput', () => {
 
     expect(issues.map((issue) => issue.field)).toEqual(expect.arrayContaining(['dataHoraEmissao', 'dataCompetencia']));
     expect(invalidDateIssues.map((issue) => issue.field)).toContain('dataHoraEmissao');
+  });
+
+  test.each([null, ''])('trata valorServico %p como obrigatório', (valorServico) => {
+    const issues = validateDpsInput({
+      ...sampleDpsInput,
+      valores: { ...sampleDpsInput.valores, valorServico: valorServico as any },
+    });
+
+    expect(issues).toContainEqual(expect.objectContaining({ field: 'valores.valorServico', severity: 'error' }));
   });
 
   test('não valida domínio nem normaliza códigos IBS/CBS', () => {
