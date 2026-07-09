@@ -59,14 +59,14 @@
 - `validationMode: 'warn'` still blocks `severity: 'error'`; only `off` bypasses local validation.
 - Dates must be real ISO dates/date-times with timezone; validation uses Luxon to reject impossible values and invalid
   `Date` objects.
-- `serie`, `numeroDps`, and `codigoTributacaoMunicipal` accept only digits before padding; do not silently strip
-  letters/signs.
-- `codigoTributacaoNacional` accepts digits and dot formatting like `01.03.01`; reject letters before normalization.
+- `serie` and `numeroDps` accept only digits before padding because they are used to build the DPS ID; do not silently
+  strip letters/signs.
 - CNPJ may be alphanumeric (`[A-Z0-9]{12}` + 2 numeric check digits); preserve uppercase letters in XML and DPS IDs.
 - `idDps` override must match the DPS structure, allowing alphanumeric CNPJ in the 14-character federal-inscription block.
 - Validate optional `tomador`/`destinatario` CPF/CNPJ and address municipality when supplied, but do not make optional
   parties mandatory.
-- `servico.codigoNbs` is only a warning when not 9 digits after normalization.
+- `servico.codigoNbs` is only a warning when it does not look like 9 digits or the documented dotted format; serialize it
+  exactly as supplied.
 - Do not validate or normalize IBS/CBS domain codes locally; emit `cIndOp` and `cClassTrib` exactly as supplied.
 
 ## Docs And Examples
