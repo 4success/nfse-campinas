@@ -3,14 +3,11 @@ import { ValidationIssue } from '../errors/ValidationError';
 import { buildDpsId } from './buildDpsId';
 import { DpsInput } from './types';
 import {
-  normalizeCodigoTributacaoMunicipal,
-  normalizeCodigoTributacaoNacional,
   normalizeCep,
   normalizeCnpj,
   normalizeCpf,
   normalizeMoney,
   normalizeMunicipio,
-  normalizeNbs,
   normalizeNumeroDps,
   normalizeSerie,
 } from './normalize';
@@ -101,7 +98,7 @@ function validateMoneyWhenPresent(value: string | number | undefined, field: str
   try {
     normalizeMoney(value);
   } catch (error) {
-    pushIssue(issues, field, (error as Error).message);
+    pushIssue(issues, field, (error as Error).message, 'warning');
   }
 }
 
@@ -209,22 +206,31 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
     } catch (error) {
       pushIssue(issues, 'servico.municipioPrestacao', (error as Error).message);
     }
-    try {
-      if (!/^\d{6}$/.test(normalizeCodigoTributacaoNacional(input.servico.codigoTributacaoNacional || ''))) {
-        pushIssue(issues, 'servico.codigoTributacaoNacional', 'deve ter 6 dígitos');
-      }
-    } catch (error) {
-      pushIssue(issues, 'servico.codigoTributacaoNacional', (error as Error).message);
+    const codigoTributacaoNacional = input.servico.codigoTributacaoNacional || '';
+    if (!/^\d{6}$/.test(codigoTributacaoNacional) && !/^\d{2}\.\d{2}\.\d{2}$/.test(codigoTributacaoNacional)) {
+      pushIssue(
+        issues,
+        'servico.codigoTributacaoNacional',
+        'código de tributação nacional normalmente usa 6 dígitos ou formato 00.00.00',
+        'warning',
+      );
     }
     if (input.servico.codigoTributacaoMunicipal) {
-      try {
-        normalizeCodigoTributacaoMunicipal(input.servico.codigoTributacaoMunicipal);
-      } catch (error) {
-        pushIssue(issues, 'servico.codigoTributacaoMunicipal', (error as Error).message);
+      if (!/^\d{3}$/.test(String(input.servico.codigoTributacaoMunicipal))) {
+        pushIssue(
+          issues,
+          'servico.codigoTributacaoMunicipal',
+          'código de tributação municipal normalmente usa 3 dígitos',
+          'warning',
+        );
       }
     }
-    if (input.servico.codigoNbs && !/^\d{9}$/.test(normalizeNbs(input.servico.codigoNbs))) {
-      pushIssue(issues, 'servico.codigoNbs', 'deve ter 9 dígitos', 'warning');
+    if (
+      input.servico.codigoNbs &&
+      !/^\d{9}$/.test(String(input.servico.codigoNbs)) &&
+      !/^\d\.\d{4}\.\d{2}\.\d{2}$/.test(String(input.servico.codigoNbs))
+    ) {
+      pushIssue(issues, 'servico.codigoNbs', 'código NBS normalmente usa 9 dígitos ou formato 0.0000.00.00', 'warning');
     }
     if (!input.servico.descricao) {
       pushIssue(issues, 'servico.descricao', 'descrição obrigatória');

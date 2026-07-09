@@ -1,14 +1,10 @@
 import xmlbuilder, { XMLElement } from 'xmlbuilder';
 import { buildDpsId } from './buildDpsId';
 import {
-  normalizeCodigoTributacaoMunicipal,
-  normalizeCodigoTributacaoNacional,
   normalizeCep,
   normalizeCnpj,
   normalizeCpf,
-  normalizeMoney,
   normalizeMunicipio,
-  normalizeNbs,
   normalizeNumeroDps,
   normalizeSerie,
 } from './normalize';
@@ -146,39 +142,21 @@ export class DpsXmlBuilder {
     const locPrest = serv.ele('locPrest');
     addText(locPrest, 'cLocPrestacao', normalizeMunicipio(input.servico.municipioPrestacao));
     const cServ = serv.ele('cServ');
-    addText(cServ, 'cTribNac', normalizeCodigoTributacaoNacional(input.servico.codigoTributacaoNacional));
-    addText(
-      cServ,
-      'cTribMun',
-      input.servico.codigoTributacaoMunicipal
-        ? normalizeCodigoTributacaoMunicipal(input.servico.codigoTributacaoMunicipal)
-        : undefined,
-    );
+    addText(cServ, 'cTribNac', input.servico.codigoTributacaoNacional);
+    addText(cServ, 'cTribMun', input.servico.codigoTributacaoMunicipal);
     addText(cServ, 'xDescServ', input.servico.descricao);
-    addText(cServ, 'cNBS', input.servico.codigoNbs ? normalizeNbs(input.servico.codigoNbs) : undefined);
+    addText(cServ, 'cNBS', input.servico.codigoNbs);
 
     const valores = infDps.ele('valores');
     const vServPrest = valores.ele('vServPrest');
-    addText(vServPrest, 'vServ', normalizeMoney(input.valores.valorServico));
+    addText(vServPrest, 'vServ', input.valores.valorServico);
     if (
       input.valores.valorDescontoIncondicionado !== undefined ||
       input.valores.valorDescontoCondicionado !== undefined
     ) {
       const vDescCondIncond = valores.ele('vDescCondIncond');
-      addText(
-        vDescCondIncond,
-        'vDescIncond',
-        input.valores.valorDescontoIncondicionado !== undefined
-          ? normalizeMoney(input.valores.valorDescontoIncondicionado)
-          : undefined,
-      );
-      addText(
-        vDescCondIncond,
-        'vDescCond',
-        input.valores.valorDescontoCondicionado !== undefined
-          ? normalizeMoney(input.valores.valorDescontoCondicionado)
-          : undefined,
-      );
+      addText(vDescCondIncond, 'vDescIncond', input.valores.valorDescontoIncondicionado);
+      addText(vDescCondIncond, 'vDescCond', input.valores.valorDescontoCondicionado);
     }
 
     const hasTributacao = Boolean(
@@ -190,13 +168,7 @@ export class DpsXmlBuilder {
       const tribMun = trib.ele('tribMun');
       addText(tribMun, 'tribISSQN', input.valores.tributacaoMunicipal.tributacaoIssqn);
       addText(tribMun, 'tpRetISSQN', input.valores.tributacaoMunicipal.tipoRetencaoIssqn);
-      addText(
-        tribMun,
-        'pAliq',
-        input.valores.tributacaoMunicipal.aliquota !== undefined
-          ? normalizeMoney(input.valores.tributacaoMunicipal.aliquota, 2)
-          : undefined,
-      );
+      addText(tribMun, 'pAliq', input.valores.tributacaoMunicipal.aliquota);
     }
 
     if (input.valores.tributacaoFederal && trib) {
@@ -205,69 +177,23 @@ export class DpsXmlBuilder {
       if (pisCofins) {
         const piscofins = tribFed.ele('piscofins');
         addText(piscofins, 'CST', pisCofins.cst);
-        addText(
-          piscofins,
-          'vBCPisCofins',
-          pisCofins.baseCalculo !== undefined ? normalizeMoney(pisCofins.baseCalculo) : undefined,
-        );
-        addText(
-          piscofins,
-          'pAliqPis',
-          pisCofins.aliquotaPis !== undefined ? normalizeMoney(pisCofins.aliquotaPis) : undefined,
-        );
-        addText(
-          piscofins,
-          'pAliqCofins',
-          pisCofins.aliquotaCofins !== undefined ? normalizeMoney(pisCofins.aliquotaCofins) : undefined,
-        );
-        addText(piscofins, 'vPis', pisCofins.valorPis !== undefined ? normalizeMoney(pisCofins.valorPis) : undefined);
-        addText(
-          piscofins,
-          'vCofins',
-          pisCofins.valorCofins !== undefined ? normalizeMoney(pisCofins.valorCofins) : undefined,
-        );
+        addText(piscofins, 'vBCPisCofins', pisCofins.baseCalculo);
+        addText(piscofins, 'pAliqPis', pisCofins.aliquotaPis);
+        addText(piscofins, 'pAliqCofins', pisCofins.aliquotaCofins);
+        addText(piscofins, 'vPis', pisCofins.valorPis);
+        addText(piscofins, 'vCofins', pisCofins.valorCofins);
         addText(piscofins, 'tpRetPisCofins', pisCofins.tipoRetencaoPisCofins);
       }
-      addText(
-        tribFed,
-        'vRetIRRF',
-        input.valores.tributacaoFederal.valorRetidoIrrf !== undefined
-          ? normalizeMoney(input.valores.tributacaoFederal.valorRetidoIrrf)
-          : undefined,
-      );
-      addText(
-        tribFed,
-        'vRetCSLL',
-        input.valores.tributacaoFederal.valorRetidoCsll !== undefined
-          ? normalizeMoney(input.valores.tributacaoFederal.valorRetidoCsll)
-          : undefined,
-      );
-      addText(
-        tribFed,
-        'vRetINSS',
-        input.valores.tributacaoFederal.valorRetidoInss !== undefined
-          ? normalizeMoney(input.valores.tributacaoFederal.valorRetidoInss)
-          : undefined,
-      );
+      addText(tribFed, 'vRetIRRF', input.valores.tributacaoFederal.valorRetidoIrrf);
+      addText(tribFed, 'vRetCSLL', input.valores.tributacaoFederal.valorRetidoCsll);
+      addText(tribFed, 'vRetINSS', input.valores.tributacaoFederal.valorRetidoInss);
     }
 
     if (input.valores.totalTributos && trib) {
       const totTrib = trib.ele('totTrib');
       addText(totTrib, 'indTotTrib', input.valores.totalTributos.indicadorTotalTributos);
-      addText(
-        totTrib,
-        'pTotTrib',
-        input.valores.totalTributos.percentualTotalTributos !== undefined
-          ? normalizeMoney(input.valores.totalTributos.percentualTotalTributos)
-          : undefined,
-      );
-      addText(
-        totTrib,
-        'vTotTrib',
-        input.valores.totalTributos.valorTotalTributos !== undefined
-          ? normalizeMoney(input.valores.totalTributos.valorTotalTributos)
-          : undefined,
-      );
+      addText(totTrib, 'pTotTrib', input.valores.totalTributos.percentualTotalTributos);
+      addText(totTrib, 'vTotTrib', input.valores.totalTributos.valorTotalTributos);
     }
 
     if (input.ibsCbs) {

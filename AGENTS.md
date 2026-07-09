@@ -50,9 +50,12 @@
   otherwise.
 - Do not sanitize, strip, truncate, or "fix" fiscal/declarative text silently before signing. Preserve caller-provided
   values and let the Prefeitura/NFS-e service validate them.
-- Normalization is allowed only for explicitly accepted input formats, such as punctuation removal from CPF/CNPJ/CEP/NBS
+- Normalization is allowed only for explicitly accepted input formats, such as punctuation removal from CPF/CNPJ/CEP
   when the original value matches one of the documented formats. Arbitrary text must not be cleaned into a different
   fiscal value.
+- Monetary/decimal strings and fiscal/declarative codes such as `codigoTributacaoNacional`,
+  `codigoTributacaoMunicipal`, and `codigoNbs` should be serialized exactly as supplied; use warnings if helpful, but do
+  not reformat, pad, strip punctuation, round, or otherwise canonicalize them before signing.
 - `validationMode: 'warn'` still blocks `severity: 'error'`; only `off` bypasses local validation.
 - Dates must be real ISO dates/date-times with timezone; validation uses Luxon to reject impossible values and invalid
   `Date` objects.

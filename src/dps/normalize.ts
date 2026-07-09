@@ -80,11 +80,7 @@ export function normalizeCodigoTributacaoMunicipal(value: string | number): stri
 }
 
 export function normalizeNbs(value: string | number): string {
-  const text = String(value);
-  if (/^\d+$/.test(text) || /^\d\.\d{4}\.\d{2}\.\d{2}$/.test(text)) {
-    return onlyDigits(text);
-  }
-  return text;
+  return String(value);
 }
 
 export function normalizeSerie(value: string | number): string {

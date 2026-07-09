@@ -1,9 +1,4 @@
 import { DpsXmlBuilder } from '../../src/dps/DpsXmlBuilder';
-import {
-  normalizeCodigoTributacaoMunicipal,
-  normalizeCodigoTributacaoNacional,
-  normalizeNbs,
-} from '../../src/dps/normalize';
 import { sampleDpsInput } from '../../test-support/fixtures';
 
 describe('DpsXmlBuilder', () => {
@@ -21,15 +16,12 @@ describe('DpsXmlBuilder', () => {
     expect(xml.indexOf('<vServPrest>')).toBeLessThan(xml.indexOf('<trib><tribMun>'));
   });
 
-  test('normaliza códigos fiscais e escapa XML', () => {
+  test('preserva códigos fiscais e escapa XML', () => {
     const { xml } = new DpsXmlBuilder().build(sampleDpsInput);
 
-    expect(normalizeCodigoTributacaoNacional('01.03.01')).toBe('010301');
-    expect(normalizeCodigoTributacaoMunicipal('1')).toBe('001');
-    expect(normalizeNbs('1.1506.90.00')).toBe('115069000');
-    expect(xml).toContain('<cTribNac>010301</cTribNac>');
-    expect(xml).toContain('<cTribMun>001</cTribMun>');
-    expect(xml).toContain('<cNBS>115069000</cNBS>');
+    expect(xml).toContain('<cTribNac>01.03.01</cTribNac>');
+    expect(xml).toContain('<cTribMun>1</cTribMun>');
+    expect(xml).toContain('<cNBS>1.1506.90.00</cNBS>');
     expect(xml).toContain('TOMADOR LTDA &amp; CIA');
     expect(xml).not.toContain('<dest>');
   });
@@ -49,8 +41,6 @@ describe('DpsXmlBuilder', () => {
       servico: { ...sampleDpsInput.servico, codigoNbs: 'ABC1.1501.10.00' },
     });
 
-    expect(normalizeNbs('1.1501.10.00')).toBe('115011000');
-    expect(normalizeNbs('ABC1.1501.10.00')).toBe('ABC1.1501.10.00');
     expect(xml).toContain('<cNBS>ABC1.1501.10.00</cNBS>');
   });
 
@@ -156,22 +146,43 @@ describe('DpsXmlBuilder', () => {
     ).toThrow('DPS inválida');
   });
 
-  test('bloqueia valor de serviço negativo antes de gerar XML', () => {
-    expect(() =>
-      new DpsXmlBuilder().build({
-        ...sampleDpsInput,
-        valores: { ...sampleDpsInput.valores, valorServico: '-1' },
-      }),
-    ).toThrow('DPS inválida');
+  test('preserva valor de serviço negativo para validação da Prefeitura', () => {
+    const { xml } = new DpsXmlBuilder().build({
+      ...sampleDpsInput,
+      valores: { ...sampleDpsInput.valores, valorServico: '-1' },
+    });
+
+    expect(xml).toContain('<vServ>-1</vServ>');
   });
 
-  test('bloqueia valor de serviço com precisão excessiva antes de gerar XML', () => {
-    expect(() =>
-      new DpsXmlBuilder().build({
-        ...sampleDpsInput,
-        valores: { ...sampleDpsInput.valores, valorServico: '1.005' },
-      }),
-    ).toThrow('DPS inválida');
+  test('preserva valor de serviço com precisão excessiva para validação da Prefeitura', () => {
+    const { xml } = new DpsXmlBuilder().build({
+      ...sampleDpsInput,
+      valores: { ...sampleDpsInput.valores, valorServico: '1.005' },
+    });
+
+    expect(xml).toContain('<vServ>1.005</vServ>');
+  });
+
+  test('preserva formatos decimais recebidos', () => {
+    const { xml } = new DpsXmlBuilder().build({
+      ...sampleDpsInput,
+      valores: {
+        ...sampleDpsInput.valores,
+        valorServico: ' 5,00 ',
+        tributacaoMunicipal: { ...sampleDpsInput.valores.tributacaoMunicipal!, aliquota: '5' },
+        tributacaoFederal: {
+          ...sampleDpsInput.valores.tributacaoFederal,
+          pisCofins: { ...sampleDpsInput.valores.tributacaoFederal!.pisCofins!, valorPis: '175.165' },
+        },
+        totalTributos: { indicadorTotalTributos: 0, percentualTotalTributos: '12,34' },
+      },
+    });
+
+    expect(xml).toContain('<vServ> 5,00 </vServ>');
+    expect(xml).toContain('<pAliq>5</pAliq>');
+    expect(xml).toContain('<vPis>175.165</vPis>');
+    expect(xml).toContain('<pTotTrib>12,34</pTotTrib>');
   });
 
   test('bloqueia IBS/CBS incompleto antes de gerar XML', () => {

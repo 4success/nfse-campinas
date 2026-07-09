@@ -26,7 +26,6 @@ describe('validateDpsInput', () => {
         'tomador.endereco.municipio',
         'destinatario.cnpj',
         'destinatario.endereco.municipio',
-        'servico.codigoTributacaoNacional',
         'servico.descricao',
       ]),
     );
@@ -154,22 +153,32 @@ describe('validateDpsInput', () => {
     );
   });
 
-  test.each(['ABC', 'ABC12', '-1'])('rejeita código municipal malformado em modo estrito: %s', (codigo) => {
+  test.each(['ABC', 'ABC12', '-1'])('alerta sobre código municipal incomum sem bloquear: %s', (codigo) => {
     const issues = validateDpsInput({
       ...sampleDpsInput,
       servico: { ...sampleDpsInput.servico, codigoTributacaoMunicipal: codigo },
     });
 
-    expect(issues.map((issue) => issue.field)).toContain('servico.codigoTributacaoMunicipal');
+    expect(issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ field: 'servico.codigoTributacaoMunicipal', severity: 'warning' }),
+      ]),
+    );
+    expect(issues.filter((issue) => issue.severity === 'error')).toEqual([]);
   });
 
-  test('rejeita código nacional com caracteres que não são formatação', () => {
+  test('alerta sobre código nacional incomum sem bloquear', () => {
     const issues = validateDpsInput({
       ...sampleDpsInput,
       servico: { ...sampleDpsInput.servico, codigoTributacaoNacional: 'ABC010301' },
     });
 
-    expect(issues.map((issue) => issue.field)).toContain('servico.codigoTributacaoNacional');
+    expect(issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ field: 'servico.codigoTributacaoNacional', severity: 'warning' }),
+      ]),
+    );
+    expect(issues.filter((issue) => issue.severity === 'error')).toEqual([]);
   });
 
   test('rejeita série e número DPS com caracteres não numéricos', () => {
@@ -182,7 +191,7 @@ describe('validateDpsInput', () => {
     expect(issues.map((issue) => issue.field)).toEqual(expect.arrayContaining(['serie', 'numeroDps']));
   });
 
-  test('rejeita valores monetários negativos', () => {
+  test('alerta sobre valores monetários negativos sem bloquear', () => {
     const issues = validateDpsInput({
       ...sampleDpsInput,
       valores: {
@@ -200,17 +209,18 @@ describe('validateDpsInput', () => {
       },
     });
 
-    expect(issues.map((issue) => issue.field)).toEqual(
+    expect(issues).toEqual(
       expect.arrayContaining([
-        'valores.valorServico',
-        'valores.valorDescontoIncondicionado',
-        'valores.tributacaoFederal.valorRetidoIrrf',
-        'valores.tributacaoFederal.pisCofins.valorPis',
+        expect.objectContaining({ field: 'valores.valorServico', severity: 'warning' }),
+        expect.objectContaining({ field: 'valores.valorDescontoIncondicionado', severity: 'warning' }),
+        expect.objectContaining({ field: 'valores.tributacaoFederal.valorRetidoIrrf', severity: 'warning' }),
+        expect.objectContaining({ field: 'valores.tributacaoFederal.pisCofins.valorPis', severity: 'warning' }),
       ]),
     );
+    expect(issues.filter((issue) => issue.severity === 'error')).toEqual([]);
   });
 
-  test('rejeita valores monetários com casas decimais acima da escala', () => {
+  test('alerta sobre valores monetários com casas decimais acima da escala sem bloquear', () => {
     const issues = validateDpsInput({
       ...sampleDpsInput,
       valores: {
@@ -226,9 +236,13 @@ describe('validateDpsInput', () => {
       },
     });
 
-    expect(issues.map((issue) => issue.field)).toEqual(
-      expect.arrayContaining(['valores.valorServico', 'valores.tributacaoFederal.pisCofins.valorPis']),
+    expect(issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ field: 'valores.valorServico', severity: 'warning' }),
+        expect.objectContaining({ field: 'valores.tributacaoFederal.pisCofins.valorPis', severity: 'warning' }),
+      ]),
     );
+    expect(issues.filter((issue) => issue.severity === 'error')).toEqual([]);
   });
 
   test.each([undefined, null, ''])('rejeita tipoEmitente obrigatório: %s', (tipoEmitente) => {
