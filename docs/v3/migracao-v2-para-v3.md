@@ -3,7 +3,7 @@
 | v2 ABRASF | v3 Nacional |
 |---|---|
 | RPS | DPS |
-| SOAP/WSDL | HTTP POST XML |
+| SOAP/WSDL | HTTP POST JSON com `{ dpsXmlGZipB64 }` |
 | `GerarNfse` | `enviarDps` |
 | `RecepcionarLoteRpsSincrono` | não há lote; enviar uma DPS por requisição |
 | `InfDeclaracaoPrestacaoServico` | `DPS/infDPS` |

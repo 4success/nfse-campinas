@@ -160,8 +160,6 @@ export type ServicoDps = {
   codigoTributacaoMunicipal?: string;
   descricao: string;
   codigoNbs?: string;
-  codigoCnae?: string;
-  codigoCbo?: string;
 };
 
 export type ValoresDps = {
