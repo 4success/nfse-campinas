@@ -239,16 +239,6 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
     validateMoneyWhenPresent(input.valores.valorDescontoCondicionado, 'valores.valorDescontoCondicionado', issues);
 
     if (input.valores.tributacaoMunicipal) {
-      validateRequiredWhenPresent(
-        input.valores.tributacaoMunicipal.tributacaoIssqn,
-        'valores.tributacaoMunicipal.tributacaoIssqn',
-        issues,
-      );
-      validateRequiredWhenPresent(
-        input.valores.tributacaoMunicipal.tipoRetencaoIssqn,
-        'valores.tributacaoMunicipal.tipoRetencaoIssqn',
-        issues,
-      );
       validateMoneyWhenPresent(
         input.valores.tributacaoMunicipal.aliquota,
         'valores.tributacaoMunicipal.aliquota',
@@ -258,7 +248,6 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
 
     if (input.valores.tributacaoFederal?.pisCofins) {
       const pisCofins = input.valores.tributacaoFederal.pisCofins;
-      validateRequiredWhenPresent(pisCofins.cst, 'valores.tributacaoFederal.pisCofins.cst', issues);
       validateMoneyWhenPresent(pisCofins.baseCalculo, 'valores.tributacaoFederal.pisCofins.baseCalculo', issues);
       validateMoneyWhenPresent(pisCofins.aliquotaPis, 'valores.tributacaoFederal.pisCofins.aliquotaPis', issues);
       validateMoneyWhenPresent(pisCofins.aliquotaCofins, 'valores.tributacaoFederal.pisCofins.aliquotaCofins', issues);

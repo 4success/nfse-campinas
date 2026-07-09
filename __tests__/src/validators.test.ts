@@ -231,38 +231,6 @@ describe('validateDpsInput', () => {
     );
   });
 
-  test('rejeita tributação municipal incompleta quando informada', () => {
-    const issues = validateDpsInput({
-      ...sampleDpsInput,
-      valores: {
-        ...sampleDpsInput.valores,
-        tributacaoMunicipal: {} as any,
-      },
-    });
-
-    expect(issues.map((issue) => issue.field)).toEqual(
-      expect.arrayContaining([
-        'valores.tributacaoMunicipal.tributacaoIssqn',
-        'valores.tributacaoMunicipal.tipoRetencaoIssqn',
-      ]),
-    );
-  });
-
-  test('rejeita PIS/COFINS sem CST quando informado', () => {
-    const issues = validateDpsInput({
-      ...sampleDpsInput,
-      valores: {
-        ...sampleDpsInput.valores,
-        tributacaoFederal: {
-          ...sampleDpsInput.valores.tributacaoFederal,
-          pisCofins: {} as any,
-        },
-      },
-    });
-
-    expect(issues.map((issue) => issue.field)).toContain('valores.tributacaoFederal.pisCofins.cst');
-  });
-
   test.each([undefined, null, ''])('rejeita tipoEmitente obrigatório: %s', (tipoEmitente) => {
     const issues = validateDpsInput({
       ...sampleDpsInput,

@@ -43,6 +43,11 @@
 
 ## Validation Rules That Are Easy To Break
 
+- Do not turn the SDK into a full DPS/XSD validator. Local validation should be limited to fields the SDK needs to
+  build IDs, sign/send requests, avoid runtime errors, or avoid silently changing user input during normalization.
+- Do not add local checks solely because the official XSD or municipal service would reject missing domain/structural
+  fields. Let the Prefeitura/NFS-e service be the source of truth for those rejections unless a product requirement says
+  otherwise.
 - `validationMode: 'warn'` still blocks `severity: 'error'`; only `off` bypasses local validation.
 - Dates must be real ISO dates/date-times with timezone; validation uses Luxon to reject impossible values and invalid
   `Date` objects.
