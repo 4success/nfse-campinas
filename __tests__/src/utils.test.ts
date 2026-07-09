@@ -2,6 +2,7 @@ import { gzipSync } from 'zlib';
 import { formatDecimal, roundHalfEven } from '../../src/utils/decimals';
 import { isIsoDate, isIsoDateTimeWithTimezone } from '../../src/utils/dates';
 import { decodeNfseXmlGZipB64 } from '../../src/utils/nfseXml';
+import { sanitizeXmlText } from '../../src/utils/xml';
 
 describe('utils', () => {
   test('arredonda half-even sem ponto flutuante', () => {
@@ -23,5 +24,10 @@ describe('utils', () => {
     const nfseXmlGZipB64 = gzipSync(Buffer.from(nfseXml, 'utf8')).toString('base64');
 
     expect(decodeNfseXmlGZipB64(nfseXmlGZipB64)).toBe(nfseXml);
+  });
+
+  test('não remove caracteres de texto fiscal antes do XML', () => {
+    expect(sanitizeXmlText('serviço 😀')).toBe('serviço 😀');
+    expect(sanitizeXmlText('serviço\u0001')).toBe('serviço\u0001');
   });
 });

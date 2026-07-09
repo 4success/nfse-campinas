@@ -34,6 +34,26 @@ describe('DpsXmlBuilder', () => {
     expect(xml).not.toContain('<dest>');
   });
 
+  test('preserva texto fiscal em vez de sanitizar silenciosamente', () => {
+    const { xml } = new DpsXmlBuilder().build({
+      ...sampleDpsInput,
+      servico: { ...sampleDpsInput.servico, descricao: 'serviço 😀' },
+    });
+
+    expect(xml).toContain('<xDescServ>serviço 😀</xDescServ>');
+  });
+
+  test('não limpa NBS arbitrário para outro valor fiscal', () => {
+    const { xml } = new DpsXmlBuilder().build({
+      ...sampleDpsInput,
+      servico: { ...sampleDpsInput.servico, codigoNbs: 'ABC1.1501.10.00' },
+    });
+
+    expect(normalizeNbs('1.1501.10.00')).toBe('115011000');
+    expect(normalizeNbs('ABC1.1501.10.00')).toBe('ABC1.1501.10.00');
+    expect(xml).toContain('<cNBS>ABC1.1501.10.00</cNBS>');
+  });
+
   test('normaliza CEP somente quando o formato básico é válido', () => {
     const { xml } = new DpsXmlBuilder().build({
       ...sampleDpsInput,
