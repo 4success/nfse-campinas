@@ -52,7 +52,13 @@ export class DpsSigner {
     });
     try {
       sig.loadSignature(signatureMatch[0]);
-      return sig.checkSignature(xml);
+      if (!sig.checkSignature(xml)) {
+        return false;
+      }
+
+      const id = this.extractId(xml, this.options);
+      const references = sig.getReferences();
+      return references.length === 1 && references[0].uri === `#${id}`;
     } catch {
       return false;
     }

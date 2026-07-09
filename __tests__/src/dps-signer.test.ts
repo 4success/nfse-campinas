@@ -77,6 +77,7 @@ describe('DpsSigner', () => {
     const sigInstance = {
       loadSignature: jest.fn(),
       checkSignature: jest.fn().mockReturnValue(true),
+      getReferences: jest.fn().mockReturnValue([{ uri: '#DPS1' }]),
     };
 
     jest.mocked(SignedXml).mockImplementation(() => sigInstance as unknown as SignedXml);
@@ -86,6 +87,20 @@ describe('DpsSigner', () => {
       '<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"></ds:Signature>',
     );
     expect(sigInstance.checkSignature).toHaveBeenCalledWith(xml);
+  });
+
+  test('rejeita assinatura válida sobre uma referência diferente da DPS', () => {
+    const xml = '<DPS><infDPS Id="DPS1"></infDPS><Signature></Signature></DPS>';
+    const certificate = { toPem: () => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }) } as PfxCertificate;
+    const sigInstance = {
+      loadSignature: jest.fn(),
+      checkSignature: jest.fn().mockReturnValue(true),
+      getReferences: jest.fn().mockReturnValue([{ uri: '#OUTRO' }]),
+    };
+
+    jest.mocked(SignedXml).mockImplementation(() => sigInstance as unknown as SignedXml);
+
+    expect(new DpsSigner(certificate).verify(xml)).toBe(false);
   });
 
   test('retorna false quando loadSignature falha', () => {
