@@ -787,7 +787,8 @@ Implementar `validateDpsInput(input: DpsInput): ValidationIssue[]` e chamar ante
 Validações mínimas:
 
 - Ambiente: `1` produção, `2` homologação.
-- `dhEmi`: ISO 8601 com timezone, ex. `2026-06-30T21:41:28-03:00`.
+- `dhEmi`: data/date-time ISO 8601 aceito pelo Luxon; timezone é recomendado, mas não exigido localmente, ex.
+  `2026-06-30T21:41:28-03:00`.
 - `dCompet`: `YYYY-MM-DD`.
 - CNPJ/CPF: dígitos e tamanho válido.
 - `cLocEmi`, `cLocPrestacao`, `cMun`: 7 dígitos.

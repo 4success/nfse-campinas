@@ -14,6 +14,7 @@ describe('utils', () => {
   test('valida datas ISO por componentes reais', () => {
     expect(isIsoDate('2026-06-30')).toBe(true);
     expect(isIsoDate('2026-02-30')).toBe(false);
+    expect(isIsoDateTime('2026-06-30')).toBe(true);
     expect(isIsoDateTime('2026-06-30T21:41:28-03:00')).toBe(true);
     expect(isIsoDateTime('2026-06-30T21:41:28')).toBe(true);
     expect(isIsoDateTime('2026-07-08T16:13:36.707848125-03:00')).toBe(true);
