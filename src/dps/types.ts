@@ -138,8 +138,6 @@ export type EnderecoDps = {
   numero?: string;
   complemento?: string;
   bairro?: string;
-  uf?: string;
-  pais?: string;
 };
 
 export type TomadorDps = {
