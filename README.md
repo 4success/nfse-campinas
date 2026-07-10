@@ -119,7 +119,7 @@ para o ambiente de execução.
 
 - [Como contribuir](CONTRIBUTING.md)
 - [Código de Conduta](CODE_OF_CONDUCT.md)
-- [Política de Segurança](SECURITY.md)
+- [Política de Segurança](.github/SECURITY.md)
 - [Licença MIT](LICENSE)
 
 ## Migração
