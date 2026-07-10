@@ -1,0 +1,34 @@
+name: Solicitação de funcionalidade
+description: Sugira uma melhoria para o pacote.
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema a resolver
+      description: Qual necessidade esta solicitação atende?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Solução proposta
+      description: Descreva a API ou o comportamento esperado.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+      description: Descreva outras abordagens ou contornos possíveis.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmações
+      options:
+        - label: Esta solicitação não contém dados sensíveis de clientes.
+          required: true
+        - label: Esta solicitação se aplica ao Padrão Nacional NFS-e / DPS v1.01.
+          required: true

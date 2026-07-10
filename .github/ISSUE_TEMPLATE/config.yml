@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Reportar vulnerabilidade
+    url: https://github.com/4success/nfse-campinas/security/advisories/new
+    about: Use o reporte privado de vulnerabilidade; não abra uma issue pública.
+  - name: Perguntas e discussões
+    url: https://github.com/4success/nfse-campinas/discussions
+    about: Use Discussions para dúvidas e conversas que não sejam bugs ou solicitações de funcionalidade.

@@ -115,6 +115,13 @@ para o ambiente de execução.
 - Nunca versionar certificados, senhas, XML real de cliente ou respostas com dados pessoais.
 - `debug=true` imprime XML e resposta brutos para diagnóstico local.
 
+## Comunidade
+
+- [Como contribuir](CONTRIBUTING.md)
+- [Código de Conduta](CODE_OF_CONDUCT.md)
+- [Política de Segurança](SECURITY.md)
+- [Licença MIT](LICENSE)
+
 ## Migração
 
 Consulte `docs/v3/migracao-v2-para-v3.md` para o mapa entre ABRASF/RPS/SOAP e Padrão Nacional/DPS.

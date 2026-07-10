@@ -1,0 +1,47 @@
+name: Relatório de bug
+description: Relate um comportamento inesperado do pacote.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Não inclua certificados, senhas, tokens, XMLs reais ou dados fiscais e pessoais. Para vulnerabilidades, use o reporte privado na aba Security.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Comportamento observado
+      description: Descreva o problema e o resultado esperado.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Como reproduzir
+      description: Forneça um exemplo mínimo, sem dados sensíveis.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versão do pacote
+      placeholder: 3.0.0
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Node.js e sistema operacional
+      placeholder: Node.js 24.x, Ubuntu 24.04
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Contexto adicional
+      description: Inclua logs anonimizados ou outros detalhes relevantes.
