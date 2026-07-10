@@ -1,0 +1,8 @@
+onlyBuiltDependencies:
+  - esbuild
+
+allowBuilds:
+  esbuild: true
+
+minimumReleaseAgeExclude:
+  - '@notaas/danfse-viewer@1.0.1'

@@ -1,128 +1,120 @@
-# NFSe Campinas
+# NFSe Campinas v3
 
-Pacote de integração para os webservices da prefeitura de Campinas no padrão ABRASF 2.03.
+Pacote de integração para NFSe Campinas no Padrão Nacional NFS-e / DPS v1.01, conforme implantação da Reforma Tributária do Consumo.
 
-> **Importante**: Se você procura a integração no padrão DSFNET, utilize
-> a [versão 1.x](https://github.com/4success/nfse-campinas/tree/v1) deste pacote.
+## Aviso de Breaking Change
 
-## Versões Disponíveis
+A versão `3.x` não usa mais ABRASF 2.03, RPS, SOAP ou WSDL. A API pública passa a trabalhar com DPS e envio REST/JSON municipal.
 
-- **2.x (Atual)**: Padrão ABRASF 2.03
-  ```bash
-  yarn add @4success/nfse-campinas
-  # ou
-  npm install @4success/nfse-campinas
-  ```
+Para continuar usando ABRASF 2.03, instale a linha anterior:
 
-- **1.x (Legacy)**: Padrão DSFNET
-  ```bash
-  yarn add @4success/nfse-campinas@^1.0.0
-  # ou
-  npm install @4success/nfse-campinas@^1.0.0
-  ```
-  - GitHub: [Branch v1](https://github.com/4success/nfse-campinas/tree/v1)
-  - NPM: [Versão 1.2.13](https://www.npmjs.com/package/@4success/nfse-campinas/v/1.2.13)
-
-## Compatibilidade
-
-Este pacote é compatível com municípios que utilizam o Padrão ABRASF 1.3 ou superior. É necessária a utilização de
-Certificado Digital A1.
-
-## API como Serviço (SaaS)
-
-Desenvolvemos uma API hospedada para facilitar a integração com NFSe Campinas para desenvolvedores que não trabalham com
-NodeJS ou precisam de uma solução mais rápida de implementar.
-
-🌐 **NFSe Hub**: https://nfsehub.4success.com.br
-
-**Principais benefícios:**
-
-- Integração independente de linguagem de programação
-- Sem necessidade de gerenciar certificados digitais
-- Documentação completa e exemplos de uso
-- Suporte para todos os endpoints do pacote NFSe Campinas
-- Ambiente de homologação e produção
-
-Visite nosso site para mais detalhes, documentação da API e planos de contratação.
-
-## Como Usar
-
-### Configuração Básica
-
-```javascript
-import { NfseCampinas } from '@4success/nfse-campinas';
-
-const cert = fs.readFileSync('/caminho/para/certificado.pfx');
-const nfse = new NfseCampinas(
-        'https://homol-rps.ima.sp.gov.br/notafiscal-abrasfv203-ws/NotaFiscalSoap?wsdl',
-        cert,
-        'senhaCertificado'
-);
+```bash
+pnpm add @4success/nfse-campinas@^2
 ```
 
-### Exemplo de Consulta
+Para DSFNET legacy, use a linha `1.x`.
 
-```javascript
-const response = await nfse.ConsultarNfseServicoPrestado({
-  ConsultarNfseServicoPrestadoEnvio: {
-    Prestador: {
-      CpfCnpj: {
-        Cnpj: '99999999000199',
-      },
-    },
-    PeriodoCompetencia: {
-      DataFinal: '2024-08-31',
-      DataInicial: '2024-08-01',
-    },
-  }
-});
+## Instalação
+
+```bash
+pnpm add @4success/nfse-campinas
 ```
 
-### Impressão da DANFE
+## Status dos Endpoints
 
-```javascript
-const pdfBuffer = await nfse.ImprimirNfse({
-  cnpj: '99999999000199',
-  inscricaoMunicipal: '1234567',
-  numeroNfse: '123',
-  codigoVerificacao: 'ABC123'
+- Envio DPS homologação: implementado em `https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/dps`.
+- Produção: aguardando URL oficial da Prefeitura; é possível informar `endpoints.dps` manualmente.
+- Consulta, cancelamento e eventos: ainda não publicados pela Prefeitura de Campinas.
+
+## Exemplo Mínimo
+
+```ts
+import fs from 'node:fs';
+import { decodeNfseXmlGZipB64, NfseCampinas } from '@4success/nfse-campinas';
+
+const nfse = new NfseCampinas({
+  environment: 'homologacao',
+  certificate: fs.readFileSync('./certificado.pfx'),
+  certPassword: process.env.CERTIFICATE_PASSWORD!,
 });
 
-// Salvar o PDF
-fs.writeFileSync('danfe.pdf', pdfBuffer);
+const result = await nfse.enviarDps({
+  ambiente: 'homologacao',
+  serie: '00001',
+  numeroDps: '1',
+  dataCompetencia: '2026-06-30',
+  dataHoraEmissao: '2026-06-30T21:41:28-03:00',
+  tipoEmitente: 1,
+  municipioEmissao: '3509502',
+  prestador: {
+    cnpj: '99999999000199',
+    inscricaoMunicipal: '123456',
+    regimeTributario: { opcaoSimplesNacional: 1, regimeEspecialTributacao: 0 },
+  },
+  tomador: {
+    cnpj: '99999999000199',
+    razaoSocial: 'TOMADOR LTDA',
+    endereco: { municipio: '3509502', cep: '13000000', logradouro: 'Rua Exemplo', numero: '100', bairro: 'Centro' },
+  },
+  servico: {
+    municipioPrestacao: '3509502',
+    codigoTributacaoNacional: '010301',
+    codigoTributacaoMunicipal: '001',
+    descricao: 'descricao do servico prestado para fins de homologacao',
+    codigoNbs: '1.1501.10.00',
+  },
+  valores: {
+    valorServico: '26947.27',
+    tributacaoMunicipal: { tributacaoIssqn: 1, tipoRetencaoIssqn: 1, aliquota: '5' },
+    totalTributos: { indicadorTotalTributos: 0 },
+  },
+  ibsCbs: {
+    finalidadeNfse: 0,
+    codigoIndicadorOperacao: '100301',
+    indicadorDestinatario: 0,
+    classificacaoTributaria: '000001',
+  },
+});
+
+console.log(result.status);
+console.log(result.idDps);
+console.log(result.rawResponse);
+
+if (result.nfseXmlGZipB64) {
+  const nfseXml = decodeNfseXmlGZipB64(result.nfseXmlGZipB64);
+  console.log(nfseXml);
+
+  const danfseHtml = await nfse.imprimirDanfse({ nfseXmlGZipB64: result.nfseXmlGZipB64 });
+  console.log(danfseHtml);
+}
 ```
 
-### Configuração para Serverless (AWS Lambda)
+`rawResponse` preserva a resposta original da Prefeitura, `parsedResponse` expõe o corpo parseado quando possível, e
+`nfseXmlGZipB64` traz o XML autorizado da NFSe compactado em GZip/Base64.
 
-O pacote não depende de binário externo do OpenSSL para converter certificados `.pfx/.p12`, então não é necessário adicionar uma Lambda layer específica para OpenSSL.
+## DANFSe
 
-## Funcionalidades
+Depois que a Prefeitura autoriza a NFSe, use o XML autorizado para gerar o HTML imprimível do DANFSe:
 
-✅ Implementado
+```ts
+const html = await nfse.imprimirDanfse({ nfseXmlGZipB64: result.nfseXmlGZipB64! });
+```
 
-- ✅ Emissão com XMLs assinados
-- ✅ Consulta de NFSe por RPS
-- ✅ Consulta de serviços prestados
-- ✅ Consulta de serviços tomados
-- ✅ Cancelamento de NFSe
-- ✅ Impressão da DANFE em PDF
-- ✅ Suporte para ambientes serverless
+Também é possível informar o XML autorizado já descompactado:
 
-## Links Úteis
+```ts
+const html = await nfse.imprimirDanfse({ xml: nfseXml });
+```
 
-- [Documentação ABRASF 2.03](https://abrasf.org.br/biblioteca/arquivos-publicos/nfs-e/versao-2-03)
-- [Grupo de Discussão](https://groups.google.com/g/wsnfsecampinas)
-- [Issues e Suporte](https://github.com/4success/nfse-campinas/issues)
+O método retorna HTML. A geração de PDF deve ser feita pelo consumidor a partir desse HTML, usando o renderer apropriado
+para o ambiente de execução.
 
-## Contribuindo
+## Segurança
 
-1. Faça um fork do projeto
-2. Crie sua feature branch (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças (`git commit -am 'Adicionando nova feature'`)
-4. Push para a branch (`git push origin feature/MinhaFeature`)
-5. Crie um novo Pull Request
+- Use certificado A1 `.pfx/.p12` do prestador.
+- Nunca versionar certificados, senhas, XML real de cliente ou respostas com dados pessoais.
+- `debug=true` imprime XML e resposta brutos para diagnóstico local.
 
-## Suporte
+## Migração
 
-Para suporte, dúvidas ou sugestões, por favor abra
-um [issue no repositório](https://github.com/4success/nfse-campinas/issues).
+Consulte `docs/v3/migracao-v2-para-v3.md` para o mapa entre ABRASF/RPS/SOAP e Padrão Nacional/DPS.
