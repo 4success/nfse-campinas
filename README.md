@@ -112,7 +112,7 @@ para o ambiente de execução.
 ## Segurança
 
 - Use certificado A1 `.pfx/.p12` do prestador.
-- Nunca versionar certificados, senhas, XML real de cliente ou respostas com dados pessoais.
+- Nunca versione certificados, senhas, XML real de cliente ou respostas com dados pessoais.
 - `debug=true` imprime XML e resposta brutos para diagnóstico local.
 
 ## Comunidade

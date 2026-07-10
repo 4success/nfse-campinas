@@ -2,7 +2,7 @@
 
 **Objetivo:** orientar agentes locais Codex a transformar o pacote `@4success/nfse-campinas` da versão 2.x, baseada em ABRASF 2.03/SOAP, para a versão 3.x, baseada no **Padrão Nacional NFS-e / DPS v1.01-20260209**, conforme implantação da Reforma Tributária do Consumo em Campinas.
 
-**Data base:** 2026-07-06.
+**Data-base:** 2026-07-06.
 
 ---
 
@@ -60,7 +60,7 @@ Use estes links como material de apoio e guarde cópias em `docs/references/v3/`
 - Página técnica da Prefeitura: `https://campinas.sp.gov.br/sites/reformatributaria/documentacao-tecnica`
 - Grupo técnico: `https://groups.google.com/g/wsnfsecampinas`
 - Comunicado de homologação disponível: `https://groups.google.com/g/wsnfsecampinas` e mensagem fixada de 01/07/2026.
-- Código Tributação Nacional e NBS: `https://groups.google.com/g/wsnfsecampinas/c/QEqM0ZpInsk/m/hoAwVLTCAAAJ`
+- Código de Tributação Nacional e NBS: `https://groups.google.com/g/wsnfsecampinas/c/QEqM0ZpInsk/m/hoAwVLTCAAAJ`
 - Consulta por CNAE: `https://drm-codae.campinas.sp.gov.br/cnae.php`
 - Consulta por CBO: `https://drm-codae.campinas.sp.gov.br/cbo.php`
 - Consulta de NBS: `https://drm-codae.campinas.sp.gov.br/nbs.html`
@@ -137,8 +137,8 @@ new NfseCampinasV3({
 
 Para Campinas, no momento da especificação:
 
-- Consulta: a ser publicado.
-- Eventos/cancelamento/substituição: a ser publicado.
+- Consulta: a ser publicada.
+- Eventos/cancelamento/substituição: a serem publicados.
 
 A API nacional possui referências genéricas para `/nfse`, `/dps/{id}` e `/nfse/{chaveAcesso}/eventos`, mas isso **não autoriza** o SDK a apontar automaticamente para endpoints nacionais ou municipais sem confirmação de Campinas.
 
@@ -985,19 +985,19 @@ Incluir:
 - `Reference URI`.
 - Transforms.
 - Como depurar rejeição de assinatura.
-- Como verificar certificado pertence ao prestador.
+- Como verificar se o certificado pertence ao prestador.
 
 ### 14.4. `docs/v3/homologacao.md`
 
 Incluir checklist:
 
 1. Empresa/certificado A1 válido.
-2. Código Tributação Nacional escolhido no emissor/consulta CNAE/CBO.
+2. Código de Tributação Nacional escolhido no emissor/consulta CNAE/CBO.
 3. NBS correspondente.
 4. Série e número DPS controlados pelo sistema emissor.
 5. Ambiente `tpAmb=2`.
 6. XML assinado.
-7. POST para endpoint homologação.
+7. POST para o endpoint de homologação.
 8. Guardar request/response.
 
 ---
@@ -1135,7 +1135,7 @@ Tarefas:
 Aceite:
 
 - Usuário entende como instalar v2 ou v3.
-- Status de endpoints está honesto.
+- Status dos endpoints está honesto.
 - CI local passa.
 - Não há segredos nos commits.
 
@@ -1152,7 +1152,7 @@ A release só pode ser considerada pronta quando todos estes itens forem verdade
 - [ ] `pnpm lint` passa ou a regra legada foi ajustada de forma documentada.
 - [ ] README informa que v3 é Padrão Nacional/DPS.
 - [ ] README informa que v2 é ABRASF 2.03.
-- [ ] Homologação endpoint configurado.
+- [ ] Endpoint de homologação configurado.
 - [ ] Produção sem endpoint explícito não envia por engano.
 - [ ] `buildDpsId` implementado e testado.
 - [ ] XML DPS v1.01 gerado em ordem determinística.

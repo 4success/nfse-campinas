@@ -20,7 +20,7 @@ Exemplos de comportamentos que contribuem para um ambiente positivo incluem:
 - Assumir responsabilidade, pedir desculpas a quem foi afetado por nossos erros e aprender com a experiência.
 - Priorizar o melhor interesse geral da comunidade.
 
-Exemplos de comportamentos inaceitaveis incluem:
+Exemplos de comportamentos inaceitáveis incluem:
 
 - Linguagem ou imagens sexualizadas e avanços sexuais indesejados.
 - Trolling, comentários insultuosos ou depreciativos e ataques pessoais ou políticos.
@@ -43,7 +43,7 @@ apropriado.
 Este Código de Conduta se aplica a todos os espaços da comunidade, assim como quando uma pessoa representa oficialmente
 a comunidade em espaços públicos.
 
-## Aplicacao
+## Aplicação
 
 Denuncie comportamento abusivo ou inadequado usando o recurso de denúncia de conteúdo do GitHub neste repositório. Todas
 as denúncias serão analisadas e investigadas de forma justa e confidencial.
@@ -66,7 +66,7 @@ considerem violação deste Código de Conduta:
    inadequado sustentado, assédio a uma pessoa ou agressão contra indivíduos ou grupos, uma proibição permanente de
    qualquer interação pública na comunidade.
 
-## Atribuicao
+## Atribuição
 
 Este Código de Conduta é adaptado do [Contributor Covenant][homepage], versão 2.1, disponível
 em https://www.contributor-covenant.org/version/2/1/code_of_conduct.html.

@@ -25,7 +25,7 @@ pnpm install
 - Preserve valores fiscais e declarativos recebidos do consumidor; não os normalize ou altere silenciosamente.
 - Documente mudanças de API pública, endpoints ou comportamento no `README.md` ou em `docs/v3`.
 
-## Validacao
+## Validação
 
 Antes de abrir o pull request, execute:
 
