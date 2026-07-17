@@ -215,11 +215,11 @@ export class CampinasDpsClient {
         requestId,
         axiosError.response
           ? parseConsultarNfseResponse({
-            chaveAcesso: input.chaveAcesso,
-            rawResponse: String(axiosError.response.data || ''),
-            httpStatus: axiosError.response.status,
-            headers: normalizeHeaders(axiosError.response.headers),
-          })
+              chaveAcesso: input.chaveAcesso,
+              rawResponse: String(axiosError.response.data || ''),
+              httpStatus: axiosError.response.status,
+              headers: normalizeHeaders(axiosError.response.headers),
+            })
           : undefined,
         error,
       );

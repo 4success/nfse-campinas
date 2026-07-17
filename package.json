@@ -1,7 +1,7 @@
 {
   "name": "@4success/nfse-campinas",
   "description": "NFSe Campinas Padrão Nacional DPS v1.01",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "packageManager": "pnpm@11.10.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
