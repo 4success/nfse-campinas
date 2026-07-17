@@ -69,11 +69,74 @@ jobs:
 
       - name: Create or update GitHub release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_NAME: ${{ github.ref_name }}
         run: |
+          set -euo pipefail
+
           if gh release view "$TAG_NAME" >/dev/null 2>&1; then
             gh release upload "$TAG_NAME" ./*.tgz --clobber
-          else
-            gh release create "$TAG_NAME" ./*.tgz --generate-notes --title "$TAG_NAME"
+            exit 0
           fi
+
+          TAG_COMMIT=$(git rev-parse "$TAG_NAME^{commit}")
+          VERSION=${TAG_NAME#v}
+          PREVIOUS_TAG=""
+
+          if git rev-parse --verify "${TAG_COMMIT}^" >/dev/null 2>&1; then
+            PREVIOUS_TAG=$(git describe --tags --abbrev=0 --first-parent "${TAG_COMMIT}^" 2>/dev/null || true)
+          fi
+
+          API_ARGS=(
+            --method POST
+            "repos/${GITHUB_REPOSITORY}/releases/generate-notes"
+            -f "tag_name=${TAG_NAME}"
+          )
+
+          if [[ -n "$PREVIOUS_TAG" ]]; then
+            API_ARGS+=(-f "previous_tag_name=${PREVIOUS_TAG}")
+          fi
+
+          NATIVE_NOTES=$(gh api "${API_ARGS[@]}" --jq '.body // ""')
+
+          if grep -Eq '/pull/[0-9]+' <<<"$NATIVE_NOTES"; then
+            printf '%s\n' "$NATIVE_NOTES" > release-notes.md
+          else
+            {
+              echo "## What's Changed"
+
+              if [[ -n "$PREVIOUS_TAG" ]]; then
+                RANGE="${PREVIOUS_TAG}..${TAG_NAME}"
+              else
+                RANGE="$TAG_NAME"
+              fi
+
+              git log "$RANGE" --no-merges --format='%H%x09%h%x09%s' |
+                while IFS=$'\t' read -r sha short subject; do
+                  if [[ "$sha" == "$TAG_COMMIT" && "$subject" == "$VERSION" ]]; then
+                    continue
+                  fi
+
+                  printf '* %s ([%s](https://github.com/%s/commit/%s))\n' \
+                    "$subject" "$short" "$GITHUB_REPOSITORY" "$sha"
+                done
+
+              if [[ -n "$PREVIOUS_TAG" ]]; then
+                echo
+                echo "**Full Changelog**: https://github.com/${GITHUB_REPOSITORY}/compare/${PREVIOUS_TAG}...${TAG_NAME}"
+              fi
+            } > release-notes.md
+          fi
+
+          RELEASE_ARGS=(
+            "$TAG_NAME"
+            ./*.tgz
+            --notes-file release-notes.md
+            --title "$TAG_NAME"
+          )
+
+          if [[ "$TAG_NAME" == *-* ]]; then
+            RELEASE_ARGS+=(--prerelease)
+          fi
+
+          gh release create "${RELEASE_ARGS[@]}"
