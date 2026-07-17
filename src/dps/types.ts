@@ -195,8 +195,8 @@ export type IbsCbsDps = {
   /** Codigo indicador de operacao (`cIndOp`): 6 digitos conforme tabela externa oficial IBS/CBS. */
   codigoIndicadorOperacao: string;
   indicadorDestinatario: IndicadorDestinatarioDps;
+  /** Codigo de situacao tributaria (`IBSCBS/valores/trib/gIBSCBS/CST`). */
+  cst: string;
   /** Classificacao tributaria (`cClassTrib`): 6 digitos conforme tabela externa oficial IBS/CBS. */
   classificacaoTributaria: string;
-  /** Campo nao encontrado nos schemas DPS v1.01 baixados; mantido sem dominio local ate confirmacao oficial. */
-  indicadorZonaFrancaManausAlc?: number;
 };

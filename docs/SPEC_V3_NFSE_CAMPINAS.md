@@ -356,8 +356,8 @@ const result = await nfse.enviarDps({
     finalidadeNfse: 0,
     codigoIndicadorOperacao: '100301',
     indicadorDestinatario: 0,
+    cst: '000',
     classificacaoTributaria: '000001',
-    indicadorZonaFrancaManausAlc: undefined,
   },
 });
 

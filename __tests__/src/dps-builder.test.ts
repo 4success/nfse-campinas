@@ -96,7 +96,7 @@ describe('DpsXmlBuilder', () => {
     });
 
     expect(xml).toContain('<cIndOp>ABC100301</cIndOp>');
-    expect(xml).toContain('<cClassTrib>ABC000001</cClassTrib>');
+    expect(xml).toContain('<gIBSCBS><CST>000</CST><cClassTrib>ABC000001</cClassTrib></gIBSCBS>');
   });
 
   test('modo warn ainda bloqueia erros estruturais', () => {

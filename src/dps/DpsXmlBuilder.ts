@@ -201,8 +201,11 @@ export class DpsXmlBuilder {
       addText(ibsCbs, 'finNFSe', input.ibsCbs.finalidadeNfse);
       addText(ibsCbs, 'cIndOp', input.ibsCbs.codigoIndicadorOperacao);
       addText(ibsCbs, 'indDest', input.ibsCbs.indicadorDestinatario);
-      addText(ibsCbs, 'cClassTrib', input.ibsCbs.classificacaoTributaria);
-      addText(ibsCbs, 'indZFManAlc', input.ibsCbs.indicadorZonaFrancaManausAlc);
+      const valoresIbsCbs = ibsCbs.ele('valores');
+      const tribIbsCbs = valoresIbsCbs.ele('trib');
+      const grupoIbsCbs = tribIbsCbs.ele('gIBSCBS');
+      addText(grupoIbsCbs, 'CST', input.ibsCbs.cst);
+      addText(grupoIbsCbs, 'cClassTrib', input.ibsCbs.classificacaoTributaria);
     }
 
     return {

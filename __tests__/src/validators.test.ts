@@ -78,6 +78,7 @@ describe('validateDpsInput', () => {
         'ibsCbs.finalidadeNfse',
         'ibsCbs.codigoIndicadorOperacao',
         'ibsCbs.indicadorDestinatario',
+        'ibsCbs.cst',
         'ibsCbs.classificacaoTributaria',
       ]),
     );

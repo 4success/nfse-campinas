@@ -302,6 +302,7 @@ export function validateDpsInput(input: DpsInput): ValidationIssue[] {
     validateRequiredWhenPresent(input.ibsCbs.finalidadeNfse, 'ibsCbs.finalidadeNfse', issues);
     validateRequiredWhenPresent(input.ibsCbs.codigoIndicadorOperacao, 'ibsCbs.codigoIndicadorOperacao', issues);
     validateRequiredWhenPresent(input.ibsCbs.indicadorDestinatario, 'ibsCbs.indicadorDestinatario', issues);
+    validateRequiredWhenPresent(input.ibsCbs.cst, 'ibsCbs.cst', issues);
     validateRequiredWhenPresent(input.ibsCbs.classificacaoTributaria, 'ibsCbs.classificacaoTributaria', issues);
   }
 
