@@ -1,15 +1,18 @@
 import fs from 'node:fs';
-import { NfseCampinas } from '../../src';
+import { NfseCampinas } from '../src';
 
 async function main() {
   const nfse = new NfseCampinas({
     environment: 'homologacao',
     certificate: fs.readFileSync(process.env.CERTIFICATE_PATH!),
     certPassword: process.env.CERTIFICATE_PASSWORD!,
+    timeoutMs: 120000,
   });
 
-  const xml = fs.readFileSync(process.argv[2], 'utf8');
-  console.log(await nfse.signDpsXml(xml));
+  // Recebe XML DPS ja assinado; para enviar um objeto DpsInput, veja enviar-dps-input-homologacao.ts.
+  const result = await nfse.enviarDps(fs.readFileSync(process.argv[2], 'utf8'));
+  console.log(result.status);
+  console.log(result.rawResponse);
 }
 
 main().catch((error) => {

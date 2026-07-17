@@ -199,11 +199,10 @@ src/
       client.test.ts
       response-parser.test.ts
       validators.test.ts
-exemplos/
-  v3/
-    enviar-dps-homologacao.ts
-    gerar-xml-dps.ts
-    assinar-xml-dps.ts
+ exemplos/
+   enviar-dps-homologacao.ts
+   gerar-xml-dps.ts
+   assinar-xml-dps.ts
 docs/
   v3/
     reforma-tributaria.md
@@ -1108,7 +1107,7 @@ Tarefas:
 
 1. Criar `NfseCampinasV3.ts`.
 2. Atualizar `src/index.ts`.
-3. Criar exemplos em `exemplos/v3`.
+3. Criar exemplos em `exemplos`.
 4. Atualizar `.env.example`.
 5. Garantir build de declarações TypeScript.
 

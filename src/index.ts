@@ -20,3 +20,4 @@ export * from './errors/ValidationError';
 export * from './errors/MissingProductionEndpointError';
 export * from './errors/NotImplementedError';
 export * from './errors/HttpError';
+export * from './errors/ConsultaHttpError';

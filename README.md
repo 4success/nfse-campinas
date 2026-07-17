@@ -23,8 +23,11 @@ pnpm add @4success/nfse-campinas
 ## Status dos Endpoints
 
 - Envio DPS homologação: implementado em `https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/dps`.
+- Consulta NFSe homologação: implementada por chave de acesso em
+  `https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}`.
 - Produção: aguardando URL oficial da Prefeitura; é possível informar `endpoints.dps` manualmente.
-- Consulta, cancelamento e eventos: ainda não publicados pela Prefeitura de Campinas.
+- Para consultar em produção, informe `endpoints.consulta`; cancelamento e eventos ainda não foram publicados pela
+  Prefeitura.
 
 ## Exemplo Mínimo
 
@@ -36,6 +39,8 @@ const nfse = new NfseCampinas({
   environment: 'homologacao',
   certificate: fs.readFileSync('./certificado.pfx'),
   certPassword: process.env.CERTIFICATE_PASSWORD!,
+  // O endpoint de homologacao pode levar mais de 30 segundos para responder.
+  timeoutMs: 120000,
 });
 
 const result = await nfse.enviarDps({
@@ -58,14 +63,17 @@ const result = await nfse.enviarDps({
   },
   servico: {
     municipioPrestacao: '3509502',
-    codigoTributacaoNacional: '010301',
+    codigoTributacaoNacional: '010601',
     codigoTributacaoMunicipal: '001',
     descricao: 'descricao do servico prestado para fins de homologacao',
-    codigoNbs: '1.1501.10.00',
+    codigoNbs: '115011000',
   },
   valores: {
     valorServico: '26947.27',
     tributacaoMunicipal: { tributacaoIssqn: 1, tipoRetencaoIssqn: 1, aliquota: '5' },
+    tributacaoFederal: {
+      pisCofins: { cst: '00', tipoRetencaoPisCofins: 0 },
+    },
     totalTributos: { indicadorTotalTributos: 0 },
   },
   ibsCbs: {
@@ -92,6 +100,25 @@ if (result.nfseXmlGZipB64) {
 
 `rawResponse` preserva a resposta original da Prefeitura, `parsedResponse` expõe o corpo parseado quando possível, e
 `nfseXmlGZipB64` traz o XML autorizado da NFSe compactado em GZip/Base64.
+
+## Consulta NFSe
+
+Consulte uma NFSe autorizada pela chave de acesso retornada no envio:
+
+```ts
+const consulta = await nfse.consultarNfse('NFS35095022215547137000138000000000210026073571802007');
+
+if (consulta.nfseXmlGZipB64) {
+  const xml = decodeNfseXmlGZipB64(consulta.nfseXmlGZipB64);
+  console.log(xml);
+}
+```
+
+Em produção, configure a URL publicada pela Prefeitura em `endpoints.consulta`. Uma NFSe inexistente retorna `HTTP 400`
+com alertas da Prefeitura, preservados em `ConsultaHttpError.response`.
+
+O exemplo local completo está em `exemplos/consultar-nfse.ts`; ele usa `CERTIFICATE_PATH`, `CERTIFICATE_PASSWORD` e a
+chave de acesso como primeiro argumento.
 
 ## DANFSe
 

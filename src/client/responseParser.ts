@@ -31,6 +31,31 @@ export type ParseEnviarDpsResponseInput = {
   headers: Record<string, string | string[] | undefined>;
 };
 
+export type ConsultarNfseAlerta = {
+  codigo?: string;
+  mensagem: string;
+};
+
+export type ConsultarNfseResult = {
+  chaveAcesso: string;
+  tipoAmbiente?: string;
+  versaoAplicativo?: string;
+  dataHoraProcessamento?: string;
+  nfseXmlGZipB64?: string;
+  alertas: ConsultarNfseAlerta[];
+  parsedResponse: unknown;
+  rawResponse: string;
+  httpStatus: number;
+  headers: Record<string, string | string[] | undefined>;
+};
+
+export type ParseConsultarNfseResponseInput = {
+  chaveAcesso: string;
+  rawResponse: string;
+  httpStatus: number;
+  headers: Record<string, string | string[] | undefined>;
+};
+
 function asString(value: unknown): string | undefined {
   if (value === undefined || value === null) {
     return undefined;
@@ -105,6 +130,25 @@ function collectMessages(value: unknown): EnviarDpsMessage[] {
   return messages;
 }
 
+function collectAlertas(value: unknown): ConsultarNfseAlerta[] {
+  const alertas = findFirstByKey(value, ['alertas']);
+  if (!Array.isArray(alertas)) {
+    return [];
+  }
+
+  return alertas.flatMap((alerta) => {
+    if (!alerta || typeof alerta !== 'object') {
+      return [];
+    }
+    const record = alerta as Record<string, unknown>;
+    const mensagem = getByKey(record, ['mensagem', 'message']);
+    if (!mensagem || typeof mensagem === 'object') {
+      return [];
+    }
+    return [{ codigo: asString(getByKey(record, ['codigo', 'code'])), mensagem: String(mensagem) }];
+  });
+}
+
 function parseBody(rawResponse: string): unknown {
   const trimmed = rawResponse.trim();
   if (!trimmed) {
@@ -158,6 +202,28 @@ export function parseEnviarDpsResponse(input: ParseEnviarDpsResponseInput): Envi
     parsedResponse: parsed,
     signedXml: input.signedXml,
     rawRequest: input.rawRequest,
+    rawResponse: input.rawResponse,
+    httpStatus: input.httpStatus,
+    headers: input.headers,
+  };
+}
+
+export function parseConsultarNfseResponse(input: ParseConsultarNfseResponseInput): ConsultarNfseResult {
+  let parsed: unknown;
+  try {
+    parsed = parseBody(input.rawResponse);
+  } catch (_error) {
+    parsed = input.rawResponse;
+  }
+
+  return {
+    chaveAcesso: input.chaveAcesso,
+    tipoAmbiente: asString(findFirstByKey(parsed, ['tipoAmbiente'])),
+    versaoAplicativo: asString(findFirstByKey(parsed, ['versaoAplicativo'])),
+    dataHoraProcessamento: asString(findFirstByKey(parsed, ['dataHoraProcessamento'])),
+    nfseXmlGZipB64: asString(findFirstByKey(parsed, ['nfseXmlGZipB64'])),
+    alertas: collectAlertas(parsed),
+    parsedResponse: parsed,
     rawResponse: input.rawResponse,
     httpStatus: input.httpStatus,
     headers: input.headers,

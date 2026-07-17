@@ -29,8 +29,10 @@
   throwing `MissingProductionEndpointError`.
 - The Campinas endpoint expects `Content-Type: application/json` with `{ dpsXmlGZipB64 }`; raw XML with
   `application/xml` returned `HTTP 415`.
-- Consulta, cancelamento, and eventos are not implemented for Campinas v3; stubs should keep throwing
-  `NotImplementedError` until endpoints are published.
+- Consulta de NFSe por chave de acesso está disponível em homologação via `GET /api/adn/nfse/{chaveAcesso}`. O retorno
+  é JSON com `nfseXmlGZipB64` e `alertas`; preserve a resposta bruta e os alertas em erros HTTP.
+- Cancelamento e eventos are not implemented for Campinas v3; stubs should keep throwing `NotImplementedError` until
+  endpoints are published.
 - `debug=true` deliberately logs signed XML and raw response without redaction. Do not add partial redaction unless
   product requirements change.
 
@@ -75,5 +77,5 @@
   and `docs/v3/reforma-tributaria.md`.
 - `docs/SPEC_V3_NFSE_CAMPINAS.md` is useful historical context but contains proposed paths that no longer match the
   flattened `src/` layout.
-- Example scripts under `exemplos/v3` import from `../../src`; they are for local source usage, not published package
+- Example scripts under `exemplos` import from `../src`; they are for local source usage, not published package
   examples.

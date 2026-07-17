@@ -1,5 +1,5 @@
 import { gzipSync } from 'zlib';
-import { parseEnviarDpsResponse } from '../../src/client/responseParser';
+import { parseConsultarNfseResponse, parseEnviarDpsResponse } from '../../src/client/responseParser';
 import { decodeNfseXmlGZipB64 } from '../../src/utils/nfseXml';
 
 describe('parseEnviarDpsResponse', () => {
@@ -135,5 +135,42 @@ describe('parseEnviarDpsResponse', () => {
     expect(result.nfseXmlGZipB64).toBe(nfseXmlGZipB64);
     expect(decodeNfseXmlGZipB64(result.nfseXmlGZipB64!)).toBe(nfseXml);
     expect(result.parsedResponse).toEqual({ cStat: '100', nfseXmlGZipB64, campoNovoPrefeitura: 'valor' });
+  });
+});
+
+describe('parseConsultarNfseResponse', () => {
+  test('interpreta envelope JSON observado na consulta Campinas', () => {
+    const result = parseConsultarNfseResponse({
+      chaveAcesso: 'NFS35095022215547137000138000000000210026073571802007',
+      rawResponse: JSON.stringify({
+        tipoAmbiente: '2',
+        versaoAplicativo: '1.0',
+        dataHoraProcessamento: '2026-07-17T10:43:53.136789642-03:00',
+        nfseXmlGZipB64: 'H4sIAAAAAAAA',
+        alertas: [],
+      }),
+      httpStatus: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+
+    expect(result).toMatchObject({
+      chaveAcesso: 'NFS35095022215547137000138000000000210026073571802007',
+      tipoAmbiente: '2',
+      versaoAplicativo: '1.0',
+      nfseXmlGZipB64: 'H4sIAAAAAAAA',
+      alertas: [],
+    });
+  });
+
+  test('interpreta alertas em resposta de erro sem descartar o corpo bruto', () => {
+    const result = parseConsultarNfseResponse({
+      chaveAcesso: 'NFS1',
+      rawResponse: JSON.stringify({ alertas: [{ codigo: 'E0044', mensagem: 'NFS-e não existe' }] }),
+      httpStatus: 400,
+      headers: {},
+    });
+
+    expect(result.alertas).toEqual([{ codigo: 'E0044', mensagem: 'NFS-e não existe' }]);
+    expect(result.rawResponse).toContain('E0044');
   });
 });

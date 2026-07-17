@@ -1,9 +1,9 @@
 import { NfseCampinasV3Error } from './NfseCampinasV3Error';
 
 export class MissingProductionEndpointError extends NfseCampinasV3Error {
-  constructor() {
+  constructor(resource = 'DPS', endpointProperty = 'dps') {
     super(
-      'Endpoint de produção da DPS ainda não publicado pela Prefeitura de Campinas. Informe endpoints.dps explicitamente.',
+      `Endpoint de produção da ${resource} ainda não publicado pela Prefeitura de Campinas. Informe endpoints.${endpointProperty} explicitamente.`,
     );
     this.name = 'MissingProductionEndpointError';
   }

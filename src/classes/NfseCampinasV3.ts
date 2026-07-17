@@ -1,8 +1,8 @@
 import { PfxCertificate } from '../certificate/PfxCertificate';
 import { CampinasDpsClient } from '../client/CampinasDpsClient';
-import { NfseCampinasV3Endpoints, resolveDpsEndpoint } from '../client/endpoints';
+import { NfseCampinasV3Endpoints, resolveConsultaEndpoint, resolveDpsEndpoint } from '../client/endpoints';
 import { HttpTraceLogger } from '../client/httpTrace';
-import { EnviarDpsResult } from '../client/responseParser';
+import { ConsultarNfseResult, EnviarDpsResult } from '../client/responseParser';
 import { imprimirDanfse, ImprimirDanfseInput } from '../danfse/imprimirDanfse';
 import { buildDpsId } from '../dps/buildDpsId';
 import { DpsXmlBuilder } from '../dps/DpsXmlBuilder';
@@ -13,6 +13,10 @@ import { DpsSigner } from '../signature/DpsSigner';
 import { defaultDpsSignatureOptions, DpsSignatureOptions } from '../signature/signatureTypes';
 
 export type EnviarDpsOptions = {
+  timeoutMs?: number;
+};
+
+export type ConsultarNfseOptions = {
   timeoutMs?: number;
 };
 
@@ -83,8 +87,30 @@ export class NfseCampinasV3 {
     return result;
   }
 
-  async consultarNfsePorDps(_idDps: string): Promise<never> {
-    throw new NotImplementedError('consultarNfsePorDps');
+  async consultarNfse(chaveAcesso: string, options: ConsultarNfseOptions = {}): Promise<ConsultarNfseResult> {
+    if (!/^NFS[A-Z0-9]{50}$/.test(chaveAcesso)) {
+      throw new ValidationError([
+        { field: 'chaveAcesso', message: 'deve conter NFS seguido de 50 caracteres alfanuméricos', severity: 'error' },
+      ]);
+    }
+
+    const endpoint = resolveConsultaEndpoint(this.environment, this.options.endpoints);
+    const useClientCertificate = this.options.transport?.useClientCertificate !== false;
+    const clientCertificate = useClientCertificate ? this.certificate.toPem() : undefined;
+    const client = new CampinasDpsClient({
+      endpoint,
+      certificate: this.options.certificate,
+      certPassword: this.options.certPassword,
+      clientKeyPem: clientCertificate?.privateKey,
+      clientCertPem: clientCertificate?.publicCert,
+      timeoutMs: this.options.timeoutMs,
+      requestHeaders: this.options.requestHeaders,
+      debug: this.options.debug,
+      traceLogger: this.options.traceLogger,
+      transport: this.options.transport,
+    });
+
+    return client.consultarNfse({ chaveAcesso, timeoutMs: options.timeoutMs });
   }
 
   async cancelarNfse(_input: unknown): Promise<never> {

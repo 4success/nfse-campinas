@@ -1,4 +1,4 @@
-import { NfseCampinas } from '../../src';
+import { NfseCampinas } from '../src';
 
 const nfse = new NfseCampinas({
   environment: 'homologacao',
@@ -17,12 +17,24 @@ const xml = nfse.buildDpsXml({
   prestador: { cnpj: '99999999000199' },
   servico: {
     municipioPrestacao: '3509502',
-    codigoTributacaoNacional: '010301',
+    codigoTributacaoNacional: '010601',
     codigoTributacaoMunicipal: '001',
     descricao: 'servico de homologacao',
-    codigoNbs: '115069000',
+    codigoNbs: '115011000',
   },
-  valores: { valorServico: '100.00' },
+  valores: {
+    valorServico: '100.00',
+    tributacaoMunicipal: { tributacaoIssqn: 1, tipoRetencaoIssqn: 1, aliquota: '2' },
+    tributacaoFederal: { pisCofins: { cst: '00', tipoRetencaoPisCofins: 0 } },
+    totalTributos: { indicadorTotalTributos: 0 },
+  },
+  ibsCbs: {
+    finalidadeNfse: 0,
+    codigoIndicadorOperacao: '100301',
+    indicadorDestinatario: 0,
+    cst: '000',
+    classificacaoTributaria: '000001',
+  },
 });
 
 console.log(xml);

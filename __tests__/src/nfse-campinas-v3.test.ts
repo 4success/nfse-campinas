@@ -3,7 +3,7 @@ import { DpsSigner } from '../../src/signature/DpsSigner';
 import { MissingProductionEndpointError } from '../../src/errors/MissingProductionEndpointError';
 import { ValidationError } from '../../src/errors/ValidationError';
 import { NfseCampinasV3 } from '../../src/classes/NfseCampinasV3';
-import { HOMOLOGACAO_DPS_ENDPOINT } from '../../src/client/endpoints';
+import { HOMOLOGACAO_CONSULTA_ENDPOINT, HOMOLOGACAO_DPS_ENDPOINT } from '../../src/client/endpoints';
 import { sampleDpsInput } from '../../test-support/fixtures';
 
 const mockToPem = jest.fn(() => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }));
@@ -22,6 +22,7 @@ jest.mock('../../src/signature/DpsSigner', () => ({
 
 describe('NfseCampinasV3', () => {
   const externalSignedDpsId = 'DPS350950221234567800019900001000000000000001';
+  const chaveAcesso = 'NFS35095022215547137000138000000000210026073571802007';
 
   afterEach(() => {
     nock.cleanAll();
@@ -124,5 +125,32 @@ describe('NfseCampinasV3', () => {
 
     expect(mockToPem).not.toHaveBeenCalled();
     expect(scope.isDone()).toBe(true);
+  });
+
+  test('consulta NFSe pela chave de acesso', async () => {
+    const endpoint = new URL(HOMOLOGACAO_CONSULTA_ENDPOINT);
+    const scope = nock(`${endpoint.protocol}//${endpoint.host}`)
+      .get(`${endpoint.pathname}/${chaveAcesso}`)
+      .reply(200, JSON.stringify({ tipoAmbiente: '2', nfseXmlGZipB64: 'H4sIAAAAAAAA', alertas: [] }));
+    const nfse = new NfseCampinasV3({
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      transport: { useClientCertificate: false },
+    });
+
+    const result = await nfse.consultarNfse(chaveAcesso);
+
+    expect(result).toMatchObject({ chaveAcesso, tipoAmbiente: '2', alertas: [] });
+    expect(scope.isDone()).toBe(true);
+  });
+
+  test('rejeita chave de acesso com estrutura inválida antes da consulta', async () => {
+    const nfse = new NfseCampinasV3({
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      transport: { useClientCertificate: false },
+    });
+
+    await expect(nfse.consultarNfse('invalida')).rejects.toThrow(ValidationError);
   });
 });

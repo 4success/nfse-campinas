@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { NfseCampinas } from '../../src';
+import { NfseCampinas } from '../src';
 
 async function main() {
   const nfse = new NfseCampinas({
@@ -8,9 +8,8 @@ async function main() {
     certPassword: process.env.CERTIFICATE_PASSWORD!,
   });
 
-  const result = await nfse.enviarDps(fs.readFileSync(process.argv[2], 'utf8'));
-  console.log(result.status);
-  console.log(result.rawResponse);
+  const xml = fs.readFileSync(process.argv[2], 'utf8');
+  console.log(await nfse.signDpsXml(xml));
 }
 
 main().catch((error) => {

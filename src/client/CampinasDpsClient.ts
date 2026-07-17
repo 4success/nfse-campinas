@@ -2,7 +2,13 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import https from 'https';
 import { gzipSync } from 'zlib';
 import { HttpError } from '../errors/HttpError';
-import { parseEnviarDpsResponse, EnviarDpsResult } from './responseParser';
+import { ConsultaHttpError } from '../errors/ConsultaHttpError';
+import {
+  ConsultarNfseResult,
+  EnviarDpsResult,
+  parseConsultarNfseResponse,
+  parseEnviarDpsResponse,
+} from './responseParser';
 import { createHttpTracer, formatTraceBody, HttpTraceLogger } from './httpTrace';
 
 export type CampinasDpsClientOptions = {
@@ -23,6 +29,11 @@ export type CampinasDpsClientOptions = {
 export type SendSignedDpsInput = {
   signedXml: string;
   idDps: string;
+  timeoutMs?: number;
+};
+
+export type ConsultarNfseInput = {
+  chaveAcesso: string;
   timeoutMs?: number;
 };
 
@@ -131,6 +142,85 @@ export class CampinasDpsClient {
         input.idDps,
         input.signedXml,
         requestId,
+        error,
+      );
+    }
+  }
+
+  async consultarNfse(input: ConsultarNfseInput): Promise<ConsultarNfseResult> {
+    const requestId = `consulta-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const endpoint = `${this.options.endpoint.replace(/\/+$/, '')}/${encodeURIComponent(input.chaveAcesso)}`;
+    const headers = {
+      Accept: 'application/json, application/xml, text/plain, */*',
+      ...this.options.requestHeaders,
+    };
+    const httpsAgent = createHttpsAgent(this.options);
+    const tracer = createHttpTracer({ enabled: this.options.debug, logger: this.options.traceLogger });
+    const startedAt = Date.now();
+
+    await tracer.logRequest({
+      timestamp: new Date().toISOString(),
+      requestId,
+      chaveAcesso: input.chaveAcesso,
+      method: 'GET',
+      url: endpoint,
+      headers,
+    });
+
+    try {
+      const response = await axios.get(endpoint, {
+        headers,
+        httpsAgent,
+        timeout: input.timeoutMs || this.options.timeoutMs,
+        responseType: 'text',
+        transformResponse: [(data) => data],
+      });
+      const normalizedHeaders = normalizeHeaders(response.headers);
+      const rawResponse = String(response.data || '');
+
+      await tracer.logResponse({
+        timestamp: new Date().toISOString(),
+        requestId,
+        chaveAcesso: input.chaveAcesso,
+        durationMs: Date.now() - startedAt,
+        status: response.status,
+        headers: normalizedHeaders,
+        body: formatTraceBody(rawResponse),
+      });
+
+      return parseConsultarNfseResponse({
+        chaveAcesso: input.chaveAcesso,
+        rawResponse,
+        httpStatus: response.status,
+        headers: normalizedHeaders,
+      });
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      const status = axiosError.response?.status;
+      const responseBody = axiosError.response?.data === undefined ? '' : `: ${String(axiosError.response.data)}`;
+      const httpMessage = status ? `HTTP ${status}${responseBody}` : axiosError.message || 'erro HTTP desconhecido';
+      await tracer.logError({
+        timestamp: new Date().toISOString(),
+        requestId,
+        chaveAcesso: input.chaveAcesso,
+        durationMs: Date.now() - startedAt,
+        message: axiosError.message || String(error),
+        status,
+        headers: axiosError.response ? normalizeHeaders(axiosError.response.headers) : undefined,
+        body: axiosError.response?.data === undefined ? undefined : formatTraceBody(String(axiosError.response.data)),
+      });
+      throw new ConsultaHttpError(
+        `Falha ao consultar NFSe ${input.chaveAcesso}: ${httpMessage}`,
+        input.chaveAcesso,
+        requestId,
+        axiosError.response
+          ? parseConsultarNfseResponse({
+            chaveAcesso: input.chaveAcesso,
+            rawResponse: String(axiosError.response.data || ''),
+            httpStatus: axiosError.response.status,
+            headers: normalizeHeaders(axiosError.response.headers),
+          })
+          : undefined,
         error,
       );
     }

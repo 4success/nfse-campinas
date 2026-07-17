@@ -2,7 +2,12 @@ import nock from 'nock';
 import https from 'https';
 import { gunzipSync } from 'zlib';
 import { CampinasDpsClient } from '../../src/client/CampinasDpsClient';
-import { HOMOLOGACAO_DPS_ENDPOINT, resolveDpsEndpoint } from '../../src/client/endpoints';
+import {
+  HOMOLOGACAO_CONSULTA_ENDPOINT,
+  HOMOLOGACAO_DPS_ENDPOINT,
+  resolveConsultaEndpoint,
+  resolveDpsEndpoint,
+} from '../../src/client/endpoints';
 import { MissingProductionEndpointError } from '../../src/errors/MissingProductionEndpointError';
 
 describe('CampinasDpsClient', () => {
@@ -33,6 +38,50 @@ describe('CampinasDpsClient', () => {
 
   test('produção sem endpoint explícito falha', () => {
     expect(() => resolveDpsEndpoint('producao')).toThrow(MissingProductionEndpointError);
+    expect(() => resolveConsultaEndpoint('producao')).toThrow(
+      'Informe endpoints.consulta explicitamente',
+    );
+  });
+
+  test('resolve endpoint de consulta de homologação e aceita override', () => {
+    expect(resolveConsultaEndpoint('homologacao')).toBe(HOMOLOGACAO_CONSULTA_ENDPOINT);
+    expect(resolveConsultaEndpoint('homologacao', { consulta: 'https://consulta.local/nfse' })).toBe(
+      'https://consulta.local/nfse',
+    );
+  });
+
+  test('consulta NFSe por GET com chave codificada e sem Content-Type', async () => {
+    const scope = nock('https://consulta.local')
+      .get('/nfse/NFS%2F1')
+      .matchHeader('accept', /application\/json/)
+      .matchHeader('content-type', (value) => value === undefined)
+      .reply(200, JSON.stringify({ tipoAmbiente: '2', alertas: [] }), { 'content-type': 'application/json' });
+
+    const result = await new CampinasDpsClient({
+      endpoint: 'https://consulta.local/nfse/',
+      transport: { useClientCertificate: false },
+    }).consultarNfse({ chaveAcesso: 'NFS/1' });
+
+    expect(result).toMatchObject({ chaveAcesso: 'NFS/1', tipoAmbiente: '2', alertas: [], httpStatus: 200 });
+    expect(scope.isDone()).toBe(true);
+  });
+
+  test('preserva alerta da prefeitura em erro HTTP de consulta', async () => {
+    nock('https://consulta-error.local').get('/nfse/NFS1').reply(
+      400,
+      JSON.stringify({ alertas: [{ codigo: 'E0044', mensagem: 'NFS-e não existe' }] }),
+      { 'content-type': 'application/json' },
+    );
+
+    await expect(
+      new CampinasDpsClient({
+        endpoint: 'https://consulta-error.local/nfse',
+        transport: { useClientCertificate: false },
+      }).consultarNfse({ chaveAcesso: 'NFS1' }),
+    ).rejects.toMatchObject({
+      chaveAcesso: 'NFS1',
+      response: { httpStatus: 400, alertas: [{ codigo: 'E0044', mensagem: 'NFS-e não existe' }] },
+    });
   });
 
   test('prefere certificado PEM ao PFX para mTLS', async () => {
