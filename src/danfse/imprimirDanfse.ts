@@ -1,4 +1,6 @@
 import { decodeNfseXmlGZipB64 } from '../utils/nfseXml';
+import { DanfseHtmlBuilder as EmbeddedDanfseHtmlBuilder } from './viewer/builder';
+import { DanfseXmlParser as EmbeddedDanfseXmlParser } from './viewer/parser';
 
 export type ImprimirDanfseInput =
   | {
@@ -15,13 +17,14 @@ export type DanfseViewerModule = {
   DanfseHtmlBuilder: new () => { build(data: unknown): string };
 };
 
-function loadDanfseViewer(): Promise<DanfseViewerModule> {
-  return Promise.resolve(require('@notaas/danfse-viewer') as DanfseViewerModule);
-}
+const embeddedDanfseViewer = {
+  DanfseXmlParser: EmbeddedDanfseXmlParser,
+  DanfseHtmlBuilder: EmbeddedDanfseHtmlBuilder,
+} as unknown as DanfseViewerModule;
 
 export async function imprimirDanfse(input: ImprimirDanfseInput, viewer?: DanfseViewerModule): Promise<string> {
   const xml = resolveXml(input);
-  const { DanfseHtmlBuilder, DanfseXmlParser } = viewer || (await loadDanfseViewer());
+  const { DanfseHtmlBuilder, DanfseXmlParser } = viewer || embeddedDanfseViewer;
   const data = await new DanfseXmlParser().parse(xml);
 
   return new DanfseHtmlBuilder().build(data);
