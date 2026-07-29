@@ -3,12 +3,16 @@ import https from 'https';
 import { gunzipSync } from 'zlib';
 import { CampinasDpsClient } from '../../src/client/CampinasDpsClient';
 import {
+  HOMOLOGACAO_CONSULTA_DPS_ENDPOINT,
   HOMOLOGACAO_CONSULTA_ENDPOINT,
   HOMOLOGACAO_DPS_ENDPOINT,
+  PRODUCAO_CONSULTA_DPS_ENDPOINT,
+  PRODUCAO_CONSULTA_ENDPOINT,
+  PRODUCAO_DPS_ENDPOINT,
+  resolveConsultaDpsEndpoint,
   resolveConsultaEndpoint,
   resolveDpsEndpoint,
 } from '../../src/client/endpoints';
-import { MissingProductionEndpointError } from '../../src/errors/MissingProductionEndpointError';
 
 describe('CampinasDpsClient', () => {
   afterEach(() => {
@@ -26,7 +30,10 @@ describe('CampinasDpsClient', () => {
       .matchHeader('content-type', /application\/json/)
       .reply(200, '<ret><chaveAcesso>abc</chaveAcesso></ret>', { 'content-type': 'application/xml' });
 
-    const result = await new CampinasDpsClient({ endpoint: HOMOLOGACAO_DPS_ENDPOINT, transport: { useClientCertificate: false } }).sendSignedDps({
+    const result = await new CampinasDpsClient({
+      endpoint: HOMOLOGACAO_DPS_ENDPOINT,
+      transport: { useClientCertificate: false },
+    }).sendSignedDps({
       idDps: 'DPS1',
       signedXml: '<DPS><Signature></Signature></DPS>',
     });
@@ -36,17 +43,20 @@ describe('CampinasDpsClient', () => {
     expect(scope.isDone()).toBe(true);
   });
 
-  test('produção sem endpoint explícito falha', () => {
-    expect(() => resolveDpsEndpoint('producao')).toThrow(MissingProductionEndpointError);
-    expect(() => resolveConsultaEndpoint('producao')).toThrow(
-      'Informe endpoints.consulta explicitamente',
-    );
+  test('resolve endpoints oficiais de produção', () => {
+    expect(resolveDpsEndpoint('producao')).toBe(PRODUCAO_DPS_ENDPOINT);
+    expect(resolveConsultaEndpoint('producao')).toBe(PRODUCAO_CONSULTA_ENDPOINT);
+    expect(resolveConsultaDpsEndpoint('producao')).toBe(PRODUCAO_CONSULTA_DPS_ENDPOINT);
   });
 
-  test('resolve endpoint de consulta de homologação e aceita override', () => {
+  test('resolve endpoints de consulta de homologação e aceita overrides', () => {
     expect(resolveConsultaEndpoint('homologacao')).toBe(HOMOLOGACAO_CONSULTA_ENDPOINT);
     expect(resolveConsultaEndpoint('homologacao', { consulta: 'https://consulta.local/nfse' })).toBe(
       'https://consulta.local/nfse',
+    );
+    expect(resolveConsultaDpsEndpoint('homologacao')).toBe(HOMOLOGACAO_CONSULTA_DPS_ENDPOINT);
+    expect(resolveConsultaDpsEndpoint('homologacao', { dps: 'https://consulta.local/dps' })).toBe(
+      'https://consulta.local/dps',
     );
   });
 
@@ -67,11 +77,11 @@ describe('CampinasDpsClient', () => {
   });
 
   test('preserva alerta da prefeitura em erro HTTP de consulta', async () => {
-    nock('https://consulta-error.local').get('/nfse/NFS1').reply(
-      400,
-      JSON.stringify({ alertas: [{ codigo: 'E0044', mensagem: 'NFS-e não existe' }] }),
-      { 'content-type': 'application/json' },
-    );
+    nock('https://consulta-error.local')
+      .get('/nfse/NFS1')
+      .reply(400, JSON.stringify({ alertas: [{ codigo: 'E0044', mensagem: 'NFS-e não existe' }] }), {
+        'content-type': 'application/json',
+      });
 
     await expect(
       new CampinasDpsClient({
@@ -84,9 +94,81 @@ describe('CampinasDpsClient', () => {
     });
   });
 
+  test('consulta chave de acesso por GET no identificador da DPS', async () => {
+    const idDps = 'DPS350950221234567800019900001000000000000001';
+    const chaveAcesso = '35095022215547137000138000000000210026073571802007';
+    const scope = nock('https://consulta.local')
+      .get(`/dps/${idDps}`)
+      .matchHeader('accept', /application\/json/)
+      .matchHeader('content-type', (value) => value === undefined)
+      .reply(200, JSON.stringify({ chaveAcesso, alertas: [] }), { 'content-type': 'application/json' });
+
+    const result = await new CampinasDpsClient({
+      endpoint: 'https://consulta.local/dps/',
+      transport: { useClientCertificate: false },
+    }).consultarDps({ idDps });
+
+    expect(result).toMatchObject({ idDps, chaveAcesso, alertas: [], httpStatus: 200 });
+    expect(scope.isDone()).toBe(true);
+  });
+
+  test('preserva identificador e alertas em erro HTTP da consulta de DPS', async () => {
+    const idDps = 'DPS350950221234567800019900001000000000000001';
+    nock('https://consulta-dps-error.local')
+      .get(`/dps/${idDps}`)
+      .reply(404, JSON.stringify({ alertas: [{ codigo: 'E0044', mensagem: 'DPS não encontrada' }] }), {
+        'content-type': 'application/json',
+      });
+
+    await expect(
+      new CampinasDpsClient({
+        endpoint: 'https://consulta-dps-error.local/dps',
+        transport: { useClientCertificate: false },
+      }).consultarDps({ idDps }),
+    ).rejects.toMatchObject({
+      idDps,
+      response: {
+        httpStatus: 404,
+        alertas: [{ codigo: 'E0044', mensagem: 'DPS não encontrada' }],
+      },
+    });
+  });
+
+  test('preserva metadados quando erro da consulta de DPS não traz alertas', async () => {
+    const idDps = 'DPS350950221234567800019900001000000000000001';
+    nock('https://consulta-dps-error.local')
+      .get(`/dps/${idDps}`)
+      .reply(
+        404,
+        JSON.stringify({
+          tipoAmbiente: 2,
+          versaoAplicativo: '1.0',
+          dataHoraProcessamento: '2026-07-29T10:00:00-03:00',
+        }),
+        { 'content-type': 'application/json' },
+      );
+
+    await expect(
+      new CampinasDpsClient({
+        endpoint: 'https://consulta-dps-error.local/dps',
+        transport: { useClientCertificate: false },
+      }).consultarDps({ idDps }),
+    ).rejects.toMatchObject({
+      idDps,
+      response: {
+        httpStatus: 404,
+        tipoAmbiente: '2',
+        versaoAplicativo: '1.0',
+        alertas: [],
+      },
+    });
+  });
+
   test('prefere certificado PEM ao PFX para mTLS', async () => {
     const OriginalAgent = https.Agent;
-    const agentSpy = jest.spyOn(https, 'Agent').mockImplementation((options?: https.AgentOptions) => new OriginalAgent(options));
+    const agentSpy = jest
+      .spyOn(https, 'Agent')
+      .mockImplementation((options?: https.AgentOptions) => new OriginalAgent(options));
     const endpoint = 'https://pem.local/dps';
     nock('https://pem.local').post('/dps').reply(200, '<ret><chaveAcesso>abc</chaveAcesso></ret>');
 
@@ -126,9 +208,11 @@ describe('CampinasDpsClient', () => {
   test('registra trace HTTP de request e response quando debug está ativo', async () => {
     const endpoint = 'https://trace.local/dps';
     const logs: Array<{ prefix: string; data: any }> = [];
-    nock('https://trace.local').post('/dps').reply(201, JSON.stringify({ chaveAcesso: 'abc' }), {
-      'content-type': 'application/json',
-    });
+    nock('https://trace.local')
+      .post('/dps')
+      .reply(201, JSON.stringify({ chaveAcesso: 'abc' }), {
+        'content-type': 'application/json',
+      });
 
     const result = await new CampinasDpsClient({
       endpoint,
@@ -154,9 +238,11 @@ describe('CampinasDpsClient', () => {
   test('registra trace HTTP de erro quando debug está ativo', async () => {
     const endpoint = 'https://trace-error.local/dps';
     const logs: Array<{ prefix: string; data: any }> = [];
-    nock('https://trace-error.local').post('/dps').reply(400, JSON.stringify({ alertas: [{ codigo: 'E1' }] }), {
-      'content-type': 'application/json',
-    });
+    nock('https://trace-error.local')
+      .post('/dps')
+      .reply(400, JSON.stringify({ alertas: [{ codigo: 'E1' }] }), {
+        'content-type': 'application/json',
+      });
 
     await expect(
       new CampinasDpsClient({

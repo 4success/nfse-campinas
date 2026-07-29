@@ -3,9 +3,12 @@ import https from 'https';
 import { gzipSync } from 'zlib';
 import { HttpError } from '../errors/HttpError';
 import { ConsultaHttpError } from '../errors/ConsultaHttpError';
+import { ConsultaDpsHttpError } from '../errors/ConsultaDpsHttpError';
 import {
+  ConsultarDpsResult,
   ConsultarNfseResult,
   EnviarDpsResult,
+  parseConsultarDpsResponse,
   parseConsultarNfseResponse,
   parseEnviarDpsResponse,
 } from './responseParser';
@@ -34,6 +37,11 @@ export type SendSignedDpsInput = {
 
 export type ConsultarNfseInput = {
   chaveAcesso: string;
+  timeoutMs?: number;
+};
+
+export type ConsultarDpsInput = {
+  idDps: string;
   timeoutMs?: number;
 };
 
@@ -216,6 +224,85 @@ export class CampinasDpsClient {
         axiosError.response
           ? parseConsultarNfseResponse({
               chaveAcesso: input.chaveAcesso,
+              rawResponse: String(axiosError.response.data || ''),
+              httpStatus: axiosError.response.status,
+              headers: normalizeHeaders(axiosError.response.headers),
+            })
+          : undefined,
+        error,
+      );
+    }
+  }
+
+  async consultarDps(input: ConsultarDpsInput): Promise<ConsultarDpsResult> {
+    const requestId = `consulta-dps-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const endpoint = `${this.options.endpoint.replace(/\/+$/, '')}/${encodeURIComponent(input.idDps)}`;
+    const headers = {
+      Accept: 'application/json, application/xml, text/plain, */*',
+      ...this.options.requestHeaders,
+    };
+    const httpsAgent = createHttpsAgent(this.options);
+    const tracer = createHttpTracer({ enabled: this.options.debug, logger: this.options.traceLogger });
+    const startedAt = Date.now();
+
+    await tracer.logRequest({
+      timestamp: new Date().toISOString(),
+      requestId,
+      idDps: input.idDps,
+      method: 'GET',
+      url: endpoint,
+      headers,
+    });
+
+    try {
+      const response = await axios.get(endpoint, {
+        headers,
+        httpsAgent,
+        timeout: input.timeoutMs || this.options.timeoutMs,
+        responseType: 'text',
+        transformResponse: [(data) => data],
+      });
+      const normalizedHeaders = normalizeHeaders(response.headers);
+      const rawResponse = String(response.data || '');
+
+      await tracer.logResponse({
+        timestamp: new Date().toISOString(),
+        requestId,
+        idDps: input.idDps,
+        durationMs: Date.now() - startedAt,
+        status: response.status,
+        headers: normalizedHeaders,
+        body: formatTraceBody(rawResponse),
+      });
+
+      return parseConsultarDpsResponse({
+        idDps: input.idDps,
+        rawResponse,
+        httpStatus: response.status,
+        headers: normalizedHeaders,
+      });
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      const status = axiosError.response?.status;
+      const responseBody = axiosError.response?.data === undefined ? '' : `: ${String(axiosError.response.data)}`;
+      const httpMessage = status ? `HTTP ${status}${responseBody}` : axiosError.message || 'erro HTTP desconhecido';
+      await tracer.logError({
+        timestamp: new Date().toISOString(),
+        requestId,
+        idDps: input.idDps,
+        durationMs: Date.now() - startedAt,
+        message: axiosError.message || String(error),
+        status,
+        headers: axiosError.response ? normalizeHeaders(axiosError.response.headers) : undefined,
+        body: axiosError.response?.data === undefined ? undefined : formatTraceBody(String(axiosError.response.data)),
+      });
+      throw new ConsultaDpsHttpError(
+        `Falha ao consultar DPS ${input.idDps}: ${httpMessage}`,
+        input.idDps,
+        requestId,
+        axiosError.response
+          ? parseConsultarDpsResponse({
+              idDps: input.idDps,
               rawResponse: String(axiosError.response.data || ''),
               httpStatus: axiosError.response.status,
               headers: normalizeHeaders(axiosError.response.headers),

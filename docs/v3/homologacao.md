@@ -17,6 +17,32 @@ Use `GET https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chav
 `tipoAmbiente`, `versaoAplicativo`, `dataHoraProcessamento`, `nfseXmlGZipB64` e `alertas`. O XML autorizado vem em
 `nfseXmlGZipB64`, compactado com GZip e codificado em Base64.
 
+## Consulta de DPS
+
+Use `GET https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/dps/{IdentificadorDPS}` para recuperar a chave de
+acesso da NFS-e gerada a partir de uma DPS:
+
+```ts
+const result = await nfse.consultarDps(idDps);
+console.log(result.chaveAcesso);
+```
+
+O endpoint exige certificado digital na conexão. A chave só é informada quando o certificado pertence ao prestador,
+tomador ou intermediário da NFS-e. Use esta consulta antes de retransmitir uma DPS cujo POST terminou com timeout ou
+outro resultado incerto.
+
+Em validação real em `29/07/2026`, o endpoint chegou a devolver para uma DPS conhecida a chave de uma NFS-e cujo XML
+continha outro `infDPS/@Id`. Portanto, a chave recuperada deve ser seguida de `consultarNfse` e só pode ser persistida
+depois que o `Id` da DPS embutida no XML autorizado coincidir exatamente com o identificador solicitado. Se houver
+divergência, preserve as duas respostas para diagnóstico e não retransmita automaticamente.
+
+O sucesso observado usa HTTP `200` e JSON com `tipoAmbiente`, `versaoAplicativo`, `dataHoraProcessamento` e
+`chaveAcesso`, sem repetir o `idDps` solicitado. Erros `400` e `404` também podem retornar JSON apenas com metadados,
+sem `alertas`; o status HTTP e o corpo bruto devem ser preservados.
+
+Em produção, envio e consultas usam a base
+`https://novanfse.campinas.sp.gov.br/notafiscal-adn-ws/api/adn`, cuja ativação foi anunciada para `01/08/2026`.
+
 Observações validadas em homologação:
 
 - `Content-Type: application/json` é obrigatório para o endpoint ADN de Campinas.

@@ -25,8 +25,10 @@
 
 - Target protocol is DPS v1.01 / Padrão Nacional, not ABRASF 2.03, RPS, SOAP, or WSDL.
 - Homologation DPS endpoint is `https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/dps`.
-- Production has no hardcoded endpoint; sending with `environment: 'producao'` without `endpoints.dps` must keep
-  throwing `MissingProductionEndpointError`.
+- Production DPS and NFSe endpoints use the official
+  `https://novanfse.campinas.sp.gov.br/notafiscal-adn-ws/api/adn` base and were announced for activation on 2026-08-01.
+- `GET /dps/{idDps}` recovers the NFSe access key and requires mTLS. Reuse the configured `dps` endpoint for POST and
+  GET; do not add a redundant endpoint option.
 - The Campinas endpoint expects `Content-Type: application/json` with `{ dpsXmlGZipB64 }`; raw XML with
   `application/xml` returned `HTTP 415`.
 - Consulta de NFSe por chave de acesso está disponível em homologação via `GET /api/adn/nfse/{chaveAcesso}`. O retorno

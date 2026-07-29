@@ -56,6 +56,26 @@ export type ParseConsultarNfseResponseInput = {
   headers: Record<string, string | string[] | undefined>;
 };
 
+export type ConsultarDpsResult = {
+  idDps: string;
+  chaveAcesso?: string;
+  tipoAmbiente?: string;
+  versaoAplicativo?: string;
+  dataHoraProcessamento?: string;
+  alertas: ConsultarNfseAlerta[];
+  parsedResponse: unknown;
+  rawResponse: string;
+  httpStatus: number;
+  headers: Record<string, string | string[] | undefined>;
+};
+
+export type ParseConsultarDpsResponseInput = {
+  idDps: string;
+  rawResponse: string;
+  httpStatus: number;
+  headers: Record<string, string | string[] | undefined>;
+};
+
 function asString(value: unknown): string | undefined {
   if (value === undefined || value === null) {
     return undefined;
@@ -100,6 +120,10 @@ function hasKey(value: unknown, keys: string[]): boolean {
 
 function isSuccessCStat(value: unknown): boolean {
   return asString(value) === '100';
+}
+
+function isAccessKey(value: string | undefined): value is string {
+  return Boolean(value && (/^NFS[A-Z0-9]{50}$/.test(value) || /^[A-Z0-9]{50}$/.test(value)));
 }
 
 function collectMessages(value: unknown): EnviarDpsMessage[] {
@@ -147,6 +171,17 @@ function collectAlertas(value: unknown): ConsultarNfseAlerta[] {
     }
     return [{ codigo: asString(getByKey(record, ['codigo', 'code'])), mensagem: String(mensagem) }];
   });
+}
+
+function collectConsultaAlertas(value: unknown): ConsultarNfseAlerta[] {
+  const alertas = collectAlertas(value);
+  if (alertas.length > 0) {
+    return alertas;
+  }
+  return collectMessages(value).map((message) => ({
+    codigo: message.codigo,
+    mensagem: message.descricao,
+  }));
 }
 
 function parseBody(rawResponse: string): unknown {
@@ -223,6 +258,36 @@ export function parseConsultarNfseResponse(input: ParseConsultarNfseResponseInpu
     dataHoraProcessamento: asString(findFirstByKey(parsed, ['dataHoraProcessamento'])),
     nfseXmlGZipB64: asString(findFirstByKey(parsed, ['nfseXmlGZipB64'])),
     alertas: collectAlertas(parsed),
+    parsedResponse: parsed,
+    rawResponse: input.rawResponse,
+    httpStatus: input.httpStatus,
+    headers: input.headers,
+  };
+}
+
+export function parseConsultarDpsResponse(input: ParseConsultarDpsResponseInput): ConsultarDpsResult {
+  let parsed: unknown;
+  try {
+    parsed = parseBody(input.rawResponse);
+  } catch (_error) {
+    parsed = input.rawResponse;
+  }
+
+  const structuredAccessKey = asString(findFirstByKey(parsed, ['chaveAcesso', 'chNFSe', 'ChaveAcesso']));
+  const plainAccessKeyCandidate = typeof parsed === 'string' ? parsed.trim().replace(/^"(.*)"$/, '$1') : undefined;
+  const chaveAcesso = isAccessKey(structuredAccessKey)
+    ? structuredAccessKey
+    : isAccessKey(plainAccessKeyCandidate)
+    ? plainAccessKeyCandidate
+    : undefined;
+
+  return {
+    idDps: input.idDps,
+    chaveAcesso,
+    tipoAmbiente: asString(findFirstByKey(parsed, ['tipoAmbiente'])),
+    versaoAplicativo: asString(findFirstByKey(parsed, ['versaoAplicativo'])),
+    dataHoraProcessamento: asString(findFirstByKey(parsed, ['dataHoraProcessamento'])),
+    alertas: collectConsultaAlertas(parsed),
     parsedResponse: parsed,
     rawResponse: input.rawResponse,
     httpStatus: input.httpStatus,

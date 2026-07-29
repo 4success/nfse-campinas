@@ -21,3 +21,4 @@ export * from './errors/MissingProductionEndpointError';
 export * from './errors/NotImplementedError';
 export * from './errors/HttpError';
 export * from './errors/ConsultaHttpError';
+export * from './errors/ConsultaDpsHttpError';

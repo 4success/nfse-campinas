@@ -14,6 +14,10 @@ import {
 
 const DPS_ID_PATTERN = /^DPS\d{7}(?:1\d{14}|2[A-Z0-9]{12}\d{2})\d{20}$/;
 
+export function isValidDpsId(value: string): boolean {
+  return DPS_ID_PATTERN.test(value);
+}
+
 function pushIssue(
   issues: ValidationIssue[],
   field: string,
@@ -112,7 +116,7 @@ function validateIdDpsWhenPresent(input: DpsInput, issues: ValidationIssue[]) {
   if (!input.idDps) {
     return;
   }
-  if (!DPS_ID_PATTERN.test(input.idDps)) {
+  if (!isValidDpsId(input.idDps)) {
     pushIssue(issues, 'idDps', 'deve seguir o formato de Id da DPS');
     return;
   }

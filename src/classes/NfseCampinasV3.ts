@@ -1,12 +1,18 @@
 import { PfxCertificate } from '../certificate/PfxCertificate';
 import { CampinasDpsClient } from '../client/CampinasDpsClient';
-import { NfseCampinasV3Endpoints, resolveConsultaEndpoint, resolveDpsEndpoint } from '../client/endpoints';
+import {
+  NfseCampinasV3Endpoints,
+  resolveConsultaDpsEndpoint,
+  resolveConsultaEndpoint,
+  resolveDpsEndpoint,
+} from '../client/endpoints';
 import { HttpTraceLogger } from '../client/httpTrace';
-import { ConsultarNfseResult, EnviarDpsResult } from '../client/responseParser';
+import { ConsultarDpsResult, ConsultarNfseResult, EnviarDpsResult } from '../client/responseParser';
 import { imprimirDanfse, ImprimirDanfseInput } from '../danfse/imprimirDanfse';
 import { buildDpsId } from '../dps/buildDpsId';
 import { DpsXmlBuilder } from '../dps/DpsXmlBuilder';
 import { BuildDpsIdInput, DpsInput, NfseCampinasV3Environment } from '../dps/types';
+import { isValidDpsId } from '../dps/validators';
 import { NotImplementedError } from '../errors/NotImplementedError';
 import { ValidationError } from '../errors/ValidationError';
 import { DpsSigner } from '../signature/DpsSigner';
@@ -17,6 +23,10 @@ export type EnviarDpsOptions = {
 };
 
 export type ConsultarNfseOptions = {
+  timeoutMs?: number;
+};
+
+export type ConsultarDpsOptions = {
   timeoutMs?: number;
 };
 
@@ -111,6 +121,34 @@ export class NfseCampinasV3 {
     });
 
     return client.consultarNfse({ chaveAcesso, timeoutMs: options.timeoutMs });
+  }
+
+  async consultarDps(idDps: string, options: ConsultarDpsOptions = {}): Promise<ConsultarDpsResult> {
+    if (!isValidDpsId(idDps)) {
+      throw new ValidationError([{ field: 'idDps', message: 'deve seguir o formato de Id da DPS', severity: 'error' }]);
+    }
+
+    const endpoint = resolveConsultaDpsEndpoint(this.environment, this.options.endpoints);
+    const useClientCertificate = this.options.transport?.useClientCertificate !== false;
+    const clientCertificate = useClientCertificate ? this.certificate.toPem() : undefined;
+    const client = new CampinasDpsClient({
+      endpoint,
+      certificate: this.options.certificate,
+      certPassword: this.options.certPassword,
+      clientKeyPem: clientCertificate?.privateKey,
+      clientCertPem: clientCertificate?.publicCert,
+      timeoutMs: this.options.timeoutMs,
+      requestHeaders: this.options.requestHeaders,
+      debug: this.options.debug,
+      traceLogger: this.options.traceLogger,
+      transport: this.options.transport,
+    });
+
+    return client.consultarDps({ idDps, timeoutMs: options.timeoutMs });
+  }
+
+  async consultarNfsePorDps(idDps: string, options: ConsultarDpsOptions = {}): Promise<ConsultarDpsResult> {
+    return this.consultarDps(idDps, options);
   }
 
   async cancelarNfse(_input: unknown): Promise<never> {

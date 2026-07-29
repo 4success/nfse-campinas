@@ -1,8 +1,11 @@
-import { MissingProductionEndpointError } from '../errors/MissingProductionEndpointError';
 import { NfseCampinasV3Environment } from '../dps/types';
 
 export const HOMOLOGACAO_DPS_ENDPOINT = 'https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/dps';
 export const HOMOLOGACAO_CONSULTA_ENDPOINT = 'https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse';
+export const HOMOLOGACAO_CONSULTA_DPS_ENDPOINT = HOMOLOGACAO_DPS_ENDPOINT;
+export const PRODUCAO_DPS_ENDPOINT = 'https://novanfse.campinas.sp.gov.br/notafiscal-adn-ws/api/adn/dps';
+export const PRODUCAO_CONSULTA_ENDPOINT = 'https://novanfse.campinas.sp.gov.br/notafiscal-adn-ws/api/adn/nfse';
+export const PRODUCAO_CONSULTA_DPS_ENDPOINT = PRODUCAO_DPS_ENDPOINT;
 
 export type NfseCampinasV3Endpoints = Partial<{
   dps: string;
@@ -20,7 +23,7 @@ export function resolveDpsEndpoint(
   if (environment === 'homologacao') {
     return HOMOLOGACAO_DPS_ENDPOINT;
   }
-  throw new MissingProductionEndpointError();
+  return PRODUCAO_DPS_ENDPOINT;
 }
 
 export function resolveConsultaEndpoint(
@@ -33,5 +36,18 @@ export function resolveConsultaEndpoint(
   if (environment === 'homologacao') {
     return HOMOLOGACAO_CONSULTA_ENDPOINT;
   }
-  throw new MissingProductionEndpointError('consulta', 'consulta');
+  return PRODUCAO_CONSULTA_ENDPOINT;
+}
+
+export function resolveConsultaDpsEndpoint(
+  environment: NfseCampinasV3Environment,
+  endpoints: NfseCampinasV3Endpoints = {},
+): string {
+  if (endpoints.dps) {
+    return endpoints.dps;
+  }
+  if (environment === 'homologacao') {
+    return HOMOLOGACAO_CONSULTA_DPS_ENDPOINT;
+  }
+  return PRODUCAO_CONSULTA_DPS_ENDPOINT;
 }

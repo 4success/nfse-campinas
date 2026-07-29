@@ -23,17 +23,19 @@ pnpm add @4success/nfse-campinas
 ## Status dos Endpoints
 
 - Envio DPS homologação: implementado em `https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/dps`.
+- Consulta DPS homologação: implementada por identificador em
+  `https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/dps/{IdentificadorDPS}`.
 - Consulta NFSe homologação: implementada por chave de acesso em
   `https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}`.
-- Produção: aguardando URL oficial da Prefeitura; é possível informar `endpoints.dps` manualmente.
-- Para consultar em produção, informe `endpoints.consulta`; cancelamento e eventos ainda não foram publicados pela
-  Prefeitura.
+- Produção: envio e consultas usam por padrão `https://novanfse.campinas.sp.gov.br/notafiscal-adn-ws/api/adn`;
+  a Prefeitura informou ativação em `01/08/2026`.
+- Cancelamento e eventos ainda não foram publicados pela Prefeitura.
 
 ## Exemplo Mínimo
 
 ```ts
 import fs from 'node:fs';
-import { decodeNfseXmlGZipB64, NfseCampinas } from '@4success/nfse-campinas';
+import { assertNfseXmlMatchesDps, decodeNfseXmlGZipB64, NfseCampinas } from '@4success/nfse-campinas';
 
 const nfse = new NfseCampinas({
   environment: 'homologacao',
@@ -91,6 +93,7 @@ console.log(result.rawResponse);
 
 if (result.nfseXmlGZipB64) {
   const nfseXml = decodeNfseXmlGZipB64(result.nfseXmlGZipB64);
+  assertNfseXmlMatchesDps(nfseXml, result.idDps);
   console.log(nfseXml);
 
   const danfseHtml = await nfse.imprimirDanfse({ nfseXmlGZipB64: result.nfseXmlGZipB64 });
@@ -114,11 +117,48 @@ if (consulta.nfseXmlGZipB64) {
 }
 ```
 
-Em produção, configure a URL publicada pela Prefeitura em `endpoints.consulta`. Uma NFSe inexistente retorna `HTTP 400`
-com alertas da Prefeitura, preservados em `ConsultaHttpError.response`.
+Uma NFSe inexistente retorna `HTTP 400` com alertas da Prefeitura, preservados em `ConsultaHttpError.response`.
 
 O exemplo local completo está em `exemplos/consultar-nfse.ts`; ele usa `CERTIFICATE_PATH`, `CERTIFICATE_PASSWORD` e a
 chave de acesso como primeiro argumento.
+
+## Consulta por DPS
+
+Quando o envio tiver resultado incerto — por exemplo, timeout depois de a Prefeitura receber a DPS — consulte o mesmo
+identificador antes de considerar qualquer reenvio:
+
+```ts
+const consultaDps = await nfse.consultarDps('DPS350950221234567800019900001000000000000001');
+
+console.log(consultaDps.chaveAcesso);
+```
+
+`consultarNfsePorDps` é um alias de `consultarDps`. A consulta usa certificado digital (mTLS), e a chave só é revelada
+quando o titular do certificado corresponde ao prestador, tomador ou intermediário da NFS-e. Erros HTTP preservam
+alertas e a resposta bruta em `ConsultaDpsHttpError.response`.
+
+Por segurança, não associe a chave retornada ao seu documento sem consultar a NFS-e e conferir se o `Id` de `infDPS`
+no XML autorizado é igual ao identificador solicitado. Essa conferência também protege contra uma resposta municipal
+inconsistente:
+
+```ts
+if (!consultaDps.chaveAcesso) {
+  throw new Error(`Consulta da DPS não retornou chave: ${consultaDps.rawResponse}`);
+}
+
+const chaveConsulta = consultaDps.chaveAcesso.startsWith('NFS')
+  ? consultaDps.chaveAcesso
+  : `NFS${consultaDps.chaveAcesso}`;
+const consultaNfse = await nfse.consultarNfse(chaveConsulta);
+if (!consultaNfse.nfseXmlGZipB64) {
+  throw new Error(`Consulta da NFS-e não retornou XML: ${consultaNfse.rawResponse}`);
+}
+const xml = decodeNfseXmlGZipB64(consultaNfse.nfseXmlGZipB64);
+
+assertNfseXmlMatchesDps(xml, 'DPS350950221234567800019900001000000000000001');
+```
+
+O exemplo local completo está em `exemplos/consultar-dps.ts`.
 
 ## DANFSe
 

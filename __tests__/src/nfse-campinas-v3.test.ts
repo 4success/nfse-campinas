@@ -1,9 +1,13 @@
 import nock from 'nock';
 import { DpsSigner } from '../../src/signature/DpsSigner';
-import { MissingProductionEndpointError } from '../../src/errors/MissingProductionEndpointError';
 import { ValidationError } from '../../src/errors/ValidationError';
 import { NfseCampinasV3 } from '../../src/classes/NfseCampinasV3';
-import { HOMOLOGACAO_CONSULTA_ENDPOINT, HOMOLOGACAO_DPS_ENDPOINT } from '../../src/client/endpoints';
+import {
+  HOMOLOGACAO_CONSULTA_DPS_ENDPOINT,
+  HOMOLOGACAO_CONSULTA_ENDPOINT,
+  HOMOLOGACAO_DPS_ENDPOINT,
+  PRODUCAO_DPS_ENDPOINT,
+} from '../../src/client/endpoints';
 import { sampleDpsInput } from '../../test-support/fixtures';
 
 const mockToPem = jest.fn(() => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }));
@@ -44,7 +48,9 @@ describe('NfseCampinasV3', () => {
     expect(scope.isDone()).toBe(true);
   });
 
-  test('não usa endpoint de homologação para DPS marcada como produção', async () => {
+  test('usa endpoint oficial de produção para DPS marcada como produção', async () => {
+    const endpoint = new URL(PRODUCAO_DPS_ENDPOINT);
+    const scope = nock(`${endpoint.protocol}//${endpoint.host}`).post(endpoint.pathname).reply(200, '<ret>ok</ret>');
     const nfse = new NfseCampinasV3({
       environment: 'homologacao',
       certificate: Buffer.from('CERT'),
@@ -52,10 +58,9 @@ describe('NfseCampinasV3', () => {
       transport: { useClientCertificate: false },
     });
 
-    await expect(nfse.enviarDps({ ...sampleDpsInput, ambiente: 'producao' })).rejects.toThrow(
-      MissingProductionEndpointError,
-    );
-    expect(DpsSigner).not.toHaveBeenCalled();
+    await nfse.enviarDps({ ...sampleDpsInput, ambiente: 'producao' });
+
+    expect(scope.isDone()).toBe(true);
   });
 
   test('rejeita ambiente inválido informado na DPS', async () => {
@@ -152,5 +157,66 @@ describe('NfseCampinasV3', () => {
     });
 
     await expect(nfse.consultarNfse('invalida')).rejects.toThrow(ValidationError);
+  });
+
+  test('consulta chave de acesso pelo identificador da DPS', async () => {
+    const endpoint = new URL(HOMOLOGACAO_CONSULTA_DPS_ENDPOINT);
+    const chaveSemPrefixo = '35095022215547137000138000000000210026073571802007';
+    const scope = nock(`${endpoint.protocol}//${endpoint.host}`)
+      .get(`${endpoint.pathname}/${externalSignedDpsId}`)
+      .reply(200, JSON.stringify({ chaveAcesso: chaveSemPrefixo, alertas: [] }));
+    const nfse = new NfseCampinasV3({
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      transport: { useClientCertificate: false },
+    });
+
+    const result = await nfse.consultarDps(externalSignedDpsId);
+
+    expect(result).toMatchObject({ idDps: externalSignedDpsId, chaveAcesso: chaveSemPrefixo, alertas: [] });
+    expect(scope.isDone()).toBe(true);
+  });
+
+  test('mantém alias consultarNfsePorDps e rejeita identificador inválido antes da rede', async () => {
+    const endpoint = new URL(HOMOLOGACAO_CONSULTA_DPS_ENDPOINT);
+    const scope = nock(`${endpoint.protocol}//${endpoint.host}`)
+      .get(`${endpoint.pathname}/${externalSignedDpsId}`)
+      .reply(200, JSON.stringify({ chaveAcesso, alertas: [] }));
+    const nfse = new NfseCampinasV3({
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      transport: { useClientCertificate: false },
+    });
+
+    const result = await nfse.consultarNfsePorDps(externalSignedDpsId);
+
+    expect(result.chaveAcesso).toBe(chaveAcesso);
+    await expect(nfse.consultarDps('DPS-invalida')).rejects.toThrow(ValidationError);
+    expect(scope.isDone()).toBe(true);
+  });
+
+  test('aceita identificador com CNPJ alfanumérico e rejeita blocos fiscais inválidos', async () => {
+    const idDpsAlfanumerico = 'DPS35095022ABCD123456789000001000000000000001';
+    const endpoint = new URL(HOMOLOGACAO_CONSULTA_DPS_ENDPOINT);
+    const scope = nock(`${endpoint.protocol}//${endpoint.host}`)
+      .get(`${endpoint.pathname}/${idDpsAlfanumerico}`)
+      .reply(200, JSON.stringify({ chaveAcesso, alertas: [] }));
+    const nfse = new NfseCampinasV3({
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      transport: { useClientCertificate: false },
+    });
+
+    await expect(nfse.consultarDps(idDpsAlfanumerico)).resolves.toMatchObject({
+      idDps: idDpsAlfanumerico,
+      chaveAcesso,
+    });
+    await expect(
+      nfse.consultarDps(`${externalSignedDpsId.slice(0, 10)}3${externalSignedDpsId.slice(11)}`),
+    ).rejects.toThrow(ValidationError);
+    await expect(
+      nfse.consultarDps(`${externalSignedDpsId.slice(0, 23)}A${externalSignedDpsId.slice(24)}`),
+    ).rejects.toThrow(ValidationError);
+    expect(scope.isDone()).toBe(true);
   });
 });

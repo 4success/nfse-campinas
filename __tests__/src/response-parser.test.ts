@@ -1,5 +1,9 @@
 import { gzipSync } from 'zlib';
-import { parseConsultarNfseResponse, parseEnviarDpsResponse } from '../../src/client/responseParser';
+import {
+  parseConsultarDpsResponse,
+  parseConsultarNfseResponse,
+  parseEnviarDpsResponse,
+} from '../../src/client/responseParser';
 import { decodeNfseXmlGZipB64 } from '../../src/utils/nfseXml';
 
 describe('parseEnviarDpsResponse', () => {
@@ -171,6 +175,65 @@ describe('parseConsultarNfseResponse', () => {
     });
 
     expect(result.alertas).toEqual([{ codigo: 'E0044', mensagem: 'NFS-e não existe' }]);
+    expect(result.rawResponse).toContain('E0044');
+  });
+});
+
+describe('parseConsultarDpsResponse', () => {
+  const idDps = 'DPS350950221234567800019900001000000000000001';
+  const chaveAcesso = '35095022215547137000138000000000210026073571802007';
+
+  test('interpreta envelope JSON e preserva metadados da consulta', () => {
+    const result = parseConsultarDpsResponse({
+      idDps,
+      rawResponse: JSON.stringify({
+        tipoAmbiente: 2,
+        versaoAplicativo: '1.0',
+        dataHoraProcessamento: '2026-07-29T10:00:00-03:00',
+        chaveAcesso,
+        alertas: [],
+      }),
+      httpStatus: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+
+    expect(result).toMatchObject({
+      idDps,
+      chaveAcesso,
+      tipoAmbiente: '2',
+      versaoAplicativo: '1.0',
+      dataHoraProcessamento: '2026-07-29T10:00:00-03:00',
+      alertas: [],
+      httpStatus: 200,
+    });
+  });
+
+  test.each([chaveAcesso, `"${chaveAcesso}"`, `NFS${chaveAcesso}`])(
+    'interpreta chave retornada como texto simples: %s',
+    (rawResponse) => {
+      const result = parseConsultarDpsResponse({
+        idDps,
+        rawResponse,
+        httpStatus: 200,
+        headers: {},
+      });
+
+      expect(result.chaveAcesso).toBe(rawResponse.replaceAll('"', ''));
+    },
+  );
+
+  test('não trata mensagem de erro como chave e preserva alertas', () => {
+    const result = parseConsultarDpsResponse({
+      idDps,
+      rawResponse: JSON.stringify({
+        erros: [{ codigo: 'E0044', descricao: 'DPS não encontrada' }],
+      }),
+      httpStatus: 404,
+      headers: {},
+    });
+
+    expect(result.chaveAcesso).toBeUndefined();
+    expect(result.alertas).toEqual([{ codigo: 'E0044', mensagem: 'DPS não encontrada' }]);
     expect(result.rawResponse).toContain('E0044');
   });
 });

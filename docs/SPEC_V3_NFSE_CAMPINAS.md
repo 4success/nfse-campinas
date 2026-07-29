@@ -6,6 +6,11 @@
 
 ---
 
+> **Atualização de 2026-07-29 (v3.2.0):** Campinas publicou os endpoints oficiais de produção para envio e consulta,
+> com ativação anunciada para 01/08/2026, e publicou `GET /dps/{IdentificadorDPS}` em homologação e produção. A
+> biblioteca agora expõe `consultarDps(idDps)` e o alias `consultarNfsePorDps(idDps)`. As afirmações históricas abaixo
+> sobre endpoint de produção ausente e consulta por DPS não implementada descrevem apenas o escopo original da v3.0.0.
+
 ## 1. Decisões de produto e release
 
 ### 1.1. Estratégia de versionamento
