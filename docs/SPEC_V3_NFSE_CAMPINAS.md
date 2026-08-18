@@ -11,6 +11,11 @@
 > biblioteca agora expõe `consultarDps(idDps)` e o alias `consultarNfsePorDps(idDps)`. As afirmações históricas abaixo
 > sobre endpoint de produção ausente e consulta por DPS não implementada descrevem apenas o escopo original da v3.0.0.
 
+> **Atualização de 2026-08-18:** Campinas publicou o cancelamento em homologação por meio de
+> `POST /nfse/{chaveAcesso}/eventos`. A chamada é síncrona e recebe o XML assinado do Pedido de Registro de Evento de
+> cancelamento, código `101101`, no payload `pedidoRegistroEventoXmlGZipB64`. As afirmações históricas abaixo de que
+> cancelamento ou eventos ainda não tinham sido publicados descrevem apenas o escopo original da v3.0.0.
+
 ## 1. Decisões de produto e release
 
 ### 1.1. Estratégia de versionamento
@@ -45,14 +50,15 @@ Implementar com qualidade de produção:
 - Testes unitários e de contrato com fixtures.
 - Documentação de migração v2 → v3.
 
-Não implementar em v3.0.0, salvo se a Prefeitura publicar endpoints durante o desenvolvimento:
+O escopo original da v3.0.0 não incluía, salvo publicação de endpoints pela Prefeitura durante o desenvolvimento:
 
 - Consulta municipal v3.
-- Cancelamento/eventos municipais v3.
+- Cancelamento/eventos municipais v3, cujo endpoint de cancelamento foi publicado posteriormente em `18/08/2026`.
 - Substituição por endpoint específico municipal.
 - Impressão DANFSe v3.
 
-Esses métodos não devem ser anunciados como disponíveis. Podem existir stubs que lancem `NotImplementedError` com mensagem clara: “endpoint ainda não publicado pela Prefeitura de Campinas”.
+Naquele escopo, esses métodos não deveriam ser anunciados como disponíveis e poderiam existir apenas como stubs com
+`NotImplementedError`. Consulte as atualizações datadas no início deste documento para o estado posterior dos endpoints.
 
 ---
 
@@ -140,12 +146,18 @@ new NfseCampinasV3({
 
 ### 3.3. Consulta e eventos
 
-Para Campinas, no momento da especificação:
+Campinas publicou posteriormente os endpoints de consulta descritos na atualização de `29/07/2026` e o seguinte
+endpoint de cancelamento em homologação:
 
-- Consulta: a ser publicada.
-- Eventos/cancelamento/substituição: a serem publicados.
+```txt
+POST https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}/eventos
+```
 
-A API nacional possui referências genéricas para `/nfse`, `/dps/{id}` e `/nfse/{chaveAcesso}/eventos`, mas isso **não autoriza** o SDK a apontar automaticamente para endpoints nacionais ou municipais sem confirmação de Campinas.
+O cancelamento é uma requisição síncrona que recebe o XML assinado do Pedido de Registro de Evento, código `101101`,
+compactado com GZip/Base64 no campo JSON `pedidoRegistroEventoXmlGZipB64`. A publicação não autoriza inferir uma URL de
+produção nem endpoints para substituição ou outros eventos; cada rota deve ser confirmada pela Prefeitura antes de ser
+adotada como padrão pelo SDK. Enquanto a URL de produção não for publicada, `endpoints.eventos` deve ser obrigatório
+nesse ambiente.
 
 ---
 
@@ -286,7 +298,7 @@ export class NfseCampinasV3 {
 
   consultarNfsePorDps(_idDps: string): Promise<never>; // NotImplemented até Campinas publicar.
 
-  cancelarNfse(_input: unknown): Promise<never>; // NotImplemented até Campinas publicar.
+  cancelarNfse(input: CancelarNfseInput, options?: CancelarNfseOptions): Promise<CancelarNfseResult>;
 }
 ```
 
@@ -962,7 +974,9 @@ Atualizar as seções:
 - Status dos endpoints:
   - Envio DPS homologação: implementado.
   - Produção: aguardando URL 01/08/2026, mas com override.
-  - Consulta/eventos: aguardando publicação.
+  - Consultas: publicadas posteriormente.
+  - Cancelamento: `POST /nfse/{chaveAcesso}/eventos` publicado em homologação para o evento assinado `101101`.
+  - Substituição e outros eventos: aguardando publicação específica.
 - Segurança de certificado.
 
 ### 14.2. `docs/v3/migracao-v2-para-v3.md`
@@ -977,7 +991,7 @@ Tabela sugerida:
 | `RecepcionarLoteRpsSincrono` | não há lote; enviar uma DPS por requisição |
 | `InfDeclaracaoPrestacaoServico` | `DPS/infDPS` |
 | Código municipal/CNAE | `cTribNac`, `cTribMun`, `cNBS` |
-| Cancelamento SOAP | eventos ainda não publicados para Campinas |
+| Cancelamento SOAP | evento `101101` por HTTP POST com XML assinado |
 | Consulta SOAP | consulta ainda não publicada para Campinas |
 
 ### 14.3. `docs/v3/assinatura-dps.md`
@@ -1166,7 +1180,8 @@ A release só pode ser considerada pronta quando todos estes itens forem verdade
 - [ ] `Signature` fica dentro de `DPS` após `infDPS`.
 - [ ] Envio usa `POST` com body XML assinado.
 - [ ] Parser preserva request/response bruto.
-- [ ] Consulta/eventos/cancelamento não são anunciados como implementados.
+- [ ] Consulta e cancelamento usam somente endpoints confirmados por Campinas; substituição e outros eventos não são
+      anunciados como disponíveis sem publicação específica.
 - [ ] Exemplos v3 criados.
 - [ ] Nenhum certificado, senha, XML real sensível ou resposta real com PII foi commitado.
 

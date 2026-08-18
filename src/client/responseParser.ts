@@ -76,6 +76,37 @@ export type ParseConsultarDpsResponseInput = {
   headers: Record<string, string | string[] | undefined>;
 };
 
+export type CancelarNfseAlerta = {
+  codigo?: string;
+  mensagem: string;
+  complemento?: string;
+};
+
+export type CancelarNfseResult = {
+  chaveAcesso: string;
+  tipoAmbiente?: string;
+  versaoAplicativo?: string;
+  dataHoraProcessamento?: string;
+  eventoXmlGZipB64?: string;
+  nfseXmlGZipB64?: string;
+  alertas: CancelarNfseAlerta[];
+  parsedResponse: unknown;
+  signedXml: string;
+  rawRequest: string;
+  rawResponse: string;
+  httpStatus: number;
+  headers: Record<string, string | string[] | undefined>;
+};
+
+export type ParseCancelarNfseResponseInput = {
+  chaveAcesso: string;
+  signedXml: string;
+  rawRequest: string;
+  rawResponse: string;
+  httpStatus: number;
+  headers: Record<string, string | string[] | undefined>;
+};
+
 function asString(value: unknown): string | undefined {
   if (value === undefined || value === null) {
     return undefined;
@@ -180,6 +211,50 @@ function collectConsultaAlertas(value: unknown): ConsultarNfseAlerta[] {
   }
   return collectMessages(value).map((message) => ({
     codigo: message.codigo,
+    mensagem: message.descricao,
+  }));
+}
+
+function collectCancelamentoAlertas(value: unknown): CancelarNfseAlerta[] {
+  const container = findFirstByKey(value, [
+    'alertas',
+    'Alertas',
+    'erros',
+    'Erros',
+    'erro',
+    'Erro',
+    'mensagens',
+    'Mensagens',
+  ]);
+  const items = Array.isArray(container) ? container : container && typeof container === 'object' ? [container] : [];
+  const alertas = items.flatMap((item): CancelarNfseAlerta[] => {
+    if (!item || typeof item !== 'object') {
+      return [];
+    }
+
+    const record = item as Record<string, unknown>;
+    const mensagem = getByKey(record, ['mensagem', 'Mensagem', 'descricao', 'Descricao', 'message', 'Message']);
+    if (!mensagem || typeof mensagem === 'object') {
+      return [];
+    }
+
+    const codigo = asString(getByKey(record, ['codigo', 'Codigo', 'code', 'Code']));
+    const complemento = asString(getByKey(record, ['complemento', 'Complemento']));
+    return [
+      {
+        ...(codigo === undefined ? {} : { codigo }),
+        mensagem: String(mensagem),
+        ...(complemento === undefined ? {} : { complemento }),
+      },
+    ];
+  });
+
+  if (alertas.length > 0) {
+    return alertas;
+  }
+
+  return collectMessages(value).map((message) => ({
+    ...(message.codigo === undefined ? {} : { codigo: message.codigo }),
     mensagem: message.descricao,
   }));
 }
@@ -289,6 +364,31 @@ export function parseConsultarDpsResponse(input: ParseConsultarDpsResponseInput)
     dataHoraProcessamento: asString(findFirstByKey(parsed, ['dataHoraProcessamento'])),
     alertas: collectConsultaAlertas(parsed),
     parsedResponse: parsed,
+    rawResponse: input.rawResponse,
+    httpStatus: input.httpStatus,
+    headers: input.headers,
+  };
+}
+
+export function parseCancelarNfseResponse(input: ParseCancelarNfseResponseInput): CancelarNfseResult {
+  let parsed: unknown;
+  try {
+    parsed = parseBody(input.rawResponse);
+  } catch (_error) {
+    parsed = input.rawResponse;
+  }
+
+  return {
+    chaveAcesso: input.chaveAcesso,
+    tipoAmbiente: asString(findFirstByKey(parsed, ['tipoAmbiente'])),
+    versaoAplicativo: asString(findFirstByKey(parsed, ['versaoAplicativo'])),
+    dataHoraProcessamento: asString(findFirstByKey(parsed, ['dataHoraProcessamento'])),
+    eventoXmlGZipB64: asString(findFirstByKey(parsed, ['eventoXmlGZipB64'])),
+    nfseXmlGZipB64: asString(findFirstByKey(parsed, ['nfseXmlGZipB64'])),
+    alertas: collectCancelamentoAlertas(parsed),
+    parsedResponse: parsed,
+    signedXml: input.signedXml,
+    rawRequest: input.rawRequest,
     rawResponse: input.rawResponse,
     httpStatus: input.httpStatus,
     headers: input.headers,

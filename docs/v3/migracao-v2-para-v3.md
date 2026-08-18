@@ -8,7 +8,7 @@
 | `RecepcionarLoteRpsSincrono`    | não há lote; enviar uma DPS por requisição     |
 | `InfDeclaracaoPrestacaoServico` | `DPS/infDPS`                                   |
 | Código municipal/CNAE           | `cTribNac`, `cTribMun`, `cNBS`                 |
-| Cancelamento SOAP               | eventos ainda não publicados para Campinas     |
+| Cancelamento SOAP               | `cancelarNfse` com evento `101101` assinado    |
 | Consulta SOAP                   | `consultarNfse(chaveAcesso)` por HTTP GET JSON |
 | Consulta por RPS                | `consultarDps(idDps)` por HTTP GET com mTLS    |
 

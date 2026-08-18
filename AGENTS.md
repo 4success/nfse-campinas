@@ -33,8 +33,11 @@
   `application/xml` returned `HTTP 415`.
 - Consulta de NFSe por chave de acesso está disponível em homologação via `GET /api/adn/nfse/{chaveAcesso}`. O retorno
   é JSON com `nfseXmlGZipB64` e `alertas`; preserve a resposta bruta e os alertas em erros HTTP.
-- Cancelamento e eventos are not implemented for Campinas v3; stubs should keep throwing `NotImplementedError` until
-  endpoints are published.
+- Cancelamento de NFSe está disponível em homologação via
+  `POST /api/adn/nfse/{chaveAcesso}/eventos`. Envie JSON com `{ pedidoRegistroEventoXmlGZipB64 }`, contendo o XML
+  `pedRegEvento` do código `101101` já assinado, compactado com GZip e codificado em Base64.
+- A URL de eventos em produção ainda não foi publicada. Exija `endpoints.eventos` explicitamente em produção; não
+  derive esse endereço por simples troca de host. Substituição e os demais eventos continuam não implementados.
 - `debug=true` deliberately logs signed XML and raw response without redaction. Do not add partial redaction unless
   product requirements change.
 

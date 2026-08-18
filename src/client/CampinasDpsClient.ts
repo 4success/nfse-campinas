@@ -1,13 +1,16 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import https from 'https';
 import { gzipSync } from 'zlib';
+import { CancelamentoHttpError } from '../errors/CancelamentoHttpError';
 import { HttpError } from '../errors/HttpError';
 import { ConsultaHttpError } from '../errors/ConsultaHttpError';
 import { ConsultaDpsHttpError } from '../errors/ConsultaDpsHttpError';
 import {
+  CancelarNfseResult,
   ConsultarDpsResult,
   ConsultarNfseResult,
   EnviarDpsResult,
+  parseCancelarNfseResponse,
   parseConsultarDpsResponse,
   parseConsultarNfseResponse,
   parseEnviarDpsResponse,
@@ -42,6 +45,12 @@ export type ConsultarNfseInput = {
 
 export type ConsultarDpsInput = {
   idDps: string;
+  timeoutMs?: number;
+};
+
+export type CancelarNfseClientInput = {
+  chaveAcesso: string;
+  signedXml: string;
   timeoutMs?: number;
 };
 
@@ -303,6 +312,95 @@ export class CampinasDpsClient {
         axiosError.response
           ? parseConsultarDpsResponse({
               idDps: input.idDps,
+              rawResponse: String(axiosError.response.data || ''),
+              httpStatus: axiosError.response.status,
+              headers: normalizeHeaders(axiosError.response.headers),
+            })
+          : undefined,
+        error,
+      );
+    }
+  }
+
+  async cancelarNfse(input: CancelarNfseClientInput): Promise<CancelarNfseResult> {
+    const requestId = `cancelamento-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const endpoint = `${this.options.endpoint.replace(/\/+$/, '')}/${encodeURIComponent(input.chaveAcesso)}/eventos`;
+    const rawRequest = JSON.stringify({
+      pedidoRegistroEventoXmlGZipB64: gzipSync(input.signedXml).toString('base64'),
+    });
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json, application/xml, text/plain, */*',
+      ...this.options.requestHeaders,
+    };
+    const httpsAgent = createHttpsAgent(this.options);
+    const tracer = createHttpTracer({ enabled: this.options.debug, logger: this.options.traceLogger });
+    const startedAt = Date.now();
+
+    await tracer.logRequest({
+      timestamp: new Date().toISOString(),
+      requestId,
+      chaveAcesso: input.chaveAcesso,
+      method: 'POST',
+      url: endpoint,
+      headers,
+      body: formatTraceBody(rawRequest),
+      signedXml: input.signedXml,
+    });
+
+    try {
+      const response = await axios.post(endpoint, rawRequest, {
+        headers,
+        httpsAgent,
+        timeout: input.timeoutMs || this.options.timeoutMs,
+        responseType: 'text',
+        transformResponse: [(data) => data],
+      });
+      const normalizedHeaders = normalizeHeaders(response.headers);
+      const rawResponse = String(response.data || '');
+
+      await tracer.logResponse({
+        timestamp: new Date().toISOString(),
+        requestId,
+        chaveAcesso: input.chaveAcesso,
+        durationMs: Date.now() - startedAt,
+        status: response.status,
+        headers: normalizedHeaders,
+        body: formatTraceBody(rawResponse),
+      });
+
+      return parseCancelarNfseResponse({
+        chaveAcesso: input.chaveAcesso,
+        signedXml: input.signedXml,
+        rawRequest,
+        rawResponse,
+        httpStatus: response.status,
+        headers: normalizedHeaders,
+      });
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      const status = axiosError.response?.status;
+      const responseBody = axiosError.response?.data === undefined ? '' : `: ${String(axiosError.response.data)}`;
+      const httpMessage = status ? `HTTP ${status}${responseBody}` : axiosError.message || 'erro HTTP desconhecido';
+      await tracer.logError({
+        timestamp: new Date().toISOString(),
+        requestId,
+        chaveAcesso: input.chaveAcesso,
+        durationMs: Date.now() - startedAt,
+        message: axiosError.message || String(error),
+        status,
+        headers: axiosError.response ? normalizeHeaders(axiosError.response.headers) : undefined,
+        body: axiosError.response?.data === undefined ? undefined : formatTraceBody(String(axiosError.response.data)),
+      });
+      throw new CancelamentoHttpError(
+        `Falha ao cancelar NFSe ${input.chaveAcesso}: ${httpMessage}`,
+        input.chaveAcesso,
+        requestId,
+        axiosError.response
+          ? parseCancelarNfseResponse({
+              chaveAcesso: input.chaveAcesso,
+              signedXml: input.signedXml,
+              rawRequest,
               rawResponse: String(axiosError.response.data || ''),
               httpStatus: axiosError.response.status,
               headers: normalizeHeaders(axiosError.response.headers),

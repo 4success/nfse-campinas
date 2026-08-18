@@ -5,15 +5,15 @@ import {
   resolveConsultaDpsEndpoint,
   resolveConsultaEndpoint,
   resolveDpsEndpoint,
+  resolveEventosEndpoint,
 } from '../client/endpoints';
 import { HttpTraceLogger } from '../client/httpTrace';
-import { ConsultarDpsResult, ConsultarNfseResult, EnviarDpsResult } from '../client/responseParser';
+import { CancelarNfseResult, ConsultarDpsResult, ConsultarNfseResult, EnviarDpsResult } from '../client/responseParser';
 import { imprimirDanfse, ImprimirDanfseInput } from '../danfse/imprimirDanfse';
 import { buildDpsId } from '../dps/buildDpsId';
 import { DpsXmlBuilder } from '../dps/DpsXmlBuilder';
 import { BuildDpsIdInput, DpsInput, NfseCampinasV3Environment } from '../dps/types';
 import { isValidDpsId } from '../dps/validators';
-import { NotImplementedError } from '../errors/NotImplementedError';
 import { ValidationError } from '../errors/ValidationError';
 import { DpsSigner } from '../signature/DpsSigner';
 import { defaultDpsSignatureOptions, DpsSignatureOptions } from '../signature/signatureTypes';
@@ -28,6 +28,15 @@ export type ConsultarNfseOptions = {
 
 export type ConsultarDpsOptions = {
   timeoutMs?: number;
+};
+
+export type CancelarNfseOptions = {
+  timeoutMs?: number;
+};
+
+export type CancelarNfseInput = {
+  chaveAcesso: string;
+  signedXml: string;
 };
 
 export type NfseCampinasV3Options = {
@@ -151,8 +160,46 @@ export class NfseCampinasV3 {
     return this.consultarDps(idDps, options);
   }
 
-  async cancelarNfse(_input: unknown): Promise<never> {
-    throw new NotImplementedError('cancelarNfse');
+  async cancelarNfse(input: CancelarNfseInput, options: CancelarNfseOptions = {}): Promise<CancelarNfseResult> {
+    const issues = [];
+    if (!input || !/^(?:NFS)?[A-Z0-9]{50}$/.test(input.chaveAcesso)) {
+      issues.push({
+        field: 'chaveAcesso',
+        message: 'deve conter 50 caracteres alfanuméricos, com prefixo NFS opcional',
+        severity: 'error' as const,
+      });
+    }
+    if (!input || typeof input.signedXml !== 'string' || !input.signedXml.trim()) {
+      issues.push({
+        field: 'signedXml',
+        message: 'deve conter o XML assinado do pedido de evento',
+        severity: 'error' as const,
+      });
+    }
+    if (issues.length > 0) {
+      throw new ValidationError(issues);
+    }
+
+    const endpoint = resolveEventosEndpoint(this.environment, this.options.endpoints);
+    const useClientCertificate = this.options.transport?.useClientCertificate !== false;
+    const clientCertificate = useClientCertificate ? this.certificate.toPem() : undefined;
+    const client = new CampinasDpsClient({
+      endpoint,
+      certificate: this.options.certificate,
+      certPassword: this.options.certPassword,
+      clientKeyPem: clientCertificate?.privateKey,
+      clientCertPem: clientCertificate?.publicCert,
+      timeoutMs: this.options.timeoutMs,
+      requestHeaders: this.options.requestHeaders,
+      debug: this.options.debug,
+      traceLogger: this.options.traceLogger,
+      transport: this.options.transport,
+    });
+
+    return client.cancelarNfse({
+      ...input,
+      timeoutMs: options.timeoutMs,
+    });
   }
 
   async imprimirDanfse(input: ImprimirDanfseInput): Promise<string> {

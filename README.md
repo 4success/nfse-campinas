@@ -29,7 +29,10 @@ pnpm add @4success/nfse-campinas
   `https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}`.
 - Produção: envio e consultas usam por padrão `https://novanfse.campinas.sp.gov.br/notafiscal-adn-ws/api/adn`;
   a Prefeitura informou ativação em `01/08/2026`.
-- Cancelamento e eventos ainda não foram publicados pela Prefeitura.
+- Cancelamento de NFSe em homologação: implementado em
+  `POST https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}/eventos`.
+- A URL de eventos em produção ainda não foi publicada; informe `endpoints.eventos` explicitamente nesse ambiente ou
+  `cancelarNfse` lançará `MissingProductionEndpointError`.
 
 ## Exemplo Mínimo
 
@@ -118,6 +121,26 @@ if (consulta.nfseXmlGZipB64) {
 ```
 
 Uma NFSe inexistente retorna `HTTP 400` com alertas da Prefeitura, preservados em `ConsultaHttpError.response`.
+
+## Cancelamento de NFSe
+
+Forneça ao SDK o XML `pedRegEvento` de cancelamento, código `101101`, já assinado digitalmente:
+
+```ts
+const cancelamento = await nfse.cancelarNfse({
+  chaveAcesso: 'NFS35095022215547137000138000000000210026073571802007',
+  signedXml: pedidoRegistroEventoXmlAssinado,
+});
+
+console.log(cancelamento.alertas);
+console.log(cancelamento.rawResponse);
+```
+
+Em homologação, a chamada síncrona usa
+`POST https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}/eventos`. O SDK compacta o XML
+assinado com GZip/Base64 e envia o JSON `{ pedidoRegistroEventoXmlGZipB64 }`. Ele não gera nem assina o Pedido de
+Registro de Evento. Consulte [o guia de cancelamento](docs/v3/cancelamento.md) para configurar produção e tratar a
+resposta.
 
 O exemplo local completo está em `exemplos/consultar-nfse.ts`; ele usa `CERTIFICATE_PATH`, `CERTIFICATE_PASSWORD` e a
 chave de acesso como primeiro argumento.

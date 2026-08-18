@@ -40,6 +40,22 @@ O sucesso observado usa HTTP `200` e JSON com `tipoAmbiente`, `versaoAplicativo`
 `chaveAcesso`, sem repetir o `idDps` solicitado. Erros `400` e `404` também podem retornar JSON apenas com metadados,
 sem `alertas`; o status HTTP e o corpo bruto devem ser preservados.
 
+## Cancelamento de NFSe
+
+Use o endpoint síncrono publicado para homologação:
+
+```txt
+POST https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}/eventos
+```
+
+Forneça a `cancelarNfse` o XML `pedRegEvento` de cancelamento, código `101101`, já assinado. O SDK o compacta com
+GZip/Base64 e envia o JSON `{ pedidoRegistroEventoXmlGZipB64 }`. Preserve a requisição, a resposta bruta e os alertas
+para diagnóstico.
+
+A URL divulgada é somente de homologação. Em produção, `endpoints.eventos` é obrigatório enquanto Campinas não
+publicar uma URL oficial; sem essa opção, `cancelarNfse` lança `MissingProductionEndpointError`. Não derive esse
+endereço por simples troca de host.
+
 Em produção, envio e consultas usam a base
 `https://novanfse.campinas.sp.gov.br/notafiscal-adn-ws/api/adn`, cuja ativação foi anunciada para `01/08/2026`.
 

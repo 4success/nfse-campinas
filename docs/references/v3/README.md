@@ -1,8 +1,10 @@
 # Referências v3
 
-Data de acesso: 2026-07-06.
+Data de acesso mais recente: 2026-08-18.
 
 - Prefeitura de Campinas, documentação técnica: https://campinas.sp.gov.br/sites/reformatributaria/documentacao-tecnica
+- Prefeitura de Campinas, endpoint de cancelamento em homologação publicado na página acima:
+  `POST https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}/eventos`
 - Grupo técnico Campinas: https://groups.google.com/g/wsnfsecampinas
 - Documentação nacional NFS-e: https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/documentacao-atual
 - XSD v1.01-20260209: https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/documentacao-atual/nfse-esquemas_xsd-v1-01-20260209.zip
