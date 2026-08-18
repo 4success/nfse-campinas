@@ -9,8 +9,8 @@ export type ValidationIssue = {
 };
 
 export class ValidationError extends NfseCampinasV3Error {
-  constructor(public readonly issues: ValidationIssue[]) {
-    super(`DPS inválida: ${issues.map((issue) => `${issue.field}: ${issue.message}`).join('; ')}`);
+  constructor(public readonly issues: ValidationIssue[], subject = 'DPS inválida') {
+    super(`${subject}: ${issues.map((issue) => `${issue.field}: ${issue.message}`).join('; ')}`);
     this.name = 'ValidationError';
   }
 }

@@ -9,7 +9,13 @@ describe('DpsSigner', () => {
 
   test('configura assinatura enveloped sem prefixo ds após infDPS', () => {
     const xml = '<DPS versao="1.01"><infDPS Id="DPS350950221234567800019900001000000000000001"></infDPS></DPS>';
-    const certificate = { toPem: () => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }) } as PfxCertificate;
+    const leafCertificate = '-----BEGIN CERTIFICATE-----\nLEAF\n-----END CERTIFICATE-----';
+    const certificate = {
+      toPem: () => ({
+        privateKey: 'PRIVATE',
+        publicCert: `${leafCertificate}\n-----BEGIN CERTIFICATE-----\nINTERMEDIATE\n-----END CERTIFICATE-----`,
+      }),
+    } as PfxCertificate;
     const sigInstance = {
       addReference: jest.fn(),
       computeSignature: jest.fn(),
@@ -23,8 +29,7 @@ describe('DpsSigner', () => {
     expect(SignedXml).toHaveBeenCalledWith(
       expect.objectContaining({
         privateKey: 'PRIVATE',
-        publicCert: 'PUBLIC',
-        idAttribute: 'Id',
+        publicCert: leafCertificate,
         signatureAlgorithm: 'http://www.w3.org/2000/09/xmldsig#rsa-sha1',
         canonicalizationAlgorithm: 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315',
       }),
@@ -43,6 +48,39 @@ describe('DpsSigner', () => {
       location: { reference: "//*[local-name(.)='infDPS']", action: 'after' },
     });
     expect(signedXml).toContain('<Signature>');
+  });
+
+  test('preserva overrides de alvo e prefixo da assinatura de DPS', () => {
+    const xml = '<DPS Id="DPS1"><infDPS></infDPS></DPS>';
+    const certificate = { toPem: () => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }) } as PfxCertificate;
+    const sigInstance = {
+      addReference: jest.fn(),
+      computeSignature: jest.fn(),
+      getSignedXml: jest.fn().mockReturnValue('<DPS></DPS>'),
+    };
+
+    jest.mocked(SignedXml).mockImplementation(() => sigInstance as unknown as SignedXml);
+
+    new DpsSigner(certificate).sign(xml, { idAttributeTarget: 'DPS', signaturePrefix: 'ds' });
+
+    expect(sigInstance.addReference).toHaveBeenCalledWith(
+      expect.objectContaining({
+        xpath: "//*[local-name(.)='DPS' and @Id='DPS1']",
+        uri: '#DPS1',
+      }),
+    );
+    expect(sigInstance.computeSignature).toHaveBeenCalledWith(xml, {
+      prefix: 'ds',
+      location: { reference: "//*[local-name(.)='infDPS']", action: 'after' },
+    });
+  });
+
+  test('preserva mensagem para DPS sem Id no alvo configurado', () => {
+    const certificate = { toPem: () => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }) } as PfxCertificate;
+
+    expect(() => new DpsSigner(certificate).sign('<DPS><infDPS></infDPS></DPS>')).toThrow(
+      'XML da DPS não contém Id em infDPS',
+    );
   });
 
   test.each([
@@ -72,7 +110,8 @@ describe('DpsSigner', () => {
   });
 
   test('verifica assinatura com prefixo ds', () => {
-    const xml = '<DPS><infDPS Id="DPS1"></infDPS><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"></ds:Signature></DPS>';
+    const xml =
+      '<DPS><infDPS Id="DPS1"></infDPS><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"></ds:Signature></DPS>';
     const certificate = { toPem: () => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }) } as PfxCertificate;
     const sigInstance = {
       loadSignature: jest.fn(),

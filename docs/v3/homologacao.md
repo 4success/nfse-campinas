@@ -48,9 +48,10 @@ Use o endpoint síncrono publicado para homologação:
 POST https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}/eventos
 ```
 
-Forneça a `cancelarNfse` o XML `pedRegEvento` de cancelamento, código `101101`, já assinado. O SDK o compacta com
-GZip/Base64 e envia o JSON `{ pedidoRegistroEventoXmlGZipB64 }`. Preserve a requisição, a resposta bruta e os alertas
-para diagnóstico.
+Forneça a `cancelarNfse` a chave da NFS-e, o CPF ou CNPJ do autor, o código do motivo (`1`, `2` ou `9`) e sua
+descrição. O SDK gera o `pedRegEvento` v1.01 do evento `101101`, assina `infPedReg` com o certificado configurado,
+compacta o XML com GZip/Base64 e envia o JSON `{ pedidoRegistroEventoXmlGZipB64 }`. Preserve a requisição, a resposta
+bruta e os alertas para diagnóstico. Um XML externo já assinado continua aceito em `signedXml` e não é reassinado.
 
 A URL divulgada é somente de homologação. Em produção, `endpoints.eventos` é obrigatório enquanto Campinas não
 publicar uma URL oficial; sem essa opção, `cancelarNfse` lança `MissingProductionEndpointError`. Não derive esse

@@ -13,7 +13,8 @@
 
 > **Atualização de 2026-08-18:** Campinas publicou o cancelamento em homologação por meio de
 > `POST /nfse/{chaveAcesso}/eventos`. A chamada é síncrona e recebe o XML assinado do Pedido de Registro de Evento de
-> cancelamento, código `101101`, no payload `pedidoRegistroEventoXmlGZipB64`. As afirmações históricas abaixo de que
+> cancelamento, código `101101`, no payload `pedidoRegistroEventoXmlGZipB64`. O SDK passou a gerar e assinar esse
+> pedido a partir de dados tipados, preservando `signedXml` como opção avançada. As afirmações históricas abaixo de que
 > cancelamento ou eventos ainda não tinham sido publicados descrevem apenas o escopo original da v3.0.0.
 
 ## 1. Decisões de produto e release
@@ -157,7 +158,8 @@ O cancelamento é uma requisição síncrona que recebe o XML assinado do Pedido
 compactado com GZip/Base64 no campo JSON `pedidoRegistroEventoXmlGZipB64`. A publicação não autoriza inferir uma URL de
 produção nem endpoints para substituição ou outros eventos; cada rota deve ser confirmada pela Prefeitura antes de ser
 adotada como padrão pelo SDK. Enquanto a URL de produção não for publicada, `endpoints.eventos` deve ser obrigatório
-nesse ambiente.
+nesse ambiente. Na API atual, `cancelarNfse` pode gerar e assinar o pedido tipado; o transporte de `signedXml` externo
+permanece disponível sem alteração ou reassinatura.
 
 ---
 
@@ -294,11 +296,18 @@ export class NfseCampinasV3 {
 
   signDpsXml(xml: string, options?: Partial<DpsSignatureOptions>): Promise<string>;
 
+  buildCancelamentoNfseXml(input: CancelarNfseDadosInput): string;
+
+  signCancelamentoNfseXml(xml: string): Promise<string>;
+
   enviarDps(input: DpsInput | string, options?: EnviarDpsOptions): Promise<EnviarDpsResult>;
 
   consultarNfsePorDps(_idDps: string): Promise<never>; // NotImplemented até Campinas publicar.
 
-  cancelarNfse(input: CancelarNfseInput, options?: CancelarNfseOptions): Promise<CancelarNfseResult>;
+  cancelarNfse(
+    input: CancelarNfseInput | CancelarNfseDadosInput,
+    options?: CancelarNfseOptions,
+  ): Promise<CancelarNfseResult>;
 }
 ```
 

@@ -15,8 +15,8 @@
 - v3 is a breaking major: `NfseCampinas` exports `NfseCampinasV3`; consumers needing ABRASF/SOAP must stay on
   `@4success/nfse-campinas@^2`.
 - Public API is exported from `src/index.ts`; implementation is flat under
-  `src/{classes,client,certificate,dps,errors,signature,utils}`. Do not reintroduce a `src/v3` namespace just because
-  older docs/specs mention it.
+  `src/{classes,client,certificate,dps,errors,eventos,signature,utils}`. Do not reintroduce a `src/v3` namespace just
+  because older docs/specs mention it.
 - `dist/` is generated and ignored. Source package contents are limited by `files: ["dist/**/*"]` for packed/published
   artifacts.
 - Tests live under `__tests__/src`; shared valid DPS input is `test-support/fixtures.ts`.
@@ -36,6 +36,8 @@
 - Cancelamento de NFSe está disponível em homologação via
   `POST /api/adn/nfse/{chaveAcesso}/eventos`. Envie JSON com `{ pedidoRegistroEventoXmlGZipB64 }`, contendo o XML
   `pedRegEvento` do código `101101` já assinado, compactado com GZip e codificado em Base64.
+- A fachada `cancelarNfse` gera e assina o `pedRegEvento` a partir de dados tipados; `signedXml` permanece como escape
+  hatch para XML externo e deve ser transmitido sem alteração nem reassinatura.
 - A URL de eventos em produção ainda não foi publicada. Exija `endpoints.eventos` explicitamente em produção; não
   derive esse endereço por simples troca de host. Substituição e os demais eventos continuam não implementados.
 - `debug=true` deliberately logs signed XML and raw response without redaction. Do not add partial redaction unless

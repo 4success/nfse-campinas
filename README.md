@@ -124,12 +124,16 @@ Uma NFSe inexistente retorna `HTTP 400` com alertas da Prefeitura, preservados e
 
 ## Cancelamento de NFSe
 
-Forneça ao SDK o XML `pedRegEvento` de cancelamento, código `101101`, já assinado digitalmente:
+Informe os dados do cancelamento. O SDK monta o `pedRegEvento` v1.01, gera o identificador do pedido, assina
+`infPedReg` com o certificado configurado e transmite o evento `101101`:
 
 ```ts
 const cancelamento = await nfse.cancelarNfse({
   chaveAcesso: 'NFS35095022215547137000138000000000210026073571802007',
-  signedXml: pedidoRegistroEventoXmlAssinado,
+  autor: { cnpj: '15547137000138' },
+  codigoMotivo: 2,
+  motivo: 'Serviço não prestado pelo fornecedor conforme acordado',
+  dataHoraEvento: '2026-08-18T14:30:00-03:00', // opcional; por padrão, usa o instante atual
 });
 
 console.log(cancelamento.alertas);
@@ -138,12 +142,12 @@ console.log(cancelamento.rawResponse);
 
 Em homologação, a chamada síncrona usa
 `POST https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}/eventos`. O SDK compacta o XML
-assinado com GZip/Base64 e envia o JSON `{ pedidoRegistroEventoXmlGZipB64 }`. Ele não gera nem assina o Pedido de
-Registro de Evento. Consulte [o guia de cancelamento](docs/v3/cancelamento.md) para configurar produção e tratar a
-resposta.
+assinado com GZip/Base64 e envia o JSON `{ pedidoRegistroEventoXmlGZipB64 }`. Também é possível fornecer um
+`signedXml` externo já pronto; nesse caso, o SDK preserva o XML e não o reassina. Consulte
+[o guia de cancelamento](docs/v3/cancelamento.md) para configurar produção, usar essa opção avançada e tratar a resposta.
 
-O exemplo local completo está em `exemplos/consultar-nfse.ts`; ele usa `CERTIFICATE_PATH`, `CERTIFICATE_PASSWORD` e a
-chave de acesso como primeiro argumento.
+O exemplo local de consulta está em `exemplos/consultar-nfse.ts`; ele usa `CERTIFICATE_PATH`, `CERTIFICATE_PASSWORD` e
+a chave de acesso como primeiro argumento.
 
 ## Consulta por DPS
 

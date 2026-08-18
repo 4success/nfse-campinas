@@ -15,7 +15,10 @@ import { DpsXmlBuilder } from '../dps/DpsXmlBuilder';
 import { BuildDpsIdInput, DpsInput, NfseCampinasV3Environment } from '../dps/types';
 import { isValidDpsId } from '../dps/validators';
 import { ValidationError } from '../errors/ValidationError';
+import { CancelamentoNfseXmlBuilder } from '../eventos/CancelamentoNfseXmlBuilder';
+import { CancelarNfseDadosInput } from '../eventos/types';
 import { DpsSigner } from '../signature/DpsSigner';
+import { PedRegEventoSigner } from '../signature/PedRegEventoSigner';
 import { defaultDpsSignatureOptions, DpsSignatureOptions } from '../signature/signatureTypes';
 
 export type EnviarDpsOptions = {
@@ -76,6 +79,17 @@ export class NfseCampinasV3 {
 
   async signDpsXml(xml: string, options: Partial<DpsSignatureOptions> = {}): Promise<string> {
     return new DpsSigner(this.certificate, this.signatureOptions).sign(xml, options);
+  }
+
+  buildCancelamentoNfseXml(input: CancelarNfseDadosInput): string {
+    return new CancelamentoNfseXmlBuilder({
+      ambiente: this.environment,
+      versaoAplicativoPadrao: this.options.applicationVersion || '3.0.0',
+    }).build(input).xml;
+  }
+
+  async signCancelamentoNfseXml(xml: string): Promise<string> {
+    return new PedRegEventoSigner(this.certificate).sign(xml);
   }
 
   async enviarDps(input: DpsInput | string, options: EnviarDpsOptions = {}): Promise<EnviarDpsResult> {
@@ -160,27 +174,23 @@ export class NfseCampinasV3 {
     return this.consultarDps(idDps, options);
   }
 
-  async cancelarNfse(input: CancelarNfseInput, options: CancelarNfseOptions = {}): Promise<CancelarNfseResult> {
-    const issues = [];
-    if (!input || !/^(?:NFS)?[A-Z0-9]{50}$/.test(input.chaveAcesso)) {
-      issues.push({
-        field: 'chaveAcesso',
-        message: 'deve conter 50 caracteres alfanuméricos, com prefixo NFS opcional',
-        severity: 'error' as const,
-      });
-    }
-    if (!input || typeof input.signedXml !== 'string' || !input.signedXml.trim()) {
-      issues.push({
-        field: 'signedXml',
-        message: 'deve conter o XML assinado do pedido de evento',
-        severity: 'error' as const,
-      });
-    }
-    if (issues.length > 0) {
-      throw new ValidationError(issues);
+  async cancelarNfse(
+    input: CancelarNfseInput | CancelarNfseDadosInput,
+    options: CancelarNfseOptions = {},
+  ): Promise<CancelarNfseResult> {
+    const hasSignedXml = Boolean(input && Object.prototype.hasOwnProperty.call(input, 'signedXml'));
+    let unsignedXml: string | undefined;
+
+    if (hasSignedXml) {
+      this.validateCancelarNfseSignedXmlInput(input as CancelarNfseInput);
+    } else {
+      unsignedXml = this.buildCancelamentoNfseXml(input as CancelarNfseDadosInput);
     }
 
     const endpoint = resolveEventosEndpoint(this.environment, this.options.endpoints);
+    const signedXml = hasSignedXml
+      ? (input as CancelarNfseInput).signedXml
+      : await this.signCancelamentoNfseXml(unsignedXml!);
     const useClientCertificate = this.options.transport?.useClientCertificate !== false;
     const clientCertificate = useClientCertificate ? this.certificate.toPem() : undefined;
     const client = new CampinasDpsClient({
@@ -197,7 +207,8 @@ export class NfseCampinasV3 {
     });
 
     return client.cancelarNfse({
-      ...input,
+      chaveAcesso: input.chaveAcesso,
+      signedXml,
       timeoutMs: options.timeoutMs,
     });
   }
@@ -247,5 +258,42 @@ export class NfseCampinasV3 {
       throw new Error('XML assinado não contém Id da DPS');
     }
     return idDps;
+  }
+
+  private validateCancelarNfseSignedXmlInput(input: CancelarNfseInput): void {
+    const issues = [];
+    if (!input || !/^(?:NFS)?[A-Z0-9]{50}$/.test(input.chaveAcesso)) {
+      issues.push({
+        field: 'chaveAcesso',
+        message: 'deve conter 50 caracteres alfanuméricos, com prefixo NFS opcional',
+        severity: 'error' as const,
+      });
+    }
+    if (!input || typeof input.signedXml !== 'string' || !input.signedXml.trim()) {
+      issues.push({
+        field: 'signedXml',
+        message: 'deve conter o XML assinado do pedido de evento',
+        severity: 'error' as const,
+      });
+    }
+
+    const structuredInput = input as CancelarNfseInput & Partial<CancelarNfseDadosInput>;
+    if (
+      structuredInput.autor !== undefined ||
+      structuredInput.codigoMotivo !== undefined ||
+      structuredInput.motivo !== undefined ||
+      structuredInput.dataHoraEvento !== undefined ||
+      structuredInput.versaoAplicativo !== undefined
+    ) {
+      issues.push({
+        field: 'input',
+        message: 'informe signedXml ou os dados do cancelamento, não ambos',
+        severity: 'error' as const,
+      });
+    }
+
+    if (issues.length > 0) {
+      throw new ValidationError(issues, 'Cancelamento inválido');
+    }
   }
 }

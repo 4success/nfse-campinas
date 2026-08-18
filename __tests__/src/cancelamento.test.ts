@@ -1,4 +1,5 @@
 import nock from 'nock';
+import { SignedXml } from 'xml-crypto';
 import { gunzipSync } from 'zlib';
 import { NfseCampinasV3 } from '../../src/classes/NfseCampinasV3';
 import { CampinasDpsClient } from '../../src/client/CampinasDpsClient';
@@ -15,10 +16,32 @@ jest.mock('../../src/certificate/PfxCertificate', () => ({
   })),
 }));
 
+jest.mock('xml-crypto');
+
+function mockEventSignature(signedXml: string) {
+  const signer = {
+    addReference: jest.fn(),
+    computeSignature: jest.fn(),
+    getSignedXml: jest.fn().mockReturnValue(signedXml),
+  };
+
+  jest.mocked(SignedXml).mockImplementation(() => signer as unknown as SignedXml);
+  return signer;
+}
+
 describe('cancelamento de NFSe', () => {
   const chaveAcesso = 'NFS35095022215547137000138000000000210026073571802007';
+  const chaveSemPrefixo = chaveAcesso.slice(3);
   const signedXml =
     '<?xml version="1.0"?><evento-opaco><conteudo>preservar sem alterações</conteudo><Signature>assinatura-teste</Signature></evento-opaco>';
+  const dadosCancelamento = {
+    chaveAcesso,
+    autor: { cnpj: '12.345.678/0001-99' },
+    codigoMotivo: 2 as const,
+    motivo: 'Serviço não prestado & contrato <desfeito> 😀',
+    dataHoraEvento: '2026-08-18T10:30:45-03:00',
+    versaoAplicativo: '3.4.0-test',
+  };
 
   afterEach(() => {
     nock.cleanAll();
@@ -186,7 +209,6 @@ describe('cancelamento de NFSe', () => {
   });
 
   test('fachada usa endpoint de eventos customizado sem alterar nem reassinar o XML', async () => {
-    const chaveSemPrefixo = chaveAcesso.slice(3);
     const scope = nock('https://eventos-fachada.local')
       .post(`/nfse/${chaveSemPrefixo}/eventos`, (body) => {
         const payload = typeof body === 'string' ? JSON.parse(body) : body;
@@ -213,6 +235,232 @@ describe('cancelamento de NFSe', () => {
     expect(mockToPem).not.toHaveBeenCalled();
     expect(scope.isDone()).toBe(true);
   });
+
+  test('gera XML 101101 público com Id, ordem e escape determinísticos', () => {
+    const nfse = new NfseCampinasV3({
+      environment: 'homologacao',
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      transport: { useClientCertificate: false },
+    });
+
+    const xml = nfse.buildCancelamentoNfseXml(dadosCancelamento);
+
+    expect(xml).toContain('<pedRegEvento');
+    expect(xml).toContain('xmlns="http://www.sped.fazenda.gov.br/nfse"');
+    expect(xml).toContain('versao="1.01"');
+    expect(xml).toContain(`<infPedReg Id="PRE${chaveSemPrefixo}101101">`);
+    expect(xml).toContain('<tpAmb>2</tpAmb>');
+    expect(xml).toContain('<verAplic>3.4.0-test</verAplic>');
+    expect(xml).toContain('<dhEvento>2026-08-18T10:30:45-03:00</dhEvento>');
+    expect(xml).toContain('<CNPJAutor>12345678000199</CNPJAutor>');
+    expect(xml).toContain(`<chNFSe>${chaveSemPrefixo}</chNFSe>`);
+    expect(xml).toContain('<e101101><xDesc>Cancelamento de NFS-e</xDesc><cMotivo>2</cMotivo>');
+    expect(xml).toContain('<xMotivo>Serviço não prestado &amp; contrato &lt;desfeito&gt; 😀</xMotivo>');
+    expect(xml).not.toContain('<nPedRegEvento>');
+
+    const orderedFragments = [
+      '<tpAmb>',
+      '<verAplic>',
+      '<dhEvento>',
+      '<CNPJAutor>',
+      '<chNFSe>',
+      '<e101101>',
+      '<xDesc>',
+      '<cMotivo>',
+      '<xMotivo>',
+    ];
+    let previousIndex = -1;
+    orderedFragments.forEach((fragment) => {
+      const currentIndex = xml.indexOf(fragment);
+      expect(currentIndex).toBeGreaterThan(previousIndex);
+      previousIndex = currentIndex;
+    });
+  });
+
+  test('gera autor CPF e data padrão válida a partir do relógio atual', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-08-18T13:45:30.789Z'));
+
+    try {
+      const nfse = new NfseCampinasV3({
+        environment: 'producao',
+        certificate: Buffer.from('CERT'),
+        certPassword: 'secret',
+        applicationVersion: '3.4.0-sdk',
+        transport: { useClientCertificate: false },
+      });
+
+      const xml = nfse.buildCancelamentoNfseXml({
+        chaveAcesso: chaveSemPrefixo,
+        autor: { cpf: '123.456.789-01' },
+        codigoMotivo: 1,
+        motivo: 'Erro na emissão da nota',
+      });
+      const dataHoraEvento = xml.match(/<dhEvento>([^<]+)<\/dhEvento>/)?.[1];
+
+      expect(xml).toContain('<tpAmb>1</tpAmb>');
+      expect(xml).toContain('<verAplic>3.4.0-sdk</verAplic>');
+      expect(xml).toContain('<CPFAutor>12345678901</CPFAutor>');
+      expect(xml).not.toContain('<CNPJAutor>');
+      expect(dataHoraEvento).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+      expect(new Date(dataHoraEvento!).getTime()).toBe(new Date('2026-08-18T13:45:30.000Z').getTime());
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test('assina o XML público referenciando infPedReg e posicionando Signature depois dele', async () => {
+    const unsignedXml = `<?xml version="1.0"?><pedRegEvento><infPedReg Id="PRE${chaveSemPrefixo}101101"><tpAmb>2</tpAmb></infPedReg></pedRegEvento>`;
+    const generatedSignedXml = unsignedXml.replace(
+      '</infPedReg>',
+      '</infPedReg><Signature xmlns="http://www.w3.org/2000/09/xmldsig#"></Signature>',
+    );
+    const signer = mockEventSignature(generatedSignedXml);
+    const nfse = new NfseCampinasV3({
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      transport: { useClientCertificate: false },
+    });
+
+    const result = await nfse.signCancelamentoNfseXml(unsignedXml);
+
+    expect(result).toBe(generatedSignedXml);
+    expect(SignedXml).toHaveBeenCalledWith(
+      expect.objectContaining({
+        privateKey: 'PRIVATE',
+        publicCert: 'PUBLIC',
+      }),
+    );
+    expect(signer.addReference).toHaveBeenCalledWith(
+      expect.objectContaining({
+        xpath: `//*[local-name(.)='infPedReg' and @Id='PRE${chaveSemPrefixo}101101']`,
+        uri: `#PRE${chaveSemPrefixo}101101`,
+      }),
+    );
+    expect(signer.computeSignature).toHaveBeenCalledWith(unsignedXml, {
+      prefix: '',
+      location: { reference: "//*[local-name(.)='infPedReg']", action: 'after' },
+    });
+    expect(mockToPem).toHaveBeenCalled();
+  });
+
+  test('fachada automática gera, assina e transmite mantendo a chave original na rota', async () => {
+    const generatedSignedXml = `<?xml version="1.0"?><pedRegEvento><infPedReg Id="PRE${chaveSemPrefixo}101101"></infPedReg><Signature>assinatura-gerada</Signature></pedRegEvento>`;
+    const signer = mockEventSignature(generatedSignedXml);
+    const scope = nock('https://eventos-auto.local')
+      .post(`/nfse/${chaveAcesso}/eventos`, (body) => {
+        const payload = typeof body === 'string' ? JSON.parse(body) : body;
+        return (
+          gunzipSync(Buffer.from(payload.pedidoRegistroEventoXmlGZipB64, 'base64')).toString('utf8') ===
+          generatedSignedXml
+        );
+      })
+      .reply(200, JSON.stringify({ eventoXmlGZipB64: 'EVENTO_AUTO', alertas: [] }), {
+        'content-type': 'application/json',
+      });
+    const nfse = new NfseCampinasV3({
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      endpoints: { eventos: 'https://eventos-auto.local/nfse' },
+      transport: { useClientCertificate: false },
+    });
+
+    const result = await nfse.cancelarNfse(dadosCancelamento);
+    const unsignedXml = signer.computeSignature.mock.calls[0]?.[0] as string;
+
+    expect(unsignedXml).toContain(`<infPedReg Id="PRE${chaveSemPrefixo}101101">`);
+    expect(unsignedXml).toContain(`<chNFSe>${chaveSemPrefixo}</chNFSe>`);
+    expect(unsignedXml).toContain('<tpAmb>2</tpAmb>');
+    expect(result).toMatchObject({
+      chaveAcesso,
+      signedXml: generatedSignedXml,
+      eventoXmlGZipB64: 'EVENTO_AUTO',
+    });
+    expect(SignedXml).toHaveBeenCalledTimes(1);
+    expect(mockToPem).toHaveBeenCalled();
+    expect(scope.isDone()).toBe(true);
+  });
+
+  test('resolve a ausência de endpoint de produção antes de assinar o pedido automático', async () => {
+    const nfse = new NfseCampinasV3({
+      environment: 'producao',
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      transport: { useClientCertificate: false },
+    });
+
+    await expect(nfse.cancelarNfse(dadosCancelamento)).rejects.toBeInstanceOf(MissingProductionEndpointError);
+    expect(SignedXml).not.toHaveBeenCalled();
+    expect(mockToPem).not.toHaveBeenCalled();
+    expect(nock.isDone()).toBe(true);
+  });
+
+  test('rejeita mistura de XML assinado com dados estruturados sem assinar nem enviar', async () => {
+    const nfse = new NfseCampinasV3({
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      endpoints: { eventos: 'https://nao-deve-enviar.local/nfse' },
+      transport: { useClientCertificate: false },
+    });
+
+    await expect(nfse.cancelarNfse({ ...dadosCancelamento, signedXml } as any)).rejects.toMatchObject({
+      name: ValidationError.name,
+      issues: expect.arrayContaining([expect.objectContaining({ severity: 'error' })]),
+    });
+    expect(SignedXml).not.toHaveBeenCalled();
+    expect(mockToPem).not.toHaveBeenCalled();
+    expect(nock.isDone()).toBe(true);
+  });
+
+  test('valida os dados estruturados sem exigir signedXml', async () => {
+    const nfse = new NfseCampinasV3({
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      endpoints: { eventos: 'https://nao-deve-enviar.local/nfse' },
+      transport: { useClientCertificate: false },
+    });
+
+    let caught: unknown;
+    try {
+      await nfse.cancelarNfse({ chaveAcesso } as any);
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(ValidationError);
+    const fields = (caught as ValidationError).issues.map((issue) => issue.field);
+    expect(fields).toEqual(expect.arrayContaining(['autor', 'codigoMotivo', 'motivo']));
+    expect(fields).not.toContain('signedXml');
+    expect(SignedXml).not.toHaveBeenCalled();
+    expect(mockToPem).not.toHaveBeenCalled();
+    expect(nock.isDone()).toBe(true);
+  });
+
+  test.each([{ autor: {} }, { autor: { cpf: '123.456.789-01', cnpj: '12.345.678/0001-99' } }])(
+    'exige autor com exatamente um entre CPF e CNPJ: %p',
+    async ({ autor }) => {
+      const nfse = new NfseCampinasV3({
+        certificate: Buffer.from('CERT'),
+        certPassword: 'secret',
+        endpoints: { eventos: 'https://nao-deve-enviar.local/nfse' },
+        transport: { useClientCertificate: false },
+      });
+
+      let caught: unknown;
+      try {
+        await nfse.cancelarNfse({ ...dadosCancelamento, autor } as any);
+      } catch (error) {
+        caught = error;
+      }
+
+      expect(caught).toBeInstanceOf(ValidationError);
+      expect((caught as ValidationError).issues.some((issue) => issue.field.startsWith('autor'))).toBe(true);
+      expect(SignedXml).not.toHaveBeenCalled();
+      expect(mockToPem).not.toHaveBeenCalled();
+      expect(nock.isDone()).toBe(true);
+    },
+  );
 
   test.each([
     [{ chaveAcesso: 'invalida', signedXml }, 'chaveAcesso'],
