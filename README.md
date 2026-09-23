@@ -22,17 +22,28 @@ pnpm add @4success/nfse-campinas
 
 ## Status dos Endpoints
 
-- Envio DPS homologação: implementado em `https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/dps`.
-- Consulta DPS homologação: implementada por identificador em
-  `https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/dps/{IdentificadorDPS}`.
-- Consulta NFSe homologação: implementada por chave de acesso em
-  `https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}`.
-- Produção: envio e consultas usam por padrão `https://novanfse.campinas.sp.gov.br/notafiscal-adn-ws/api/adn`;
-  a Prefeitura informou ativação em `01/08/2026`.
-- Cancelamento de NFSe em homologação: implementado em
-  `POST https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}/eventos`.
-- A URL de eventos em produção ainda não foi publicada; informe `endpoints.eventos` explicitamente nesse ambiente ou
-  `cancelarNfse` lançará `MissingProductionEndpointError`.
+Os novos endereços de Campinas são usados por padrão, incluindo cancelamento em produção. O
+[guia oficial atualizado em 18/09/2026](https://groups.google.com/g/wsnfsecampinas/c/oQOKosJ7n-Y/m/177VueC0AQAJ)
+informa a disponibilidade de produção desde `21/09/2026`.
+
+- Base de homologação: `https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse`.
+- Base de produção: `https://nfseapi.campinas.sp.gov.br/notafiscal-ws/nfse`.
+
+| Operação         | Método e rota                      |
+| ---------------- | ---------------------------------- |
+| Envio de DPS     | `POST {base}`                      |
+| Consulta por DPS | `GET {base}/dps/{idDps}`             |
+| Consulta de NFSe | `GET {base}/{chaveAcesso}`           |
+| Cancelamento    | `POST {base}/{chaveAcesso}/eventos`  |
+
+Para configurar endereços próprios, use `endpoints.dps`, `endpoints.consulta`, `endpoints.consultaDps` e
+`endpoints.eventos`. A consulta por DPS prioriza `consultaDps`; se ausente, reutiliza um `dps` explicitamente configurado
+para preservar integrações antigas. Sem esses overrides, usa a constante de consulta por DPS do ambiente. Ao
+sobrescrever o envio com o novo endereço terminado em `/nfse`, informe também `consultaDps` terminado em `/nfse/dps`.
+
+O SDK desabilita redirecionamentos HTTP (`maxRedirects: 0`). Um `302` gera erro imediato com o status e o cabeçalho
+`Location` preservados, evitando que o redirecionamento converta um POST em GET. Consulte
+[o guia de homologação](docs/v3/homologacao.md) para diagnosticar esses erros.
 
 ## Exemplo Mínimo
 
@@ -141,7 +152,7 @@ console.log(cancelamento.rawResponse);
 ```
 
 Em homologação, a chamada síncrona usa
-`POST https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}/eventos`. O SDK compacta o XML
+`POST https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse/{chaveAcesso}/eventos`. O SDK compacta o XML
 assinado com GZip/Base64 e envia o JSON `{ pedidoRegistroEventoXmlGZipB64 }`. Também é possível fornecer um
 `signedXml` externo já pronto; nesse caso, o SDK preserva o XML e não o reassina. Consulte
 [o guia de cancelamento](docs/v3/cancelamento.md) para configurar produção, usar essa opção avançada e tratar a resposta.

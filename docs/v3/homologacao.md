@@ -8,24 +8,30 @@ Checklist para o primeiro envio real:
 4. Informar `cTribNac`, `cTribMun`, `cNBS`, `cIndOp`, CST e `cClassTrib` escolhidos fora do SDK.
 5. Gerar XML DPS v1.01.
 6. Assinar XML referenciando `#idDps`.
-7. Compactar o XML assinado com gzip e enviar `POST` JSON para `https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/dps` no campo `dpsXmlGZipB64`.
+7. Compactar o XML assinado com gzip e enviar `POST` JSON para `https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse` no campo `dpsXmlGZipB64`.
 8. Guardar request e response brutos para suporte.
 
 ## Consulta de NFSe
 
-Use `GET https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}`. A resposta é JSON com
+Use `GET https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse/{chaveAcesso}`. A resposta é JSON com
 `tipoAmbiente`, `versaoAplicativo`, `dataHoraProcessamento`, `nfseXmlGZipB64` e `alertas`. O XML autorizado vem em
 `nfseXmlGZipB64`, compactado com GZip e codificado em Base64.
 
 ## Consulta de DPS
 
-Use `GET https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/dps/{IdentificadorDPS}` para recuperar a chave de
+Use `GET https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse/dps/{IdentificadorDPS}` para recuperar a chave de
 acesso da NFS-e gerada a partir de uma DPS:
 
 ```ts
 const result = await nfse.consultarDps(idDps);
 console.log(result.chaveAcesso);
 ```
+
+A consulta tem uma base própria, diferente do envio. `endpoints.consultaDps` permite sobrescrevê-la sem incluir o
+identificador. Quando essa opção é omitida, um `endpoints.dps` explícito continua sendo usado como base da consulta por
+compatibilidade; sem ambos os overrides, o SDK usa a constante de consulta por DPS do ambiente. Ao configurar os novos
+endereços manualmente, informe `dps: 'https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse'` e
+`consultaDps: 'https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse/dps'`.
 
 O endpoint exige certificado digital na conexão. A chave só é informada quando o certificado pertence ao prestador,
 tomador ou intermediário da NFS-e. Use esta consulta antes de retransmitir uma DPS cujo POST terminou com timeout ou
@@ -45,7 +51,7 @@ sem `alertas`; o status HTTP e o corpo bruto devem ser preservados.
 Use o endpoint síncrono publicado para homologação:
 
 ```txt
-POST https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}/eventos
+POST https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse/{chaveAcesso}/eventos
 ```
 
 Forneça a `cancelarNfse` a chave da NFS-e, o CPF ou CNPJ do autor, o código do motivo (`1`, `2` ou `9`) e sua
@@ -53,14 +59,27 @@ descrição. O SDK gera o `pedRegEvento` v1.01 do evento `101101`, assina `infPe
 compacta o XML com GZip/Base64 e envia o JSON `{ pedidoRegistroEventoXmlGZipB64 }`. Preserve a requisição, a resposta
 bruta e os alertas para diagnóstico. Um XML externo já assinado continua aceito em `signedXml` e não é reassinado.
 
-A URL divulgada é somente de homologação. Em produção, `endpoints.eventos` é obrigatório enquanto Campinas não
-publicar uma URL oficial; sem essa opção, `cancelarNfse` lança `MissingProductionEndpointError`. Não derive esse
-endereço por simples troca de host.
+## Produção e migração dos endereços
 
-Em produção, envio e consultas usam a base
-`https://novanfse.campinas.sp.gov.br/notafiscal-adn-ws/api/adn`, cuja ativação foi anunciada para `01/08/2026`.
+O [guia oficial atualizado em 18/09/2026](https://groups.google.com/g/wsnfsecampinas/c/oQOKosJ7n-Y/m/177VueC0AQAJ)
+informa que os novos endpoints de produção estão disponíveis desde `21/09/2026`.
+Envio, consulta de NFSe e eventos usam a base `https://nfseapi.campinas.sp.gov.br/notafiscal-ws/nfse`; a consulta por DPS
+usa `https://nfseapi.campinas.sp.gov.br/notafiscal-ws/nfse/dps`. Esses endereços são os padrões do SDK para
+`environment: 'producao'`, sem exigir `endpoints.eventos`.
 
-Observações validadas em homologação:
+Remova overrides antigos ou atualize-os, incluindo `endpoints.consultaDps` quando o endereço de envio também for
+configurado. Os endereços com `/notafiscal-adn-ws/` e `/api/adn/` pertencem à integração anterior.
+
+As chamadas de envio, consulta e cancelamento usam `maxRedirects: 0`. Isso impede que um `302` transforme o POST em GET
+e esconda a mudança de endereço sob um erro `405`. No envio, o `HttpError` preserva o erro Axios em `cause`, com status
+em `cause.response.status` e destino em `cause.response.headers.location`. Nos erros `ConsultaHttpError`,
+`ConsultaDpsHttpError` e `CancelamentoHttpError`, consulte `response.httpStatus` e `response.headers.location`, além
+da resposta bruta. Um redirecionamento exige revisar o endpoint configurado.
+
+## Observações de homologação
+
+As observações abaixo foram validadas na integração anterior e não representam uma nova validação dos endpoints de
+setembro de 2026:
 
 - `Content-Type: application/json` é obrigatório para o endpoint ADN de Campinas.
 - XML bruto com `application/xml` retorna `HTTP 415`.

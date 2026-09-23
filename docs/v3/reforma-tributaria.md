@@ -6,8 +6,8 @@ O SDK não consulta automaticamente tabelas de CNAE, CBO, Código de Tributaçã
 
 ## Cancelamento
 
-Campinas publicou em homologação o endpoint síncrono
-`POST /notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}/eventos`. O SDK gera e assina o XML do evento de cancelamento
+Campinas publicou em homologação e produção o endpoint síncrono
+`POST /notafiscal-ws/nfse/{chaveAcesso}/eventos`. O SDK gera e assina o XML do evento de cancelamento
 `101101` e o envia compactado no campo JSON `pedidoRegistroEventoXmlGZipB64`. Um XML externo já assinado também pode
 ser transmitido sem alteração. Veja
-[Cancelamento de NFSe](cancelamento.md) para a URL completa e a configuração explícita exigida em produção.
+[Cancelamento de NFSe](cancelamento.md) para as URLs completas de cada ambiente, já usadas por padrão pelo SDK.

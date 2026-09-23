@@ -115,6 +115,7 @@ export class CampinasDpsClient {
       const response = await axios.post(this.options.endpoint, rawRequest, {
         headers,
         httpsAgent,
+        maxRedirects: 0,
         timeout: input.timeoutMs || this.options.timeoutMs,
         responseType: 'text',
         transformResponse: [(data) => data],
@@ -188,6 +189,7 @@ export class CampinasDpsClient {
       const response = await axios.get(endpoint, {
         headers,
         httpsAgent,
+        maxRedirects: 0,
         timeout: input.timeoutMs || this.options.timeoutMs,
         responseType: 'text',
         transformResponse: [(data) => data],
@@ -267,6 +269,7 @@ export class CampinasDpsClient {
       const response = await axios.get(endpoint, {
         headers,
         httpsAgent,
+        maxRedirects: 0,
         timeout: input.timeoutMs || this.options.timeoutMs,
         responseType: 'text',
         transformResponse: [(data) => data],
@@ -352,6 +355,7 @@ export class CampinasDpsClient {
       const response = await axios.post(endpoint, rawRequest, {
         headers,
         httpsAgent,
+        maxRedirects: 0,
         timeout: input.timeoutMs || this.options.timeoutMs,
         responseType: 'text',
         transformResponse: [(data) => data],
