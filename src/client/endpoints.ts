@@ -1,17 +1,19 @@
 import { NfseCampinasV3Environment } from '../dps/types';
-import { MissingProductionEndpointError } from '../errors/MissingProductionEndpointError';
 
-export const HOMOLOGACAO_DPS_ENDPOINT = 'https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/dps';
-export const HOMOLOGACAO_CONSULTA_ENDPOINT = 'https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse';
-export const HOMOLOGACAO_CONSULTA_DPS_ENDPOINT = HOMOLOGACAO_DPS_ENDPOINT;
+export const HOMOLOGACAO_DPS_ENDPOINT = 'https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse';
+export const HOMOLOGACAO_CONSULTA_ENDPOINT = HOMOLOGACAO_DPS_ENDPOINT;
+export const HOMOLOGACAO_CONSULTA_DPS_ENDPOINT = 'https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse/dps';
 export const HOMOLOGACAO_EVENTOS_ENDPOINT = HOMOLOGACAO_CONSULTA_ENDPOINT;
-export const PRODUCAO_DPS_ENDPOINT = 'https://novanfse.campinas.sp.gov.br/notafiscal-adn-ws/api/adn/dps';
-export const PRODUCAO_CONSULTA_ENDPOINT = 'https://novanfse.campinas.sp.gov.br/notafiscal-adn-ws/api/adn/nfse';
-export const PRODUCAO_CONSULTA_DPS_ENDPOINT = PRODUCAO_DPS_ENDPOINT;
+export const PRODUCAO_DPS_ENDPOINT = 'https://nfseapi.campinas.sp.gov.br/notafiscal-ws/nfse';
+export const PRODUCAO_CONSULTA_ENDPOINT = PRODUCAO_DPS_ENDPOINT;
+export const PRODUCAO_CONSULTA_DPS_ENDPOINT = 'https://nfseapi.campinas.sp.gov.br/notafiscal-ws/nfse/dps';
+export const PRODUCAO_EVENTOS_ENDPOINT = PRODUCAO_CONSULTA_ENDPOINT;
 
 export type NfseCampinasV3Endpoints = Partial<{
   dps: string;
   consulta: string;
+  /** Base da consulta por DPS, sem o identificador. Tem prioridade sobre o override legado de dps. */
+  consultaDps: string;
   eventos: string;
 }>;
 
@@ -45,6 +47,10 @@ export function resolveConsultaDpsEndpoint(
   environment: NfseCampinasV3Environment,
   endpoints: NfseCampinasV3Endpoints = {},
 ): string {
+  if (endpoints.consultaDps) {
+    return endpoints.consultaDps;
+  }
+  // Preserva configurações antigas que usam o mesmo endpoint personalizado para envio e consulta.
   if (endpoints.dps) {
     return endpoints.dps;
   }
@@ -64,5 +70,5 @@ export function resolveEventosEndpoint(
   if (environment === 'homologacao') {
     return HOMOLOGACAO_EVENTOS_ENDPOINT;
   }
-  throw new MissingProductionEndpointError('eventos de NFSe', 'eventos');
+  return PRODUCAO_EVENTOS_ENDPOINT;
 }

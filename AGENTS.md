@@ -24,22 +24,28 @@
 ## Campinas v3 Behavior
 
 - Target protocol is DPS v1.01 / Padrão Nacional, not ABRASF 2.03, RPS, SOAP, or WSDL.
-- Homologation DPS endpoint is `https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/dps`.
-- Production DPS and NFSe endpoints use the official
-  `https://novanfse.campinas.sp.gov.br/notafiscal-adn-ws/api/adn` base and were announced for activation on 2026-08-01.
-- `GET /dps/{idDps}` recovers the NFSe access key and requires mTLS. Reuse the configured `dps` endpoint for POST and
-  GET; do not add a redundant endpoint option.
+- Em homologação, envio, consulta de NFSe e eventos usam a base
+  `https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse`.
+- Em produção, a base é `https://nfseapi.campinas.sp.gov.br/notafiscal-ws/nfse`, com ativação em 21/09/2026 conforme
+  o guia oficial atualizado em 18/09/2026; consulte `docs/references/v3/README.md` para fontes e divergências da
+  página técnica.
+- A consulta de DPS exige mTLS e usa `GET /notafiscal-ws/nfse/dps/{idDps}`. A resolução prioriza
+  `endpoints.consultaDps`, depois `endpoints.dps` explícito por compatibilidade e, por fim, a constante própria do
+  ambiente. Ao sobrescrever o envio para um endereço diferente da consulta, informe também `consultaDps`.
 - The Campinas endpoint expects `Content-Type: application/json` with `{ dpsXmlGZipB64 }`; raw XML with
   `application/xml` returned `HTTP 415`.
-- Consulta de NFSe por chave de acesso está disponível em homologação via `GET /api/adn/nfse/{chaveAcesso}`. O retorno
+- Consulta de NFSe por chave de acesso está disponível via `GET /notafiscal-ws/nfse/{chaveAcesso}`. O retorno
   é JSON com `nfseXmlGZipB64` e `alertas`; preserve a resposta bruta e os alertas em erros HTTP.
-- Cancelamento de NFSe está disponível em homologação via
-  `POST /api/adn/nfse/{chaveAcesso}/eventos`. Envie JSON com `{ pedidoRegistroEventoXmlGZipB64 }`, contendo o XML
+- Cancelamento de NFSe está disponível em homologação e produção via
+  `POST /notafiscal-ws/nfse/{chaveAcesso}/eventos`. Envie JSON com `{ pedidoRegistroEventoXmlGZipB64 }`, contendo o XML
   `pedRegEvento` do código `101101` já assinado, compactado com GZip e codificado em Base64.
 - A fachada `cancelarNfse` gera e assina o `pedRegEvento` a partir de dados tipados; `signedXml` permanece como escape
   hatch para XML externo e deve ser transmitido sem alteração nem reassinatura.
-- A URL de eventos em produção ainda não foi publicada. Exija `endpoints.eventos` explicitamente em produção; não
-  derive esse endereço por simples troca de host. Substituição e os demais eventos continuam não implementados.
+- Eventos em produção usam `PRODUCAO_EVENTOS_ENDPOINT` por padrão; `endpoints.eventos` continua disponível como
+  override. `MissingProductionEndpointError` permanece exportado apenas por compatibilidade. Substituição e os
+  demais eventos continuam não implementados.
+- As quatro chamadas HTTP usam `maxRedirects: 0`: um redirecionamento deve preservar o status e o cabeçalho `Location`
+  no erro, sem converter silenciosamente o POST em GET.
 - `debug=true` deliberately logs signed XML and raw response without redaction. Do not add partial redaction unless
   product requirements change.
 

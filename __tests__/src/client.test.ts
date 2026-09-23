@@ -1,6 +1,7 @@
 import nock from 'nock';
 import https from 'https';
 import { gunzipSync } from 'zlib';
+import { NfseCampinasV3 } from '../../src/classes/NfseCampinasV3';
 import { CampinasDpsClient } from '../../src/client/CampinasDpsClient';
 import {
   HOMOLOGACAO_CONSULTA_DPS_ENDPOINT,
@@ -58,6 +59,83 @@ describe('CampinasDpsClient', () => {
     expect(resolveConsultaDpsEndpoint('homologacao', { dps: 'https://consulta.local/dps' })).toBe(
       'https://consulta.local/dps',
     );
+    expect(
+      resolveConsultaDpsEndpoint('homologacao', {
+        dps: 'https://consulta.local/nfse',
+        consultaDps: 'https://consulta.local/dps',
+      }),
+    ).toBe('https://consulta.local/dps');
+  });
+
+  test.each([
+    ['homologacao' as const, 'https://preprod-nfseapi.ima.sp.gov.br'],
+    ['producao' as const, 'https://nfseapi.campinas.sp.gov.br'],
+  ])('fachada usa as novas rotas oficiais de envio e consultas em %s', async (environment, origin) => {
+    const idDps = 'DPS350950221234567800019900001000000000000001';
+    const chaveAcesso = `NFS${'1'.repeat(50)}`;
+    const scope = nock(origin)
+      .post('/notafiscal-ws/nfse')
+      .reply(201, { chaveAcesso })
+      .get(`/notafiscal-ws/nfse/dps/${idDps}`)
+      .reply(200, { chaveAcesso })
+      .get(`/notafiscal-ws/nfse/${chaveAcesso}`)
+      .reply(200, { nfseXmlGZipB64: 'XML_COMPACTADO' });
+    const nfse = new NfseCampinasV3({
+      environment,
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      transport: { useClientCertificate: false },
+    });
+
+    await expect(nfse.enviarDps(`<DPS Id="${idDps}"><Signature/></DPS>`)).resolves.toMatchObject({
+      chaveAcesso,
+      httpStatus: 201,
+    });
+    await expect(nfse.consultarDps(idDps)).resolves.toMatchObject({ idDps, chaveAcesso, httpStatus: 200 });
+    await expect(nfse.consultarNfse(chaveAcesso)).resolves.toMatchObject({
+      chaveAcesso,
+      nfseXmlGZipB64: 'XML_COMPACTADO',
+      httpStatus: 200,
+    });
+    expect(scope.isDone()).toBe(true);
+  });
+
+  test('fachada permite envio e consulta de DPS em rotas independentes como na Sefin Nacional', async () => {
+    const idDps = 'DPS350950221234567800019900001000000000000001';
+    const chaveAcesso = `NFS${'1'.repeat(50)}`;
+    const scope = nock('https://sefin.local')
+      .post('/SefinNacional/nfse')
+      .reply(201, { chaveAcesso })
+      .get(`/SefinNacional/dps/${idDps}`)
+      .reply(200, { chaveAcesso });
+    const nfse = new NfseCampinasV3({
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      endpoints: {
+        dps: 'https://sefin.local/SefinNacional/nfse',
+        consultaDps: 'https://sefin.local/SefinNacional/dps',
+      },
+      transport: { useClientCertificate: false },
+    });
+
+    await expect(nfse.enviarDps(`<DPS Id="${idDps}"><Signature/></DPS>`)).resolves.toMatchObject({ chaveAcesso });
+    await expect(nfse.consultarDps(idDps)).resolves.toMatchObject({ idDps, chaveAcesso });
+    expect(scope.isDone()).toBe(true);
+  });
+
+  test('fachada mantém o endpoint de envio customizado como consulta quando consultaDps não é informado', async () => {
+    const idDps = 'DPS350950221234567800019900001000000000000001';
+    const chaveAcesso = `NFS${'1'.repeat(50)}`;
+    const scope = nock('https://legado.local').get(`/api/adn/dps/${idDps}`).reply(200, { chaveAcesso });
+    const nfse = new NfseCampinasV3({
+      certificate: Buffer.from('CERT'),
+      certPassword: 'secret',
+      endpoints: { dps: 'https://legado.local/api/adn/dps/' },
+      transport: { useClientCertificate: false },
+    });
+
+    await expect(nfse.consultarDps(idDps)).resolves.toMatchObject({ idDps, chaveAcesso });
+    expect(scope.isDone()).toBe(true);
   });
 
   test('consulta NFSe por GET com chave codificada e sem Content-Type', async () => {
@@ -204,6 +282,51 @@ describe('CampinasDpsClient', () => {
       message: 'Falha ao enviar DPS DPS1: HTTP 415: Unsupported Media Type',
     });
   });
+
+  test('recusa redirecionamento do envio sem transformar POST em GET e preserva Location', async () => {
+    const location = 'https://redirect.local/nfse';
+    const original = nock('https://redirect.local').post('/dps').reply(302, 'Endpoint movido', { Location: location });
+    const redirected = nock('https://redirect.local').get('/nfse').reply(405, 'Method Not Allowed');
+
+    await expect(
+      new CampinasDpsClient({
+        endpoint: 'https://redirect.local/dps',
+        transport: { useClientCertificate: false },
+      }).sendSignedDps({ idDps: 'DPS1', signedXml: '<DPS/>' }),
+    ).rejects.toMatchObject({
+      idDps: 'DPS1',
+      signedXml: '<DPS/>',
+      message: 'Falha ao enviar DPS DPS1: HTTP 302: Endpoint movido',
+      cause: { response: { status: 302, headers: { location } } },
+    });
+    expect(original.isDone()).toBe(true);
+    expect(redirected.isDone()).toBe(false);
+  });
+
+  test.each(['consultarNfse', 'consultarDps'] as const)(
+    '%s recusa redirecionamento e preserva status, corpo e Location',
+    async (operacao) => {
+      const location = 'https://redirect-consulta.local/destino';
+      const original = nock('https://redirect-consulta.local')
+        .get('/origem/ID1')
+        .reply(302, 'Endpoint movido', { Location: location });
+      const redirected = nock('https://redirect-consulta.local').get('/destino').reply(200, {});
+      const client = new CampinasDpsClient({
+        endpoint: 'https://redirect-consulta.local/origem',
+        transport: { useClientCertificate: false },
+      });
+      const consulta =
+        operacao === 'consultarNfse'
+          ? client.consultarNfse({ chaveAcesso: 'ID1' })
+          : client.consultarDps({ idDps: 'ID1' });
+
+      await expect(consulta).rejects.toMatchObject({
+        response: { httpStatus: 302, rawResponse: 'Endpoint movido', headers: { location } },
+      });
+      expect(original.isDone()).toBe(true);
+      expect(redirected.isDone()).toBe(false);
+    },
+  );
 
   test('registra trace HTTP de request e response quando debug está ativo', async () => {
     const endpoint = 'https://trace.local/dps';

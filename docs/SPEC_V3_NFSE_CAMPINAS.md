@@ -17,6 +17,16 @@
 > pedido a partir de dados tipados, preservando `signedXml` como opção avançada. As afirmações históricas abaixo de que
 > cancelamento ou eventos ainda não tinham sido publicados descrevem apenas o escopo original da v3.0.0.
 
+> **Atualização de 2026-09-23:** o [guia oficial atualizado em 18/09/2026](https://groups.google.com/g/wsnfsecampinas/c/oQOKosJ7n-Y/m/177VueC0AQAJ)
+> confirma os novos endpoints, com produção disponível desde `21/09/2026`. As bases são
+> `https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse` em homologação e
+> `https://nfseapi.campinas.sp.gov.br/notafiscal-ws/nfse` em produção. O envio usa `POST {base}`; a consulta por DPS,
+> `GET {base}/dps/{idDps}`; a consulta de NFSe, `GET {base}/{chaveAcesso}`; e o cancelamento,
+> `POST {base}/{chaveAcesso}/eventos`. O SDK usa constantes próprias para consulta por DPS e eventos em produção.
+> `endpoints.consultaDps` tem precedência sobre `endpoints.dps` explícito, mantido como fallback por compatibilidade.
+> As chamadas HTTP não seguem redirecionamentos (`maxRedirects: 0`). As URLs antigas e a exigência de override em
+> produção registradas abaixo são históricas; consulte o [README atual](../README.md) para a configuração vigente.
+
 ## 1. Decisões de produto e release
 
 ### 1.1. Estratégia de versionamento
@@ -99,7 +109,7 @@ Observação importante para os agentes: o portal RTC pode listar notas técnica
 
 ---
 
-## 3. Ambientes e endpoints
+## 3. Ambientes e endpoints (histórico)
 
 ### 3.1. Homologação Campinas
 

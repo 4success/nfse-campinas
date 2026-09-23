@@ -3,9 +3,12 @@ import { SignedXml } from 'xml-crypto';
 import { gunzipSync } from 'zlib';
 import { NfseCampinasV3 } from '../../src/classes/NfseCampinasV3';
 import { CampinasDpsClient } from '../../src/client/CampinasDpsClient';
-import { HOMOLOGACAO_EVENTOS_ENDPOINT, resolveEventosEndpoint } from '../../src/client/endpoints';
+import {
+  HOMOLOGACAO_EVENTOS_ENDPOINT,
+  PRODUCAO_EVENTOS_ENDPOINT,
+  resolveEventosEndpoint,
+} from '../../src/client/endpoints';
 import { parseCancelarNfseResponse } from '../../src/client/responseParser';
-import { MissingProductionEndpointError } from '../../src/errors/MissingProductionEndpointError';
 import { ValidationError } from '../../src/errors/ValidationError';
 
 const mockToPem = jest.fn(() => ({ privateKey: 'PRIVATE', publicCert: 'PUBLIC' }));
@@ -48,8 +51,9 @@ describe('cancelamento de NFSe', () => {
     jest.clearAllMocks();
   });
 
-  test('resolve somente o endpoint de eventos oficialmente publicado', () => {
-    expect(HOMOLOGACAO_EVENTOS_ENDPOINT).toBe('https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse');
+  test('resolve endpoints oficiais de eventos de homologação e produção e aceita overrides', () => {
+    expect(HOMOLOGACAO_EVENTOS_ENDPOINT).toBe('https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse');
+    expect(PRODUCAO_EVENTOS_ENDPOINT).toBe('https://nfseapi.campinas.sp.gov.br/notafiscal-ws/nfse');
     expect(resolveEventosEndpoint('homologacao')).toBe(HOMOLOGACAO_EVENTOS_ENDPOINT);
     expect(resolveEventosEndpoint('homologacao', { eventos: 'https://eventos.local/nfse/' })).toBe(
       'https://eventos.local/nfse/',
@@ -57,7 +61,7 @@ describe('cancelamento de NFSe', () => {
     expect(resolveEventosEndpoint('producao', { eventos: 'https://eventos-producao.local/nfse' })).toBe(
       'https://eventos-producao.local/nfse',
     );
-    expect(() => resolveEventosEndpoint('producao')).toThrow(MissingProductionEndpointError);
+    expect(resolveEventosEndpoint('producao')).toBe(PRODUCAO_EVENTOS_ENDPOINT);
   });
 
   test('envia o pedido assinado em JSON GZip/Base64 para a rota síncrona de eventos', async () => {
@@ -143,6 +147,33 @@ describe('cancelamento de NFSe', () => {
         httpStatus: 400,
       },
     });
+  });
+
+  test('recusa redirecionamento de cancelamento sem transformar POST em GET e preserva Location', async () => {
+    const location = `https://eventos-redirect.local/novo/nfse/${chaveAcesso}/eventos`;
+    const original = nock('https://eventos-redirect.local')
+      .post(`/nfse/${chaveAcesso}/eventos`)
+      .reply(302, 'Endpoint movido', { Location: location });
+    const redirected = nock('https://eventos-redirect.local')
+      .get(`/novo/nfse/${chaveAcesso}/eventos`)
+      .reply(405, 'Method Not Allowed');
+
+    await expect(
+      new CampinasDpsClient({
+        endpoint: 'https://eventos-redirect.local/nfse',
+        transport: { useClientCertificate: false },
+      }).cancelarNfse({ chaveAcesso, signedXml }),
+    ).rejects.toMatchObject({
+      chaveAcesso,
+      response: {
+        signedXml,
+        httpStatus: 302,
+        rawResponse: 'Endpoint movido',
+        headers: { location },
+      },
+    });
+    expect(original.isDone()).toBe(true);
+    expect(redirected.isDone()).toBe(false);
   });
 
   test.each([
@@ -382,18 +413,37 @@ describe('cancelamento de NFSe', () => {
     expect(scope.isDone()).toBe(true);
   });
 
-  test('resolve a ausência de endpoint de produção antes de assinar o pedido automático', async () => {
+  test.each([
+    ['homologacao' as const, 'https://preprod-nfseapi.ima.sp.gov.br', '2'],
+    ['producao' as const, 'https://nfseapi.campinas.sp.gov.br', '1'],
+  ])('fachada automática usa endpoint de eventos oficial de %s sem override', async (environment, origin, tpAmb) => {
+    const generatedSignedXml = '<pedRegEvento><Signature>assinatura-gerada</Signature></pedRegEvento>';
+    const signer = mockEventSignature(generatedSignedXml);
+    const scope = nock(origin)
+      .post(`/notafiscal-ws/nfse/${chaveAcesso}/eventos`, (body) => {
+        const payload = typeof body === 'string' ? JSON.parse(body) : body;
+        return (
+          gunzipSync(Buffer.from(payload.pedidoRegistroEventoXmlGZipB64, 'base64')).toString('utf8') ===
+          generatedSignedXml
+        );
+      })
+      .reply(200, { eventoXmlGZipB64: 'EVENTO_AUTO', alertas: [] });
     const nfse = new NfseCampinasV3({
-      environment: 'producao',
+      environment,
       certificate: Buffer.from('CERT'),
       certPassword: 'secret',
       transport: { useClientCertificate: false },
     });
 
-    await expect(nfse.cancelarNfse(dadosCancelamento)).rejects.toBeInstanceOf(MissingProductionEndpointError);
-    expect(SignedXml).not.toHaveBeenCalled();
-    expect(mockToPem).not.toHaveBeenCalled();
-    expect(nock.isDone()).toBe(true);
+    await expect(nfse.cancelarNfse(dadosCancelamento)).resolves.toMatchObject({
+      chaveAcesso,
+      signedXml: generatedSignedXml,
+      eventoXmlGZipB64: 'EVENTO_AUTO',
+      httpStatus: 200,
+    });
+    expect(signer.computeSignature.mock.calls[0]?.[0]).toContain(`<tpAmb>${tpAmb}</tpAmb>`);
+    expect(SignedXml).toHaveBeenCalledTimes(1);
+    expect(scope.isDone()).toBe(true);
   });
 
   test('rejeita mistura de XML assinado com dados estruturados sem assinar nem enviar', async () => {

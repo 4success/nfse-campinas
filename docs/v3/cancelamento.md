@@ -3,7 +3,7 @@
 A Prefeitura de Campinas publicou o endpoint síncrono de homologação para cancelamento de NFSe no Padrão Nacional:
 
 ```txt
-POST https://preprod-nfse.ima.sp.gov.br/notafiscal-adn-ws/api/adn/nfse/{chaveAcesso}/eventos
+POST https://preprod-nfseapi.ima.sp.gov.br/notafiscal-ws/nfse/{chaveAcesso}/eventos
 ```
 
 O SDK gera o XML `pedRegEvento` v1.01 do cancelamento (`101101`), assina o elemento `infPedReg` com o certificado A1
@@ -103,27 +103,33 @@ lançam `CancelamentoHttpError`, preservando a resposta e os alertas devolvidos 
 
 ## Produção
 
-A URL divulgada é exclusiva do ambiente de homologação. Enquanto Campinas não publicar uma URL oficial de eventos em
-produção, configure `endpoints.eventos` explicitamente. Sem essa opção, `cancelarNfse` lança
-`MissingProductionEndpointError`:
+O guia oficial atualizado em 18/09/2026 informa que o endpoint de produção está disponível desde `21/09/2026`:
+
+```txt
+POST https://nfseapi.campinas.sp.gov.br/notafiscal-ws/nfse/{chaveAcesso}/eventos
+```
+
+O SDK usa esse endereço por padrão quando `environment` é `producao`:
 
 ```ts
 const nfse = new NfseCampinas({
   environment: 'producao',
   certificate,
   certPassword,
-  endpoints: {
-    eventos: 'https://endpoint-oficial-publicado-pela-prefeitura/.../nfse',
-  },
 });
 ```
 
-Não derive a URL de produção por simples troca de host. O valor de `endpoints.eventos` é a base do recurso `nfse`; o
-SDK acrescenta `/{chaveAcesso}/eventos` ao enviar o pedido. No caminho tipado, `tpAmb` é derivado do mesmo ambiente da
-instância usado para resolver o endpoint.
+`endpoints.eventos` continua disponível para sobrescrever a base do recurso `nfse`; o SDK acrescenta
+`/{chaveAcesso}/eventos` ao enviar o pedido. No caminho tipado, `tpAmb` é derivado do mesmo ambiente da instância usado
+para resolver o endpoint. `MissingProductionEndpointError` permanece exportado por compatibilidade, mas não é mais
+lançado pela resolução dos endpoints padrão.
+
+Redirecionamentos não são seguidos. Se o servidor responder `302`, `CancelamentoHttpError.response` preserva o status
+em `httpStatus` e o destino em `headers.location` para diagnosticar um endereço antigo.
 
 Fontes oficiais:
 
+- [Guia Reforma Tributária — NFSe Campinas Padrão Nacional, atualizado em 18/09/2026](https://groups.google.com/g/wsnfsecampinas/c/oQOKosJ7n-Y/m/177VueC0AQAJ)
 - [Documentação técnica da Reforma Tributária de Campinas](https://campinas.sp.gov.br/sites/reformatributaria/documentacao-tecnica)
 - [Documentação técnica atual do Sistema Nacional NFS-e](https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/documentacao-atual)
 - [Esquemas de produção NFS-e v1.01 de 09/02/2026](https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/documentacao-atual/nfse-esquemas_xsd-v1-01-20260209.zip)
