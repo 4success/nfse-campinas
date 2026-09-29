@@ -30,6 +30,13 @@ function addText(parent: XMLElement, name: string, value: unknown): XMLElement |
   return parent.ele(name, sanitizeXmlText(String(value)));
 }
 
+function addMoney(parent: XMLElement, name: string, value: string | number | undefined): void {
+  // Number perde o zero decimal final. Completar uma casa não muda o valor;
+  // strings e precisão excedente permanecem sob responsabilidade do emissor.
+  const text = typeof value === 'number' && /^\d+\.\d$/.test(String(value)) ? `${value}0` : value;
+  addText(parent, name, text);
+}
+
 function addCpfCnpj(parent: XMLElement, entity: { cpf?: string; cnpj?: string }) {
   if (entity.cnpj) {
     addText(parent, 'CNPJ', normalizeCnpj(entity.cnpj));
@@ -129,7 +136,8 @@ export class DpsXmlBuilder {
     addText(infDps, 'dhEmi', formatDpsDateTime(input.dataHoraEmissao));
     addText(infDps, 'verAplic', input.versaoAplicativo || DPS_VERSION);
     addText(infDps, 'serie', normalizeSerie(input.serie));
-    addText(infDps, 'nDPS', normalizeNumeroDps(input.numeroDps));
+    // O preenchimento de 15 posições pertence ao Id, não ao elemento nDPS.
+    addText(infDps, 'nDPS', normalizeNumeroDps(input.numeroDps).replace(/^0+(?=\d)/, ''));
     addText(infDps, 'dCompet', formatDpsDate(input.dataCompetencia));
     addText(infDps, 'tpEmit', input.tipoEmitente);
     addText(infDps, 'cLocEmi', normalizeMunicipio(input.municipioEmissao));
@@ -149,14 +157,14 @@ export class DpsXmlBuilder {
 
     const valores = infDps.ele('valores');
     const vServPrest = valores.ele('vServPrest');
-    addText(vServPrest, 'vServ', input.valores.valorServico);
+    addMoney(vServPrest, 'vServ', input.valores.valorServico);
     if (
       input.valores.valorDescontoIncondicionado !== undefined ||
       input.valores.valorDescontoCondicionado !== undefined
     ) {
       const vDescCondIncond = valores.ele('vDescCondIncond');
-      addText(vDescCondIncond, 'vDescIncond', input.valores.valorDescontoIncondicionado);
-      addText(vDescCondIncond, 'vDescCond', input.valores.valorDescontoCondicionado);
+      addMoney(vDescCondIncond, 'vDescIncond', input.valores.valorDescontoIncondicionado);
+      addMoney(vDescCondIncond, 'vDescCond', input.valores.valorDescontoCondicionado);
     }
 
     const hasTributacao = Boolean(
@@ -177,15 +185,15 @@ export class DpsXmlBuilder {
       if (pisCofins) {
         const piscofins = tribFed.ele('piscofins');
         addText(piscofins, 'CST', pisCofins.cst);
-        addText(piscofins, 'vBCPisCofins', pisCofins.baseCalculo);
+        addMoney(piscofins, 'vBCPisCofins', pisCofins.baseCalculo);
         addText(piscofins, 'pAliqPis', pisCofins.aliquotaPis);
         addText(piscofins, 'pAliqCofins', pisCofins.aliquotaCofins);
-        addText(piscofins, 'vPis', pisCofins.valorPis);
-        addText(piscofins, 'vCofins', pisCofins.valorCofins);
+        addMoney(piscofins, 'vPis', pisCofins.valorPis);
+        addMoney(piscofins, 'vCofins', pisCofins.valorCofins);
         addText(piscofins, 'tpRetPisCofins', pisCofins.tipoRetencaoPisCofins);
       }
-      addText(tribFed, 'vRetIRRF', input.valores.tributacaoFederal.valorRetidoIrrf);
-      addText(tribFed, 'vRetCSLL', input.valores.tributacaoFederal.valorRetidoCsll);
+      addMoney(tribFed, 'vRetIRRF', input.valores.tributacaoFederal.valorRetidoIrrf);
+      addMoney(tribFed, 'vRetCSLL', input.valores.tributacaoFederal.valorRetidoCsll);
       addText(tribFed, 'vRetINSS', input.valores.tributacaoFederal.valorRetidoInss);
     }
 
