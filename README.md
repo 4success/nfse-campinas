@@ -215,6 +215,10 @@ const html = await nfse.imprimirDanfse({ xml: nfseXml });
 O método retorna HTML. A geração de PDF deve ser feita pelo consumidor a partir desse HTML, usando o renderer apropriado
 para o ambiente de execução.
 
+A classificação IBS/CBS é lida da DPS incluída no XML autorizado; os valores apurados são lidos do bloco IBS/CBS da
+NFS-e. XMLs históricos com os dados em apenas um desses blocos continuam aceitos. Não é necessário enriquecer o XML
+com snapshots do emissor para imprimir esses valores.
+
 ## Segurança
 
 - Use certificado A1 `.pfx/.p12` do prestador.
