@@ -443,13 +443,14 @@ export class DanfseXmlParser {
     const competYear = parseInt(dCompetRaw.slice(0, 4), 10);
     const exibirPisCofins = !isNaN(competYear) && competYear <= 2026;
 
-    const ibscbsValores = ibscbs.valores || {};
-    const ibscbsTrib = ibscbsValores.trib || {};
+    // A DPS declara a classificação; a NFS-e traz a apuração municipal no mesmo XML.
+    const ibscbsValores = infNFSe.IBSCBS?.valores || ibscbs.valores || {};
+    const ibscbsTrib = ibscbs.valores?.trib || ibscbsValores.trib || {};
     const gIBSCBS = ibscbsTrib.gIBSCBS || {};
     const ibsUf = ibscbsValores.uf || {};
     const ibsMun = ibscbsValores.mun || {};
     const ibsFed = ibscbsValores.fed || {};
-    const totCIBS = ibscbs.totCIBS || {};
+    const totCIBS = infNFSe.IBSCBS?.totCIBS || ibscbs.totCIBS || {};
     const gIBS = totCIBS.gIBS || {};
     const gIBSMunTot = gIBS.gIBSMunTot || {};
     const gIBSUFTot = gIBS.gIBSUFTot || {};
