@@ -219,6 +219,12 @@ A classificação IBS/CBS é lida da DPS incluída no XML autorizado; os valores
 NFS-e. XMLs históricos com os dados em apenas um desses blocos continuam aceitos. Não é necessário enriquecer o XML
 com snapshots do emissor para imprimir esses valores.
 
+O ISS prioriza `valores/pAliqAplic` da NFS-e e, quando ausente, usa `tribMun/pAliq` da DPS incorporada.
+Alíquotas informadas como zero são exibidas como `0,00%`; campos ausentes continuam com `-`.
+O indicador `indDest=0` identifica o próprio tomador como destinatário. Nomes de municípios também podem ser
+resolvidos pelo par `cLocalidadeIncid`/`xLocalidadeIncid` no mesmo XML. Horários, telefones e textos declarados são
+preservados conforme o XML autorizado, sem preenchimento a partir de cadastros ou requisições anteriores.
+
 ## Segurança
 
 - Use certificado A1 `.pfx/.p12` do prestador.
