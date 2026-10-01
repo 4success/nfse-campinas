@@ -36,8 +36,9 @@ function fmtMoney(v: unknown): string {
 }
 
 function fmtPct(v: unknown): string {
-  const n = toNum(v);
-  if (n === 0) return DASH;
+  if (v === undefined || v === null || String(v).trim() === '') return DASH;
+  const n = Number(v);
+  if (!Number.isFinite(n)) return DASH;
   return `${n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}%`;
 }
 
@@ -254,6 +255,15 @@ export class DanfseXmlParser {
         uf: existing?.uf || '',
       });
     }
+    const ibscbs = (infNFSe.IBSCBS || infDPS.IBSCBS || {}) as Record<string, unknown>;
+    const cLocalidadeIncid = String(ibscbs.cLocalidadeIncid || '');
+    if (cLocalidadeIncid && ibscbs.xLocalidadeIncid) {
+      const existing = this.munLookup.get(cLocalidadeIncid);
+      this.munLookup.set(cLocalidadeIncid, {
+        xMun: String(ibscbs.xLocalidadeIncid),
+        uf: existing?.uf || this.resolveUfFromCMun(cLocalidadeIncid),
+      });
+    }
   }
 
   private resolveUfFromCMun(cMun: string): string {
@@ -399,7 +409,8 @@ export class DanfseXmlParser {
     const dest = ibscbs.dest as Record<string, unknown> | undefined;
     const destinatario = this.extractPessoa(dest);
 
-    let destinatarioIgualTomador = false;
+    // indDest=0 identifica o próprio tomador mesmo sem repetir o bloco dest.
+    let destinatarioIgualTomador = !!toma && !dest && String(ibscbs.indDest) === '0';
     if (toma && dest) {
       const tomaDoc = this.extractDoc(toma);
       const destDoc = this.extractDoc(dest);
@@ -605,7 +616,8 @@ export class DanfseXmlParser {
       ),
       vDescIncondISSQN: fmtMoney(vDescCondIncond.vDescIncond),
       vBC: fmtMoney(valoresNFSe.vBC),
-      pAliqAplic: fmtPct(valoresNFSe.pAliqAplic),
+      // Campinas pode informar a alíquota somente na DPS incorporada ao XML autorizado.
+      pAliqAplic: fmtPct(valoresNFSe.pAliqAplic ?? tribMun.pAliq),
       tpRetISSQN: RET_ISSQN_MAP[String(tribMun.tpRetISSQN)] || str(tribMun.tpRetISSQN),
       vISSQN: fmtMoney(valoresNFSe.vISSQN),
       vRetIRRF: fmtMoney(tribFed.vRetIRRF),

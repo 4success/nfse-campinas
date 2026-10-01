@@ -164,7 +164,7 @@ describe('imprimirDanfse', () => {
 
     expect(data.cstClass).toBe('000 / 000001');
     expect(data.vBCIbs).toBe('R$\u00a073,21');
-    expect(data.aliqIbs).toBe('0,10% / -');
+    expect(data.aliqIbs).toBe('0,10% / 0,00%');
     expect(data.pAliqEfetUF).toBe('0,10%');
     expect(data.pCBS).toBe('0,90%');
     expect(data.pAliqEfetCBS).toBe('0,90%');
@@ -198,6 +198,101 @@ describe('imprimirDanfse', () => {
     const html = await imprimirDanfse({ xml });
 
     expect(html).toContain('<span class="val">1.1501.10.00</span>');
+  });
+
+  test('usa a alíquota da DPS autorizada quando a apuração não repete pAliqAplic', async () => {
+    const xml = authorizedNfseXml
+      .replace('<pAliqAplic>5.00</pAliqAplic>', '')
+      .replace('<tpRetISSQN>1</tpRetISSQN>', '<tpRetISSQN>1</tpRetISSQN><pAliq>2.00</pAliq>');
+
+    const data = await new DanfseXmlParser().parse(xml);
+
+    expect(data.pAliqAplic).toBe('2,00%');
+    expect(data.vBC).toBe('R$\u00a0100,00');
+    expect(data.vISSQN).toBe('R$\u00a05,00');
+    expect(data.vLiq).toBe('R$\u00a0100,00');
+  });
+
+  test('prioriza pAliqAplic, inclusive zero, e não calcula alíquota ausente', async () => {
+    const xml = authorizedNfseXml.replace(
+      '<tpRetISSQN>1</tpRetISSQN>',
+      '<tpRetISSQN>1</tpRetISSQN><pAliq>2.00</pAliq>',
+    );
+    expect((await new DanfseXmlParser().parse(xml)).pAliqAplic).toBe('5,00%');
+    expect(
+      (await new DanfseXmlParser().parse(xml.replace('<pAliqAplic>5.00</pAliqAplic>', '<pAliqAplic>0</pAliqAplic>')))
+        .pAliqAplic,
+    ).toBe('0,00%');
+    expect(
+      (await new DanfseXmlParser().parse(authorizedNfseXml.replace('<pAliqAplic>5.00</pAliqAplic>', ''))).pAliqAplic,
+    ).toBe('-');
+  });
+
+  test('mantém separados os horários da DPS e da NFS-e presentes no XML', async () => {
+    const data = await new DanfseXmlParser().parse(authorizedNfseXml);
+    expect(data.dhEmi).toBe('28/07/2026 10:29:00');
+    expect(data.dhProc).toBe('28/07/2026 10:30:00');
+    const missing = authorizedNfseXml.replace('<dhEmi>2026-07-28T10:29:00-03:00</dhEmi>', '');
+    expect((await new DanfseXmlParser().parse(missing)).dhEmi).toBe('-');
+  });
+
+  const tomadorXml = `<toma><CPF>12345678901</CPF><xNome>Tomador de Teste</xNome>
+    <end><endNac><cMun>3536505</cMun><CEP>13140000</CEP></endNac>
+      <xLgr>Rua de Teste</xLgr><nro>1</nro></end><fone>11999990000</fone></toma>`;
+
+  test('resolve o município pelo nome de incidência no XML e identifica indDest=0', async () => {
+    const xml = authorizedNfseXml
+      .replace('<serv>', tomadorXml + '<serv>')
+      .replace('<finNFSe>0</finNFSe>', '<finNFSe>0</finNFSe><indDest>0</indDest>')
+      .replace(
+        '</infNFSe>',
+        '<IBSCBS><cLocalidadeIncid>3536505</cLocalidadeIncid><xLocalidadeIncid>Paulínia</xLocalidadeIncid></IBSCBS></infNFSe>',
+      );
+
+    const data = await new DanfseXmlParser().parse(xml);
+    const html = await imprimirDanfse({ xml });
+    expect(data.tomador.municipioUf).toBe('Paulínia / SP');
+    expect(data.tomador.fone).toBe('11999990000');
+    expect(data.destinatarioIgualTomador).toBe(true);
+    expect(html).toContain('O DESTINATÁRIO É O PRÓPRIO TOMADOR/ADQUIRENTE DA OPERAÇÃO');
+    expect(html).not.toContain('DESTINATÁRIO DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e');
+  });
+
+  test('não inventa município, telefone ou destinatário quando não constam do XML', async () => {
+    const xml = authorizedNfseXml.replace('<serv>', tomadorXml.replace('<fone>11999990000</fone>', '') + '<serv>');
+    const data = await new DanfseXmlParser().parse(xml);
+    expect(data.tomador.municipioUf).toBe('3536505 / SP');
+    expect(data.tomador.fone).toBe('-');
+    expect(data.prestador.fone).toBe('-');
+    expect(data.destinatarioIgualTomador).toBe(false);
+    expect(data.destinatario).toBeNull();
+  });
+
+  test('preserva destinatário explícito e telefones disponíveis no XML', async () => {
+    const destXml = '<dest><CPF>98765432100</CPF><xNome>Destinatário de Teste</xNome><fone>11988880000</fone></dest>';
+    const xml = authorizedNfseXml
+      .replace('<serv>', tomadorXml + '<serv>')
+      .replace('<finNFSe>0</finNFSe>', '<finNFSe>0</finNFSe><indDest>1</indDest>' + destXml)
+      .replace('<xNome>Prestador de Teste</xNome>', '<xNome>Prestador de Teste</xNome><fone>1933330000</fone>');
+    const data = await new DanfseXmlParser().parse(xml);
+    expect(data.destinatarioIgualTomador).toBe(false);
+    expect(data.destinatario.fone).toBe('11988880000');
+    expect(data.prestador.fone).toBe('1933330000');
+    const html = await imprimirDanfse({ xml });
+    expect(html).toContain('Destinatário de Teste');
+    expect(html).toContain('11988880000');
+    expect(html).toContain('1933330000');
+  });
+
+  test('distingue alíquota zero de campo ausente sem alterar valores monetários', async () => {
+    const xml = authorizedNfseXml.replace('</infNFSe>', assessedIbsCbs + '</infNFSe>');
+    const data = await new DanfseXmlParser().parse(xml);
+    expect(data.aliqIbs).toBe('0,10% / 0,00%');
+    expect(data.pAliqEfetMun).toBe('0,00%');
+    expect(data.redAliq).toBe('- / - / -');
+    expect(data.vIBSMun).toBe('-');
+    expect(data.vBCIbs).toBe('R$\u00a073,21');
+    expect(data.vLiq).toBe('R$\u00a0100,00');
   });
 
   test('exige XML autorizado ou nfseXmlGZipB64', async () => {

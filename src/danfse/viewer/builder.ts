@@ -166,6 +166,7 @@ table.danfse td {
   text-overflow: ellipsis;
   margin-bottom: .5pt;
 }
+.c .lbl.wrap { white-space: normal; }
 tr.ident-row .lbl {
   font-size: 7pt;
   text-transform: uppercase;
@@ -553,7 +554,7 @@ tr.sec-title-full td {
     <td class="c"><span class="lbl">Base de Cálculo Após Exclusões e Reduções</span><span class="val">${this.esc(
       data.vBCIbs,
     )}</span></td>
-    <td class="c"><span class="lbl">Reduções da Alíquota IBS / Reduções da Alíquota CBS</span><span class="val">${this.esc(
+    <td class="c"><span class="lbl wrap">Reduções da Alíquota IBS / Reduções da Alíquota CBS</span><span class="val">${this.esc(
       data.redAliq,
     )}</span></td>
     <td class="c"><span class="lbl">Alíquota IBS UF / IBS Municipal</span><span class="val">${this.esc(
