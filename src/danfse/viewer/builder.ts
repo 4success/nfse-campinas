@@ -180,6 +180,7 @@ tr.ident-row .lbl {
   text-overflow: ellipsis;
 }
 .c .val.wrap { white-space: normal; word-break: break-word; }
+.desc-serv .val.wrap { white-space: pre-wrap; }
 
 /* ── Linha do título do bloco (título na col1 + campos nas cols 2-4) ── */
 tr.row-sec-top td {
