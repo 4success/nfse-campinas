@@ -223,7 +223,19 @@ O ISS prioriza `valores/pAliqAplic` da NFS-e e, quando ausente, usa `tribMun/pAl
 Alíquotas informadas como zero são exibidas como `0,00%`; campos ausentes continuam com `-`.
 O indicador `indDest=0` identifica o próprio tomador como destinatário. Nomes de municípios também podem ser
 resolvidos pelo par `cLocalidadeIncid`/`xLocalidadeIncid` no mesmo XML. Horários, telefones e textos declarados são
-preservados conforme o XML autorizado, sem preenchimento a partir de cadastros ou requisições anteriores.
+preservados conforme o XML autorizado.
+
+Opcionalmente, `descricaoServico` pode recuperar as quebras de linha da descrição original somente na apresentação:
+
+```ts
+const html = await nfse.imprimirDanfse({ xml: nfseXml, descricaoServico: descricaoOriginal });
+```
+
+O complemento é aceito apenas quando seu texto integral coincide com a descrição do XML após remover exclusivamente
+CR e LF dos dois lados. Espaços, tabulações e todos os outros caracteres continuam significativos; as entidades XML
+são decodificadas uma vez para essa comparação. Uma divergência ignora o complemento e mantém a descrição autorizada.
+Tipos diferentes de string são rejeitados. O XML, sua assinatura e os campos tributários não são modificados.
+As quebras e os parágrafos vazios são preservados na apresentação, mantendo o escape HTML da descrição.
 
 ## Segurança
 

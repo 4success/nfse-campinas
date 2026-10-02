@@ -301,6 +301,107 @@ describe('imprimirDanfse', () => {
     );
   });
 
+  test.each(['\n', '\r\n', '\r'])('restaura apenas quebras %j na descrição de apresentação', async (breaks) => {
+    const xml = authorizedNfseXml.replace('Serviço de teste', 'LINHA ALINHA B');
+    const input = { xml, descricaoServico: `LINHA A${breaks}${breaks}LINHA B` };
+    const html = await imprimirDanfse(input);
+
+    expect(html).toContain(input.descricaoServico);
+    expect(html).toContain('.desc-serv .val.wrap { white-space: pre-wrap; }');
+    expect(input.xml).toBe(xml);
+  });
+
+  test('mantém quebras do próprio XML quando não há complemento', async () => {
+    const xml = authorizedNfseXml.replace('Serviço de teste', 'LINHA A\n\nLINHA B');
+    const html = await imprimirDanfse({ xml });
+
+    expect(html).toContain('LINHA A\n\nLINHA B');
+    expect(html).toContain('.desc-serv .val.wrap { white-space: pre-wrap; }');
+  });
+
+  test.each(['LINHA A LINHA B', 'LINHA A\tLINHA B', 'LINHA A\nOUTRA', 'linha A\nLINHA B'])(
+    'ignora complemento que altera caracteres diferentes de CR/LF: %j',
+    async (descricaoServico) => {
+      const xml = authorizedNfseXml.replace('Serviço de teste', 'LINHA ALINHA B');
+      const input = { xml, descricaoServico };
+
+      expect(await imprimirDanfse(input)).toBe(await imprimirDanfse({ xml }));
+    },
+  );
+
+  test('não aceita igualdade obtida removendo espaços das bordas do XML', async () => {
+    const xml = authorizedNfseXml.replace('Serviço de teste', '  LINHA ALINHA B  ');
+    const input = { xml, descricaoServico: 'LINHA A\nLINHA B' };
+
+    expect(await imprimirDanfse(input)).toBe(await imprimirDanfse({ xml }));
+  });
+
+  test('compara a descrição integral antes da projeção truncada do visualizador', async () => {
+    const description = 'A'.repeat(1400) + 'FINAL';
+    const xml = authorizedNfseXml.replace('Serviço de teste', description);
+    const valid = { xml, descricaoServico: 'A'.repeat(1400) + '\nFINAL' };
+    const truncated = { xml, descricaoServico: (await new DanfseXmlParser().parse(xml)).xDescServ + '\n' };
+    const changed = { xml, descricaoServico: 'A'.repeat(1400) + '\nDIFERENTE' };
+
+    expect(await imprimirDanfse(valid)).toContain(valid.descricaoServico);
+    expect(await imprimirDanfse(truncated)).toBe(await imprimirDanfse({ xml }));
+    expect(await imprimirDanfse(changed)).toBe(await imprimirDanfse({ xml }));
+  });
+
+  test('compara entidades XML decodificadas uma vez e mantém o escape HTML', async () => {
+    const xml = authorizedNfseXml.replace('Serviço de teste', 'A&amp;B&lt;script&gt;C&lt;/script&gt;');
+    const input = { xml, descricaoServico: 'A&\nB<script>C</script>' };
+    const html = await imprimirDanfse(input);
+    const doubleEncoded = { xml, descricaoServico: 'A&amp;\nB<script>C</script>' };
+
+    expect(html).toContain('A&amp;\nB&lt;script&gt;C&lt;/script&gt;');
+    expect(html).not.toContain('<script>C</script>');
+    expect(await imprimirDanfse(doubleEncoded)).toBe(await imprimirDanfse({ xml }));
+  });
+
+  test('preserva XML compactado, assinatura e todos os outros dados de apresentação', async () => {
+    const xml = authorizedNfseXml
+      .replace('Serviço de teste', 'LINHA ALINHA B')
+      .replace('</NFSe>', '<Signature>ASSINATURA SINTÉTICA</Signature></NFSe>');
+    const input = {
+      nfseXmlGZipB64: gzipSync(Buffer.from(xml)).toString('base64'),
+      descricaoServico: 'LINHA A\nLINHA B',
+    };
+    const originalInput = { ...input };
+    const parse = jest.fn((originalXml: string) => new DanfseXmlParser().parse(originalXml));
+    const build = jest.fn(() => 'HTML');
+    const controlledViewer: DanfseViewerModule = {
+      DanfseXmlParser: jest.fn().mockImplementation(() => ({ parse })),
+      DanfseHtmlBuilder: jest.fn().mockImplementation(() => ({ build })),
+    };
+
+    await imprimirDanfse(input, controlledViewer);
+
+    expect(parse).toHaveBeenCalledWith(xml);
+    expect(build).toHaveBeenCalledWith({
+      ...(await new DanfseXmlParser().parse(xml)),
+      xDescServ: input.descricaoServico,
+    });
+    expect(input).toEqual(originalInput);
+  });
+
+  test('distingue referência numérica XML de uma sequência literal semelhante', async () => {
+    const numericXml = authorizedNfseXml.replace('Serviço de teste', 'A&#38;B');
+    const literalXml = authorizedNfseXml.replace('Serviço de teste', 'A&amp;#38;B');
+    const description = 'A&\nB';
+    const numeric = { xml: numericXml, descricaoServico: description };
+    const literal = { xml: literalXml, descricaoServico: description };
+
+    expect(await imprimirDanfse(numeric)).toContain('A&amp;\nB');
+    expect(await imprimirDanfse(literal)).toBe(await imprimirDanfse({ xml: literalXml }));
+  });
+
+  test.each([null, 1, true, {}, []])('rejeita complemento com tipo inválido: %j', async (descricaoServico) => {
+    const input = { xml: authorizedNfseXml, descricaoServico } as unknown as Parameters<typeof imprimirDanfse>[0];
+
+    await expect(imprimirDanfse(input)).rejects.toThrow('descricaoServico deve ser uma string');
+  });
+
   test('fachada NfseCampinasV3 expõe imprimirDanfse', async () => {
     const nfse = new NfseCampinasV3({ certificate: Buffer.from(''), certPassword: '' });
 
